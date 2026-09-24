@@ -9,6 +9,7 @@ import br.com.dunnastecnologia.chamados.domain.model.Chamado;
 import br.com.dunnastecnologia.chamados.domain.model.Comentario;
 import br.com.dunnastecnologia.chamados.domain.model.StatusChamado;
 import br.com.dunnastecnologia.chamados.infrastructure.controller.api.ColaboradorChamadoApiController;
+import br.com.dunnastecnologia.chamados.infrastructure.security.JwtService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -28,7 +29,6 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -44,6 +44,9 @@ class ColaboradorWebControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private JwtService jwtService;
 
     @MockitoBean
     private ColaboradorUseCases colaboradorUseCases;
@@ -78,7 +81,7 @@ class ColaboradorWebControllerIntegrationTest {
         when(colaboradorUseCases.buscarChamados(colaborador, statusAtrasadoId, null, null, null, PageRequest.of(0, 1)))
                 .thenReturn(new PageResult<>(List.of(), 2, 2, 0, 1));
 
-        mockMvc.perform(get("/colaborador").with(authentication(colaboradorAuth)))
+        mockMvc.perform(get("/colaborador").with(WebTestAuthenticationFactory.autenticacao(colaboradorAuth)))
                 .andExpect(status().isOk())
                 .andExpect(view().name("colaborador/dashboard"))
                 .andExpect(model().attribute("totalChamadosAtrasados", 2L));
@@ -105,7 +108,7 @@ class ColaboradorWebControllerIntegrationTest {
 
         mockMvc.perform(
                         get("/colaborador/chamados")
-                                .with(authentication(WebTestAuthenticationFactory.colaborador()))
+                                .with(WebTestAuthenticationFactory.autenticacao(WebTestAuthenticationFactory.colaborador()))
                                 .param("statusId", statusId.toString())
                                 .param("tipoChamadoId", tipoChamadoId.toString())
                                 .param("unidade", "A-101")
@@ -147,7 +150,7 @@ class ColaboradorWebControllerIntegrationTest {
         mockMvc.perform(
                         multipart("/colaborador/chamados/{chamadoId}/comentarios", chamadoId)
                                 .file(arquivo)
-                                .with(authentication(WebTestAuthenticationFactory.colaborador()))
+                                .with(WebTestAuthenticationFactory.autenticacao(WebTestAuthenticationFactory.colaborador()))
                                 .param("mensagem", "Atualizacao do atendimento")
                 )
                 .andExpect(status().is3xxRedirection())
@@ -183,7 +186,7 @@ class ColaboradorWebControllerIntegrationTest {
 
         mockMvc.perform(
                         patch("/colaborador/chamados/{chamadoId}/status", chamadoId)
-                                .with(authentication(WebTestAuthenticationFactory.colaborador()))
+                                .with(WebTestAuthenticationFactory.autenticacao(WebTestAuthenticationFactory.colaborador()))
                                 .param("statusId", statusId.toString())
                 )
                 .andExpect(status().is3xxRedirection())

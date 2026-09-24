@@ -2,13 +2,16 @@ package br.com.dunnastecnologia.chamados.infrastructure.controller.web;
 
 import br.com.dunnastecnologia.chamados.application.UserCase.AdminUseCases;
 import br.com.dunnastecnologia.chamados.application.UserCase.AnexoChamadoUseCases;
+import br.com.dunnastecnologia.chamados.application.UserCase.AreaUseCase;
 import br.com.dunnastecnologia.chamados.application.UserCase.ComentarioUseCase;
 import br.com.dunnastecnologia.chamados.application.pagination.PageResult;
 import br.com.dunnastecnologia.chamados.domain.model.Colaborador;
 import br.com.dunnastecnologia.chamados.domain.model.Morador;
+import br.com.dunnastecnologia.chamados.domain.model.StatusArea;
 import br.com.dunnastecnologia.chamados.domain.model.Unidade;
 import br.com.dunnastecnologia.chamados.domain.model.Usuario;
 import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.AtualizarStatusForm;
+import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.AreaForm;
 import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.BlocoForm;
 import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.ComentarioForm;
 import br.com.dunnastecnologia.chamados.infrastructure.controller.web.form.StatusChamadoForm;
@@ -49,18 +52,26 @@ public class AdminWebController {
     private final AdminUseCases adminUseCases;
     private final AnexoChamadoUseCases anexoChamadoUseCases;
     private final ComentarioUseCase comentarioUseCase;
+    private final AreaUseCase areaUseCase;
     private final WebControllerSupport support;
 
     public AdminWebController(
             AdminUseCases adminUseCases,
             AnexoChamadoUseCases anexoChamadoUseCases,
             ComentarioUseCase comentarioUseCase,
+            AreaUseCase areaUseCase,
             WebControllerSupport support
     ) {
         this.adminUseCases = adminUseCases;
         this.anexoChamadoUseCases = anexoChamadoUseCases;
         this.comentarioUseCase = comentarioUseCase;
+        this.areaUseCase = areaUseCase;
         this.support = support;
+    }
+
+    @ModelAttribute("areaForm")
+    public AreaForm areaForm() {
+        return new AreaForm();
     }
 
     @ModelAttribute("blocoForm")
@@ -340,6 +351,41 @@ public class AdminWebController {
         }
 
         return "admin/usuarios/detalhe";
+    }
+
+    @Operation(summary = "Lista as areas do condominio", tags = "02 - Admin Web - Paginas")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Pagina de listagem de areas renderizada com sucesso."),
+            @ApiResponse(responseCode = "403", description = "Acesso negado para o perfil autenticado."),
+            @ApiResponse(responseCode = "404", description = "Area informada nao encontrada.")
+    })
+    @GetMapping({"/areas", "/areas/"})
+    @Transactional(readOnly = true)
+    public String listarAreas(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(required = false) UUID areaId,
+            Model model
+    ) {
+        var currentUser = support.authenticatedUser(authentication);
+        var areas = areaUseCase.listarAreas(currentUser, support.pageRequest(page, size));
+
+        model.addAttribute("pageTitle", "Areas");
+        model.addAttribute("areas", support.mapContent(areas.content(), support::toAreaMap));
+        model.addAttribute("areasPage", support.pageMetadata(areas));
+        model.addAttribute("statusAreaDisponiveis", StatusArea.values());
+
+        if (areaId != null) {
+            var area = areaUseCase.buscarAreaPorId(currentUser, areaId);
+            var form = new AreaForm();
+            form.setNome(area.getNome());
+            form.setStatus(area.getStatus() == null ? null : area.getStatus().getValor());
+            model.addAttribute("areaEdicao", support.toAreaMap(area));
+            model.addAttribute("areaForm", form);
+        }
+
+        return "admin/areas/lista";
     }
 
     @Operation(summary = "Lista os tipos de chamado cadastrados", tags = "02 - Admin Web - Paginas")

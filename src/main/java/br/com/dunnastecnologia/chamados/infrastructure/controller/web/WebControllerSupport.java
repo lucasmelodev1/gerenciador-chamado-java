@@ -2,6 +2,7 @@ package br.com.dunnastecnologia.chamados.infrastructure.controller.web;
 
 import br.com.dunnastecnologia.chamados.application.Security.AuthenticatedUser;
 import br.com.dunnastecnologia.chamados.application.pagination.PageResult;
+import br.com.dunnastecnologia.chamados.domain.model.Area;
 import br.com.dunnastecnologia.chamados.domain.model.Bloco;
 import br.com.dunnastecnologia.chamados.domain.model.Chamado;
 import br.com.dunnastecnologia.chamados.domain.model.Comentario;
@@ -132,6 +133,15 @@ public class WebControllerSupport {
                 "role", usuario.getRole(),
                 "tipo", userTypeLabel(usuario)
         );
+    }
+
+    public Map<String, Object> toAreaMap(Area area) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("id", area.getId());
+        values.put("nome", area.getNome());
+        values.put("status", area.getStatus() == null ? null : area.getStatus().getValor());
+        values.put("statusNome", area.getStatus() == null ? null : area.getStatus().name());
+        return values;
     }
 
     public Map<String, Object> toTipoChamadoMap(TipoChamado tipoChamado) {

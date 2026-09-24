@@ -1,5 +1,6 @@
 package br.com.dunnastecnologia.chamados.infrastructure.controller.web;
 
+import br.com.dunnastecnologia.chamados.infrastructure.controller.api.AreaApiController;
 import br.com.dunnastecnologia.chamados.infrastructure.exception.BusinessRuleException;
 import br.com.dunnastecnologia.chamados.infrastructure.exception.ResourceNotFoundException;
 import br.com.dunnastecnologia.chamados.infrastructure.exception.UnauthorizedOperationException;
@@ -16,7 +17,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
         HomeWebController.class,
         AdminWebController.class,
         MoradorWebController.class,
-        ColaboradorWebController.class
+        ColaboradorWebController.class,
+        AreaApiController.class
 })
 @Hidden
 public class WebExceptionHandler {

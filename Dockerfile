@@ -13,7 +13,7 @@ RUN mvn clean package -DskipTests
 
 
 # ---------- STAGE 2 : RUNTIME ----------
-FROM eclipse-temurin:21-jdk-jammy
+FROM eclipse-temurin:21-jdk-jammy AS runtime
 
 WORKDIR /app
 
@@ -22,4 +22,6 @@ COPY --from=build /app/target/*.war app.war
 
 EXPOSE 8080
 
-ENTRYPOINT ["sh","-c","exec java -Duser.timezone=\"${APP_TIMEZONE:-${TZ:-UTC}}\" -jar app.war"]
+
+# ---------- STAGE 3 : TEST ----------
+FROM build AS test

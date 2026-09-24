@@ -11,6 +11,7 @@ Implementações das interfaces de `application/UserCase`. Concentram regra de n
 - `AnexoChamadoService.java` / `AnexoComentarioService.java`: implementam os use cases de anexos.
 - `UsuarioService.java`: implementa `UsuarioUseCase`.
 - `TipoChamadoService.java` / `StatusChamadoService.java`: implementam os catálogos.
+- `AreaService.java`: implementa `AreaUseCase` (cadastro, listagem, busca, atualização e remoção com soft delete); leituras exigem administrador; `status` nulo assume `Ativo` no cadastro e é preservado na atualização.
 - `AuthenticationService.java`: `UserDetailsService` que carrega usuário ativo por e-mail.
 - `ChamadoAtrasoScheduler.java`: job agendado que marca chamados atrasados conforme SLA (controlado por `app.chamado.atraso.scheduler.*`).
 

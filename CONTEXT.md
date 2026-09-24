@@ -11,7 +11,8 @@ Sistema de gestão de chamados para condomínios. Backend em Spring Boot 4 (Java
 ## Comandos
 - Ambiente local: `docker compose up --build` (app em http://localhost:8080).
 - Build: `./mvnw clean package`.
-- Testes: `./mvnw test`.
+- Testes: `docker compose run --rm test` (serviço `test`, banco PostgreSQL dedicado `gerenciador_chamados_test`).
+- Primeira subida do banco: se o volume `postgres_data` já existir sem o banco de testes, rode `docker compose down -v` uma vez.
 
 ## Configuração
 - `pom.xml`: dependências (Spring Boot, Security, JPA, Flyway, Jasper/JSTL, JJWT, springdoc, PostgreSQL, Lombok).

@@ -6,6 +6,9 @@ import br.com.dunnastecnologia.chamados.domain.model.Morador;
 import br.com.dunnastecnologia.chamados.domain.model.Usuario;
 import br.com.dunnastecnologia.chamados.infrastructure.security.adapter.UserDetailsImpl;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import java.util.UUID;
 
@@ -24,6 +27,14 @@ final class WebTestAuthenticationFactory {
 
     static UsernamePasswordAuthenticationToken morador() {
         return authenticationFor(usuarioMorador());
+    }
+
+    static RequestPostProcessor autenticacao(Authentication authentication) {
+        return request -> {
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            request.setUserPrincipal(authentication);
+            return request;
+        };
     }
 
     private static UsernamePasswordAuthenticationToken authenticationFor(Usuario usuario) {

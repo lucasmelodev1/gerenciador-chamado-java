@@ -10,6 +10,7 @@ Interfaces Spring Data JPA (`@Repository`). Parte das consultas delega para fun�
 - `TipoChamadoRepository.java`, `StatusChamadoRepository.java`: catálogos (status inicial padrão).
 - `ComentarioRepository.java`: comentários por chamado.
 - `AnexoChamadoRepository.java`, `AnexoComentarioRepository.java`: anexos e conteúdo binário.
+- `AreaRepository.java`: áreas do condomínio; registros com `deleted_at` são filtrados pelo Hibernate via soft delete.
 
 ## Relacionados
 - `../../resources/db/migration/CONTEXT.md` (funções e views)

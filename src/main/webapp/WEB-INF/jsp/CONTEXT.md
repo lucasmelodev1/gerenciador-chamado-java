@@ -5,7 +5,7 @@ Views JSP/JSTL renderizadas pelos controllers de `infrastructure/controller/web`
 ## Estrutura
 - `fragments/`: `taglibs.jspf` (taglibs e `ctx`), `head.jspf` (CSS), `topbar.jspf`, `sidebar.jspf` (navegação por perfil), `alerts.jspf`, `scripts.jspf`, `csrf.jspf`.
 - `auth/`: `login.jsp`.
-- `admin/`: `dashboard.jsp`, `blocos/`, `chamados/`, `escopo-colaborador/`, `status-chamado/`, `tipos-chamado/`, `usuarios/`, `vinculos-morador/`.
+- `admin/`: `dashboard.jsp`, `blocos/`, `areas/`, `chamados/`, `escopo-colaborador/`, `status-chamado/`, `tipos-chamado/`, `usuarios/`, `vinculos-morador/`.
 - `colaborador/`: `dashboard.jsp` e `chamados/`.
 - `morador/`: `dashboard.jsp` e `chamados/` (`lista`, `novo`, `detalhe`).
 

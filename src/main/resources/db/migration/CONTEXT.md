@@ -8,6 +8,7 @@ Migrations Flyway do PostgreSQL. Dividem-se em estrutura (tabelas/índices/colun
 - `V8__anexos_chamado.sql` / `V15__anexos_comentario.sql`: anexos (metadados + binário).
 - `V12__soft_delete_usuarios.sql`: coluna `ativo` para exclusão lógica.
 - `V16__input_validation_limits.sql`: restrições de tamanho de campos e anexos (5MB).
+- `V19__area.sql`: tabela `areas` (áreas do condomínio com status e exclusão lógica).
 
 ## Funções e consultas
 - `V2__morador_authorization_functions.sql`: permissões/assertivas do morador e listagem.

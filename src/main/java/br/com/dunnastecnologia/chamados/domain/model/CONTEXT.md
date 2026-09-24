@@ -12,6 +12,8 @@ Entidades JPA e tipos de domínio mapeados na tabela do banco (Flyway). Herança
 - `Chamado.java`: ocorrência com descrição, datas, morador, unidade, tipo e status.
 - `Comentario.java`: histórico textual do chamado.
 - `AnexoChamado.java` e `AnexoComentario.java`: metadados e conteúdo binário de anexos.
+- `Area.java`: área do condomínio com nome e status; exclusão lógica via `@SoftDelete` (`deleted_at`).
+- `StatusArea.java` / `StatusAreaConverter.java`: enum `Ativo`/`Inativo` e conversor que persiste o rótulo na coluna `status`.
 
 ## Relacionados
 - `../validation/CONTEXT.md` (limites de tamanho usados nas colunas)

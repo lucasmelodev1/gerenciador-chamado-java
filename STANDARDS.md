@@ -69,8 +69,8 @@ public class UsuarioService implements UsuarioUseCase {
 - Every new feature needs E2E coverage; sensitive/heavy or external-dependency flows also get API integration tests; security and complex calculations also get unit tests (`AGENTS.md`).
 - Unit tests: JUnit 5 + Mockito (`@ExtendWith(MockitoExtension.class)`), placed in a package mirroring the target, with descriptive Portuguese method names (`deve...`).
 - Web integration: `@WebMvcTest` + `MockMvc` + `@MockitoBean`; authenticate via `WebTestAuthenticationFactory`.
-- Repository integration: `@DataJpaTest` with H2 in `MODE=PostgreSQL` and Flyway disabled.
-- Run all tests with `./mvnw test`.
+- Database integration: `@SpringBootTest` through `integration/support/IntegrationTestSupport`, against the suite's PostgreSQL database (`TEST_DB_NAME`, default `gerenciador_chamados_test`), with Flyway creating the schema; use `@Transactional` for rollback.
+- Run all tests with `docker compose run --rm test` (or `./mvnw test` with the database reachable).
 
 ## 8. Formatting & Style
 

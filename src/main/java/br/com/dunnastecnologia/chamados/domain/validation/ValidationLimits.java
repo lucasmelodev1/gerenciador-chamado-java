@@ -7,6 +7,8 @@ public final class ValidationLimits {
     public static final int USUARIO_NOME_MAX_LENGTH = 255;
     public static final int USUARIO_EMAIL_MAX_LENGTH = 255;
     public static final int USUARIO_SENHA_MAX_LENGTH = 255;
+    public static final int AREA_NOME_MAX_LENGTH = 255;
+    public static final int AREA_STATUS_MAX_LENGTH = 255;
     public static final int TIPO_CHAMADO_TITULO_MAX_LENGTH = 255;
     public static final int STATUS_CHAMADO_NOME_MAX_LENGTH = 255;
     public static final int CHAMADO_DESCRICAO_MAX_LENGTH = 255;

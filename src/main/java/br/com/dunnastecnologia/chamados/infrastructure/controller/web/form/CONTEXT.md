@@ -9,6 +9,7 @@ Form objects (Lombok `@Getter`/`@Setter`) usados como `@ModelAttribute` nos cont
 - `ComentarioForm.java`: mensagem do comentário.
 - `StatusChamadoForm.java`: nome do status.
 - `TipoChamadoForm.java`: título e prazo em horas.
+- `AreaForm.java`: nome e status da área.
 - `UsuarioForm.java`: nome, e-mail, senha e tipo de perfil.
 - `VincularColaboradorTipoChamadoForm.java`: vínculo colaborador-tipo.
 - `VincularMoradorUnidadeForm.java`: vínculo morador-unidade.

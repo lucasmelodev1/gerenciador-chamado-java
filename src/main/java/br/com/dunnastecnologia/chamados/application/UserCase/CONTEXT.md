@@ -13,6 +13,7 @@ Interfaces (portas) dos casos de uso do sistema. São implementadas em `infrastr
 - `UsuarioUseCase.java`: CRUD de usuários e vínculos morador-unidade / colaborador-tipo.
 - `TipoChamadoUseCase.java`: cadastro, listagem, busca e atualização de tipos de chamado.
 - `StatusChamadoUseCase.java`: cadastro, listagem, busca, atualização e definição do status inicial padrão.
+- `AreaUseCase.java`: contrato de áreas (cadastro, listagem, busca, atualização e remoção); leituras também exigem `AuthenticatedUser` de administrador.
 
 ## Relacionados
 - `../Security/CONTEXT.md`, `../pagination/CONTEXT.md`

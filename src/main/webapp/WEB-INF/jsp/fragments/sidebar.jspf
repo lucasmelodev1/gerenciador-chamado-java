@@ -10,6 +10,7 @@
 
         <c:if test="${isAdministrador}">
             <a href="${ctx}/admin/blocos" class="nav-link">Blocos</a>
+            <a href="${ctx}/admin/areas" class="nav-link">Areas</a>
             <a href="${ctx}/admin/usuarios" class="nav-link">Usuarios</a>
             <a href="${ctx}/admin/vinculos-morador" class="nav-link">Vincular Morador</a>
             <a href="${ctx}/admin/escopo-colaborador" class="nav-link">Escopo Colaborador</a>
