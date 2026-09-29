@@ -9,6 +9,8 @@ public final class ValidationLimits {
     public static final int USUARIO_SENHA_MAX_LENGTH = 255;
     public static final int AREA_NOME_MAX_LENGTH = 255;
     public static final int AREA_STATUS_MAX_LENGTH = 255;
+    public static final int SOLICITACAO_AREA_STATUS_MAX_LENGTH = 32;
+    public static final int SOLICITACAO_AREA_MOTIVO_NEGACAO_MAX_LENGTH = 255;
     public static final int TIPO_CHAMADO_TITULO_MAX_LENGTH = 255;
     public static final int STATUS_CHAMADO_NOME_MAX_LENGTH = 255;
     public static final int CHAMADO_DESCRICAO_MAX_LENGTH = 255;

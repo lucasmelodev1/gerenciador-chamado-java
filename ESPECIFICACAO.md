@@ -1,29 +1,43 @@
 # Ferramentas de IA usadas
-Estou usando Opencode como Harness e usando puramente o DeepSeek V4.1 Flash como modelo.
-Uso skills de autoração minha para que eu tenha maior controle sobre o que é gerado. Eu conheço 
-melhor os limites do que minha IA consegue e não consegue fazer.
+Estou usando Opencode como Harness e usando puramente o DeepSeek V4.1 Flash como modelo. Uso skills de autoração minha para que eu tenha maior controle sobre o que é gerado. Eu conheço melhor os limites do que minha IA consegue e não consegue fazer. Também comecei a usar o agente Pi recentemente, e ele demonstrou resultados similares, com menos variância e com menos tokens, pois usa mais o cache do modelo que eu uso.
 
 # Sugestões de IA aceitas
-Nenhuma, eu não aceito sugestão de IA, toda decisão arquitetônica é feita por mim. A decisão da
-IA se limita a escrever o código seguindo todas as minhas regras.
+Eu não aceito sugestão arquitetônica de IA, e a decisão dela se limita a escrever o código seguindo todas as minhas regras. O meu agente customizado de Review normalmente recomenda alguns caminhos para seguir em micro partes do sistema, e eu vou mencionar as que, depois da minha pesquisa independente, se mostraram interessantes:
+1. Usar a extensao padrao `btree_gist` do PostgreSQL para evitar race conditions na tabela `solicitacoes_area`. [Documentacao oficial](https://www.postgresql.org/docs/current/btree-gist.html). As alternativas seriam fazer a verificação apenas no lado da aplicação ou usar soluções de row locking nativas do postgres. btree_gist ganhou por ser conciso e um único esforço.
+2. Usar FullCalendar.js como calendário. Depois da sugestão, eu pesquisei todas as alternativas e percebi que essa era a correta mesmo, igual o processo que fiz pra decidir a btree_gist.
 
 # Como validei conteúdo e código gerados
-Cada iteração de funcionalidade e bugfix é isolada em um commit no git, e eu checo as diffs de 
-todos os arquivos. Como as mudanças são pequenas e pontuais, isso não cria um gargalo de review.
+Cada iteração de funcionalidade e bugfix é isolada em um commit no git, e eu checo as diffs de todos os arquivos. Como as mudanças são pequenas e pontuais, isso não cria um gargalo de review. Cada iteração de geração de código eu verifico o output imediato pra identificar desvios no objetivo. Pequenos prompts com especificações técnicas é bem efetivo para evitar retrabalhos.
 
 # Quais decisões de negócio, segurança, escopo e aceite não foram delegadas à IA
 Todas, mas eu vou listando por aqui todas as decisões que tomei.
 - Manter campos de tempo de criação e tempo de deleção (pouco código agora, essencial pra auditoria)
 - Utilizar TEXT ao invés de VARCHAR (recomendado pela própria documentação oficial do POSTGRESQL)
 - Utilizar TEXT ao invés de enums (maior flexibilidade, checagem feita a nível de aplicação)
+- Schemas. Eu criei todos os schemas na mão, porque acredito que o schema do banco de dados necessita de um 
+entendimento muito bom do contexto humano da aplicação, como escala e expectativas futuras do cliente, coisas 
+que não estão escritas em canto nenhum.
+- Arquitetura de testes, pois a IA vai tentar sempre se esforçar o mínimo possível para o trabalho dela ser validado. Dessa forma, eu escolhi ser robusto na arquitetura de testes. Eu escolhi seguir com E2E-first, onde poucos testes vão testar muita superfície do código. Essa estratégia é válida especialmente para ambientes de alta velocidade, onde parar para fazer testes custa caro. O lado ruim de testes E2E é que eles são mais fáceis de quebrar por mudanças na API e interfaces, mas na minha experiência eles são muito mais efetivos que testes unitários por esforço e tempo.
 
 # Interações relevantes
-1. Utilizei a IA para identificar padrões de nomenclatura e projeto na camada de banco de dados, 
-especificamente para saber o padrão de escrita (camelCase, snake_case, etc) usado em enumeradores 
-no formato string na camada do BD, e saber se havia algum tipo de soft delete aplicado com Hibernate.
-2. IA quis mapear `deleted_at` como campo na classe da Area, mas o Hibernate já faz isso na sua versão 
-mais nova. Jogando essa responsabilidade pra o Hibernate, temos menos área de superfície pra bugs.
-3. IA quis usar H2 como banco de dados para executar os testes E2E, mesmo sem nenhuma mencao sobre. 
-Como eu entendi a visao sobre os testes serem reprodutivos em multiplos ambientes, eu dei um upgrade na 
-arquitetura de testes usando o proprio `docker compose` como motor para replicar o ambiente e utilizar o 
-BD por la.
+1. Utilizei a IA para identificar padrões de nomenclatura e projeto na camada de banco de dados, especificamente para saber o padrão de escrita (camelCase, snake_case, etc) usado em enumeradores no formato string na camada do BD, e saber se havia algum tipo de soft delete aplicado com Hibernate.
+2. IA quis mapear `deleted_at` como campo na classe da Area, mas o Hibernate já faz isso na sua versão mais nova. Jogando essa responsabilidade pra o Hibernate, temos menos área de superfície pra bugs.
+3. IA quis usar H2 como banco de dados para executar os testes E2E, mesmo sem nenhuma mencao sobre. Como eu entendi a visao sobre os testes serem reprodutivos em multiplos ambientes, eu dei um upgrade na arquitetura de testes usando o proprio `docker compose` como motor para replicar o ambiente e utilizar o BD por la.
+4. A IA quebrou as barreiras e limites que eu impus no escopo da implementação várias vezes, porque fazer a API e testar ela em isolamento é muito mais difícil quando se usa JSP ou qualquer tipo de tecnologia HATEOAS, como o HTMX ou Thymeleaf. Eu percebo que a separação da API do frontend por meio de JSON ou gRPC é MUITO mais efetiva para programação com IA. Podemos criar testes muito mais robustos e legíveis, pois eles são mais localizados e específicos. Creio que o melhor tradeoff de velocidade e robustez seria trocar a API do backend de forms para JSON, usando OpenAPI como ponte para o frontend. O frontend usaria bibliotecas que convertem de OpenAPI spec para tipos typescript e seguiria consumindo a API por ele. O repositório seria único, back e front no mesmo repositório. O pipeline de deploy primeiro geraria o arquivo do OpenAPI, yaml ou json, depois geraria os tipos do front por meio desse arquivo, depois executaria todos os testes do front e do back, e caso passasse tudo, seguiria para build e deploy. Claro que esse pipeline já estaria pronto de antemão, dependendo da ferramenta em núvem usada, então não teria atraso de projeto em projeto.
+
+# Decisões fora de escopo + motivos
+1. Usei FullCalendar.js para fazer o calendário por ser feito em vanilla Javascript, ser padrão no mercado, ter interfaces para se comunicar com o sistema atual e ser estilizável. Ao invés de baixar direto do CDN, baixei uma versão fixa e coloquei no código por motivos de estabiliidade.
+2. Fiz testes E2E acima dos testes unitários solicitados, pois vejo que eles se encaixam melhor para esse tipo de projeto, como eu mencionei alguns pontos acima. Além disso, eles estão mais próximos do que o Kent Beck menciona em Extreme Programming Explained, que se mostrou ser efetivo no passado.
+
+# Decisões técnicas
+1. Ambiente de testes deve ser 1:1 o máximo possível com ambiente de produção. Testes são executados via 
+docker compose sobre a mesma imagem docker da produção.
+2. Evitar race conditions nas solicitações diretamente no banco de dados para evitar que regressões no 
+código afetem os clientes diretamente (ambos código e banco devem ser comprometidos, diminuindo a 
+surface area para bugs).
+3. Evitar grandes funções pl/SQL, pois são extremamente difíceis de atualizar e debugar, sendo um pesadelo em produção e atrasando o tempo de solução de bugs que passam por essa camada. Views complexas demais e triggers fazem sentido, mas não funções de query básicas.
+
+# Interpretações
+1. O código atual usa muito pl/SQL, e eu interpreto isso como um futuro débito técnico, porque engessa 
+atualizações lógicas, pois migrations no banco de dados são mais difíceis de atualizar 
+do que apenas códigos na camada de serviço.

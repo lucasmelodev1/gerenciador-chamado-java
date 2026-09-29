@@ -3,3 +3,9 @@
 <script src="${ctx}/js/forms.js"></script>
 <script src="${ctx}/js/tables.js"></script>
 <script src="${ctx}/js/layout.js"></script>
+<c:if test="${calendarAssets}">
+    <script src="${ctx}/js/vendor/fullcalendar/fullcalendar.global.min.js"></script>
+    <script src="${ctx}/js/vendor/fullcalendar/theme-classic.global.min.js"></script>
+    <script src="${ctx}/js/vendor/fullcalendar/pt-br.global.min.js"></script>
+    <script src="${ctx}/js/calendar.js"></script>
+</c:if>

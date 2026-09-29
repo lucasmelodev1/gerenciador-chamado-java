@@ -84,6 +84,11 @@
                                             <td>${area.status}</td>
                                             <td class="cell-actions">
                                                 <a href="${ctx}/admin/areas?areaId=${area.id}" class="btn btn-link">Editar</a>
+                                                <form method="post" action="${ctx}/admin/areas/${area.id}" onsubmit="return confirm('Remover esta area? As reservas existentes serao preservadas.');">
+                                                    <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
+                                                    <input type="hidden" name="_method" value="delete">
+                                                    <button type="submit" class="btn btn-danger">Remover</button>
+                                                </form>
                                             </td>
                                         </tr>
                                     </c:forEach>

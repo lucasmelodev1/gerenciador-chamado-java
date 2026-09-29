@@ -1,24 +1,12 @@
 # src/main/resources/db/migration
 
-Migrations Flyway do PostgreSQL. Dividem-se em estrutura (tabelas/índices/colunas) e funções PL/pgSQL que concentram regras de autorização e consultas usadas pelos repositórios.
+Migrations Flyway do PostgreSQL: estrutura e funções PL/pgSQL usadas pelos repositórios.
 
-## Estrutura
-- `V1__init.sql`: tabelas base (usuários, perfis, blocos, unidades, morador_unidade, tipos/status, chamados, comentários) e índices.
-- `V7__status_default_flag.sql`: flag de status inicial padrão.
-- `V8__anexos_chamado.sql` / `V15__anexos_comentario.sql`: anexos (metadados + binário).
-- `V12__soft_delete_usuarios.sql`: coluna `ativo` para exclusão lógica.
-- `V16__input_validation_limits.sql`: restrições de tamanho de campos e anexos (5MB).
-- `V19__area.sql`: tabela `areas` (áreas do condomínio com status e exclusão lógica).
-
-## Funções e consultas
-- `V2__morador_authorization_functions.sql`: permissões/assertivas do morador e listagem.
-- `V3__admin_business_functions.sql`: autorização do admin, geração automática de unidades e consulta de chamados.
-- `V4__colaborador_business_functions.sql`: escopo, permissão de atendimento e consultas do colaborador.
-- `V5__repository_query_functions.sql`: buscas de detalhe e listagens de apoio aos repositories.
-- `V6__chamado_visibility_rules.sql`: consolida regras de visibilidade por perfil.
-- `V9`/`V10`/`V11`/`V13`/`V17`/`V18`: evoluções de filtros (morador, tipo/unidade, data/antiguidade) e escopo do colaborador por tipo.
-- `V14__status_atrasado.sql`: status `Atrasado` por SLA.
-
-## Convenções
-- Chamadas pelos métodos nativos dos repositórios em `infrastructure/repository`.
-- Ao mudar assinatura de função, a migration remove a versão anterior antes de recriar.
+- `V1__init.sql`: tabelas base (usuários, perfis, blocos, unidades, chamados, comentários).
+- `V7`, `V12`, `V14`, `V16`: status inicial padrão, soft delete de usuários, status `Atrasado`, limites de campo/anexo.
+- `V8__anexos_chamado.sql`, `V15__anexos_comentario.sql`: anexos.
+- `V19__area.sql`: tabela `areas`.
+- `V20__solicitacoes_area.sql`: tabela `solicitacoes_area` com colunas de texto em `TEXT` (`status`, `motivo_negacao`), `CHECK (inicio < fim)`, `CHECK` de status e `EXCLUDE USING gist` (requer `btree_gist`) que impede reservas `Aprovado` sobrepostas da mesma área. Os limites de tamanho ficam na aplicação (`ValidationLimits` e entidades).
+- `V21__solicitacoes_area_indice_morador.sql`: índice `(morador_id, inicio)`.
+- `V2` a `V6` e `V9` a `V11`, `V13`, `V17`, `V18`: funções e filtros de autorização/visibilidade por perfil.
+- Ao alterar assinatura de função, remover a versão anterior na mesma migration.

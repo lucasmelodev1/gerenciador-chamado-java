@@ -1,20 +1,10 @@
 # domain/model
 
-Entidades JPA e tipos de domínio mapeados na tabela do banco (Flyway). Herança de usuários é `JOINED` sobre `usuarios`.
+Entidades JPA (schema criado pelo Flyway); herança de usuários é `JOINED` sobre `usuarios`.
 
-## Entidades
-- `Usuario.java`: classe base abstrata (`id`, `nome`, `email`, `senha`, `ativo`); método abstrato `getRole()`.
-- `Administrador.java`, `Colaborador.java`, `Morador.java`: subtipos de `Usuario` com a role correspondente.
-- `Bloco.java`: estrutura física; origem da geração automática de unidades.
-- `Unidade.java`: apartamento gerado a partir de bloco, andar e identificação.
-- `TipoChamado.java`: catálogo de tipos com `prazoHoras` (SLA).
-- `StatusChamado.java`: status do fluxo e flag `inicialPadrao`.
-- `Chamado.java`: ocorrência com descrição, datas, morador, unidade, tipo e status.
-- `Comentario.java`: histórico textual do chamado.
-- `AnexoChamado.java` e `AnexoComentario.java`: metadados e conteúdo binário de anexos.
-- `Area.java`: área do condomínio com nome e status; exclusão lógica via `@SoftDelete` (`deleted_at`).
-- `StatusArea.java` / `StatusAreaConverter.java`: enum `Ativo`/`Inativo` e conversor que persiste o rótulo na coluna `status`.
-
-## Relacionados
-- `../validation/CONTEXT.md` (limites de tamanho usados nas colunas)
-- `../../infrastructure/repository/CONTEXT.md`
+- `Usuario.java` (abstrata) + `Administrador.java`, `Colaborador.java`, `Morador.java`: perfis e `getRole()`.
+- `Bloco.java`, `Unidade.java`: estrutura física.
+- `TipoChamado.java`, `StatusChamado.java`, `Chamado.java`, `Comentario.java`, `AnexoChamado.java`, `AnexoComentario.java`: fluxo de chamados.
+- `Area.java`, `StatusArea.java`/`StatusAreaConverter.java`: áreas comuns (`Ativo`/`Inativo`).
+- `SolicitacaoArea.java`, `StatusSolicitacaoArea.java`/`StatusSolicitacaoAreaConverter.java`: reservas (`Solicitado`/`Aprovado`/`Negado`/`Cancelado`).
+- Áreas e reservas usam exclusão lógica (`@SoftDelete`, coluna `deleted_at`).

@@ -1,28 +1,24 @@
 # Gerenciador de Chamados
 
-Sistema de gestão de chamados para condomínios. Backend em Spring Boot 4 (Java 21) empacotado como WAR, com frontend server-side em JSP/JSTL. Arquitetura em camadas: `application` (portas/use cases), `domain` (entidades) e `infrastructure` (adaptadores web, persistência, segurança). PostgreSQL via JPA/Hibernate e Flyway.
+Backend Spring Boot 4 (Java 21, WAR) com views JSP/JSTL e PostgreSQL via JPA/Flyway. Camadas: `application` (portas), `domain` (modelo), `infrastructure` (adaptadores). Regras em `AGENTS.md`, padrões em `STANDARDS.md`.
 
 ## Documentos
-- `AGENTS.md`: regras de trabalho do projeto.
-- `STANDARDS.md`: padrões de código (nomenclatura, camadas, persistência, testes e formatação).
-- `ESPECIFICACAO.md`: decisões de uso de IA e validação.
+- `ESPECIFICACAO.md`: decisões, uso de IA e evidências de cobertura.
 - `diagrama-relacional.drawio.svg`: modelo de dados.
 
 ## Comandos
-- Ambiente local: `docker compose up --build` (app em http://localhost:8080).
-- Build: `./mvnw clean package`.
-- Testes: `docker compose run --rm test` (serviço `test`, banco PostgreSQL dedicado `gerenciador_chamados_test`).
-- Primeira subida do banco: se o volume `postgres_data` já existir sem o banco de testes, rode `docker compose down -v` uma vez.
+- `docker compose up --build`: ambiente local (http://localhost:8080).
+- `./mvnw clean package`: build.
+- `docker compose run --rm test`: suíte completa (PostgreSQL do container `db`).
+- Cobertura unitária das reservas: comando em `src/test/java/br/com/dunnastecnologia/chamados/CONTEXT.md`.
+- Volume `postgres_data` sem o banco de testes: `docker compose down -v` uma vez.
 
 ## Configuração
-- `pom.xml`: dependências (Spring Boot, Security, JPA, Flyway, Jasper/JSTL, JJWT, springdoc, PostgreSQL, Lombok).
-- `src/main/resources/application.properties`: datasource, Flyway, upload de 5MB, bootstrap de admin, scheduler de atraso.
-- `.env` / `.env.example`: variáveis usadas pelo `docker-compose.yml`.
-- `Dockerfile` / `docker-compose.yml`: build multi-stage e ambiente local.
+- `pom.xml` (dependências e JaCoCo), `application.properties`, `.env`/`.env.example`, `Dockerfile`/`docker-compose.yml`.
 
-## Índice de CONTEXT.md
-- Código da aplicação: `src/main/java/br/com/dunnastecnologia/chamados/CONTEXT.md`
-- Migrations/DB: `src/main/resources/db/migration/CONTEXT.md`
-- Views JSP: `src/main/webapp/WEB-INF/jsp/CONTEXT.md`
-- Assets estáticos: `src/main/resources/static/CONTEXT.md`
-- Testes: `src/test/java/br/com/dunnastecnologia/chamados/CONTEXT.md`
+## Índice
+- `src/main/java/br/com/dunnastecnologia/chamados/`: código da aplicação.
+- `src/main/resources/db/migration/`: migrations Flyway.
+- `src/main/webapp/WEB-INF/jsp/`: views JSP.
+- `src/main/resources/static/`: CSS/JS.
+- `src/test/java/br/com/dunnastecnologia/chamados/`: testes.

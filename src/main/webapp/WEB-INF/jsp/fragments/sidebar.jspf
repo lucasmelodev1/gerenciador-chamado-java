@@ -11,6 +11,8 @@
         <c:if test="${isAdministrador}">
             <a href="${ctx}/admin/blocos" class="nav-link">Blocos</a>
             <a href="${ctx}/admin/areas" class="nav-link">Areas</a>
+            <a href="${ctx}/admin/reservas" class="nav-link">Reservas</a>
+            <a href="${ctx}/admin/reservas/agenda" class="nav-link">Agenda</a>
             <a href="${ctx}/admin/usuarios" class="nav-link">Usuarios</a>
             <a href="${ctx}/admin/vinculos-morador" class="nav-link">Vincular Morador</a>
             <a href="${ctx}/admin/escopo-colaborador" class="nav-link">Escopo Colaborador</a>
@@ -22,6 +24,9 @@
         <c:if test="${isMorador}">
             <a href="${ctx}/morador/chamados" class="nav-link">Meus Chamados</a>
             <a href="${ctx}/morador/chamados/novo" class="nav-link">Abrir Chamado</a>
+            <a href="${ctx}/morador/reservas" class="nav-link">Minhas Reservas</a>
+            <a href="${ctx}/morador/reservas/agenda" class="nav-link">Agenda</a>
+            <a href="${ctx}/morador/reservas/nova" class="nav-link">Reservar Area</a>
         </c:if>
 
         <c:if test="${isColaborador}">

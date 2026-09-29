@@ -77,10 +77,23 @@ class AreaApiIntegrationTest extends IntegrationTestSupport {
         cadastrarAreaViaApi(areaNome, AREA_STATUS_ATIVO);
         cadastrarAreaViaApi(segundaAreaNome, AREA_STATUS_INATIVO);
 
-        PageResult<Area> pageResult = areaUseCase.listarAreas(admin, PageRequest.of(0, 10));
+        // A suite compartilha um banco persistente e testes nao transacionais (concorrencia) deixam
+        // areas acumuladas; por isso a busca percorre as paginas em vez de assumir uma unica pagina.
+        boolean encontrouArea = false;
+        boolean encontrouSegunda = false;
+        for (int page = 0; !(encontrouArea && encontrouSegunda); page++) {
+            PageResult<Area> pageResult = areaUseCase.listarAreas(admin, PageRequest.of(page, 50));
+            encontrouArea = encontrouArea || pageResult.content().stream()
+                    .anyMatch(area -> areaNome.equals(area.getNome()));
+            encontrouSegunda = encontrouSegunda || pageResult.content().stream()
+                    .anyMatch(area -> segundaAreaNome.equals(area.getNome()));
+            if (page + 1 >= pageResult.totalPages()) {
+                break;
+            }
+        }
 
-        assertTrue(pageResult.content().stream().anyMatch(area -> areaNome.equals(area.getNome())));
-        assertTrue(pageResult.content().stream().anyMatch(area -> segundaAreaNome.equals(area.getNome())));
+        assertTrue(encontrouArea);
+        assertTrue(encontrouSegunda);
     }
 
     @Test

@@ -6,4 +6,10 @@
     <link rel="stylesheet" href="${ctx}/css/layout.css">
     <link rel="stylesheet" href="${ctx}/css/components.css">
     <link rel="stylesheet" href="${ctx}/css/responsive.css">
+    <c:if test="${calendarAssets}">
+        <link rel="stylesheet" href="${ctx}/css/vendor/fullcalendar/skeleton.min.css">
+        <link rel="stylesheet" href="${ctx}/css/vendor/fullcalendar/theme.min.css">
+        <link rel="stylesheet" href="${ctx}/css/vendor/fullcalendar/palette.min.css">
+        <link rel="stylesheet" href="${ctx}/css/calendar.css">
+    </c:if>
 </head>
