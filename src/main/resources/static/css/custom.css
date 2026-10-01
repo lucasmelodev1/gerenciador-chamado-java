@@ -16,15 +16,16 @@
  */
 
 /* ---------------------------------------------------------------------------
- * Shell: painel "inset" (S19)
+ * Shell: conteudo "inset" (S19)
  *
- * O bloco dashboard-01 do shadcn usa a variante `inset`: lateral e conteudo sao duas
- * superficies separadas, arredondadas, sobre o fundo da pagina (que aqui e o
- * `--bg` = #f3efe7 = base-200, definido no body do legado).
+ * No bloco dashboard-01 do shadcn a area de conteudo e uma superficie propria,
+ * arredondada, sobre o fundo da pagina — enquanto a LATERAL fica sobre o mesmo fundo,
+ * sem ilha (S21). O fundo da pagina e `--bg` do body do legado, alinhado com
+ * `--color-base-200` do tema.
  * ------------------------------------------------------------------------ */
 
-/* O fundo da pagina ja e base-200; a folga sai do `p-1.5 lg:p-2` do `.drawer-side`
-   (que fica no JSP) e das margens abaixo. */
+/* A folga sai do `p-1.5 lg:p-2` do `.drawer-side` (que fica no JSP) e da margem
+   abaixo. */
 @media (min-width: 1024px) {
     .drawer-content {
         margin: 0.5rem 0.5rem 0.5rem 0;

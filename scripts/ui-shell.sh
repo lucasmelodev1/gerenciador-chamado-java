@@ -49,7 +49,7 @@ REQ = {
  "morador-reservas-disponibilidade":"/morador/reservas/disponibilidade",
  "colaborador":"/colaborador","colaborador-chamados":"/colaborador/chamados",
 }
-SIDEBAR = 'class="app-sidebar flex h-full w-72 flex-col overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-sm"'
+SIDEBAR = 'class="app-sidebar flex h-full w-72 flex-col bg-base-200 lg:bg-transparent"'
 TOPBAR = ['<label for="app-drawer" class="btn btn-square btn-sm btn-ghost lg:hidden"',
           'class="mx-2 hidden h-4 w-px shrink-0 bg-base-300 lg:block"',
           'class="font-display truncate text-lg font-semibold"',
@@ -78,6 +78,17 @@ for arq in sorted(DIR.glob("*.html")):
         if frag not in sb: bad(f"falta {frag[:46]!r}")
     if '<circle cx="12" cy="12" r="9" />' in sb:
         bad("icone de fallback emitido (alias desconhecido em icone.jspf)")
+    # A lateral fica SOBRE o fundo da pagina (S21): se voltar a ser uma ilha com
+    # superficie/borda/sombra proprias, isto falha.
+    tag_aside = re.search(r'<aside[^>]*>', sb)
+    cabecalho_aside = tag_aside.group(0) if tag_aside else ''
+    if not cabecalho_aside:
+        bad("tag <aside> da lateral nao encontrada")
+    for ilha in ('bg-base-100', 'rounded-box', 'shadow-sm', 'border'):
+        if ilha in cabecalho_aside:
+            bad(f"lateral voltou a ser ilha: {ilha!r} no <aside>")
+    if 'lg:bg-transparent' not in cabecalho_aside:
+        bad("lateral sem `lg:bg-transparent` (nao esta sobre o fundo da pagina)")
     if f'href="{"/" + perfil}"' not in sb: bad("link da marca nao aponta para a home do perfil")
     if not re.search(r'<div class="h-8 w-8 bg-neutral text-xs font-semibold text-neutral-content">[A-Z0-9]{1,2}</div>', sb):
         bad("iniciais do avatar ausentes/malformadas")

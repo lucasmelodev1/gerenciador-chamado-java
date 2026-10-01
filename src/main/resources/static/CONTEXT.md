@@ -6,7 +6,9 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
 - `css/app.css`: entry do Tailwind CSS 4 + daisyUI 5 (tema `chamados`), tipografia (Inter/Noto Sans) e
   `@source` explícitos com `source(none)` — sem isso o scan varre o repositório e emite componentes citados
   apenas em documentação. Também define a escala de raios do tema (`--radius-box: 1rem`,
-  `--radius-field: .625rem`, `--radius-selector: .5rem`), reduzida em S20.
+  `--radius-field: .625rem`, `--radius-selector: .5rem`), reduzida em S20, e as superfícies
+  (`--color-base-200: #f3f4f6`, `--color-base-300: #e5e7eb`) — cinza-neutro desde S21, no lugar do creme
+  `#f3efe7/#e4ded2`. O `--bg` do `base.css` (fundo real do `body`) acompanha o `base-200`.
 - `css/app.build.css`: **gerado** (`npm run build:css` ou estágio `frontend` do Dockerfile); não versionado.
 - `css/custom.css`: shell — painel *inset* do `drawer-content` e topbar (linha única com `border-b`) —,
   dois ajustes de geometria escopados em `.app-sidebar` (a daisyUI vem depois de `utilities` no cascade, então

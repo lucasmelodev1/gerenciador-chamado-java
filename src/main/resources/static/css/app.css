@@ -103,10 +103,11 @@
     prefersdark: false;
     color-scheme: light;
 
-    /* superficies: --bg #f3efe7, --panel-strong #ffffff, --ink #122033 */
+    /* superficies: --panel-strong #ffffff, --ink #122033. base-200/300 eram o creme
+       quente do legado (#f3efe7 / #e4ded2); S21 trocou por um cinza-neutro. */
     --color-base-100: #ffffff;
-    --color-base-200: #f3efe7;
-    --color-base-300: #e4ded2;
+    --color-base-200: #f3f4f6;
+    --color-base-300: #e5e7eb;
     --color-base-content: #122033;
 
     /* --primary #0d5c63 / --primary-strong #093f44 */

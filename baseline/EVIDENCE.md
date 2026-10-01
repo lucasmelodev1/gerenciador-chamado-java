@@ -643,6 +643,52 @@ Os dois lados foram ajustados para o raio ser consistente.
 
 O shell verificado (`ui-shell.sh`) foi atualizado junto: ele fixa a string de classes do `.drawer-side`.
 
+# P7.2 — S21 Lateral sobre o fundo + fundo cinza-neutro — **GATE PASS**
+
+Pedido: a lateral deve ficar **sobre o fundo da página**, não como ilha; e o fundo mais cinza-branco, menos
+amarelo.
+
+## Lateral sem superfície própria
+
+Removido do `<aside>`: `bg-base-100`, `border border-base-300`, `rounded-box`, `shadow-sm` e `overflow-hidden`
+(este último não fazia mais sentido sem os cantos arredondados e ainda podia cortar o menu do cartão do
+usuário). Ficou `bg-base-200 lg:bg-transparent`.
+
+**A exceção do mobile é necessária, não estética:** abaixo de `lg` o `.drawer-overlay` pinta `oklch(0% 0 0/.4)`
+sobre a página; uma lateral transparente ali deixaria o texto da navegação sobre o fundo escurecido. Por isso
+ela é opaca abaixo de `lg` e transparente a partir de `lg`.
+
+**Efeito colateral tratado:** os hovers do cabeçalho (marca) e do cartão do usuário usavam `bg-base-200` —
+exatamente a cor do fundo em que a lateral agora vive, ou seja, ficariam invisíveis. Trocados por
+`bg-base-content/10`, a mesma mistura que a própria daisyUI usa no hover dos itens de `menu`.
+
+O conteúdo (`drawer-content`) continua sendo a superfície arredondada; o contraste com a lateral plana é o que
+dá a separação agora que a borda saiu.
+
+## Fundo cinza-neutro
+
+| Token | Antes | Depois |
+|---|---|---|
+| `--bg` (`base.css`, fundo real do `body`) | `#f3efe7` | **`#f3f4f6`** |
+| `--color-base-200` (tema) | `#f3efe7` | **`#f3f4f6`** |
+| `--color-base-300` (bordas) | `#e4ded2` | **`#e5e7eb`** |
+
+`base-300` entrou junto porque é a cor da borda e do filete da topbar: mantê-la quente ao lado de um fundo
+frio deixaria a moldura amarelada. Os acentos (`--primary #0d5c63`, `--accent #dba24a`) não foram tocados.
+
+## Verificação
+
+| # | Check | Result |
+|---|---|---|
+| 1 | tokens no bundle | `--color-base-200:#f3f4f6`, `--color-base-300:#e5e7eb`, `--color-base-100:#fff` |
+| 2 | utilitários emitidos | `bg-base-200`, `lg:bg-transparent`, `hover:bg-base-content/10`, `focus-visible:bg-base-content/10` |
+| 3 | guard novo em `ui-shell.sh` | falha se o `<aside>` voltar a ter `bg-base-100`/`border`/`rounded-box`/`shadow-sm` ou perder `lg:bg-transparent` — **4/4 sabotagens detectadas** |
+| 4 | matriz de rotas | **26/26** |
+| 5 | `scripts/ui-shell.sh` | **SHELL OK** |
+| 6 | `scripts/ui-invariants.sh check` | `INVARIANTS OK` |
+| 7 | CSRF/logout ao vivo, 3 perfis | cookie `XSRF-TOKEN` emitido · `/logout` **302** · sessão encerrada |
+| 8 | escopo de backend | nenhuma mudança em `src/main/java`, `db/`, `pom.xml` |
+
 ## Known limitations (carried to the end)
 
 1. **No browser in this environment.** Every verification is DOM/CSS-level. Button/alert colours, spacing,

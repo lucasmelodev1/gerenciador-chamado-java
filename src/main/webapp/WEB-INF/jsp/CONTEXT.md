@@ -10,7 +10,12 @@ Views JSP/JSTL dos controllers web; prefixo/sufixo em `application.properties`.
   buffer de 8 KB do Tomcat o `Set-Cookie` se perde e **todo POST autenticado vira 403** (ver EVIDENCE.md > S19).
 - `fragments/sidebar.jspf`: `drawer` no formato do bloco `dashboard-01` — cabeçalho (marca + ícone), conteúdo
   (grupos com rótulo + `menu` de itens com ícone) e rodapé com o **cartão do usuário** (`avatar` + `dropdown`
-  com o logout). Variante *inset*: `.drawer-side` com `p-2 lg:p-3` e painel `rounded-box`.
+  com o logout). A lateral fica **sobre o fundo da página**, sem superfície própria: nada de `bg-base-100`,
+  borda, `rounded-box` ou sombra no `<aside>`. Ela só é opaca abaixo de `lg` (`bg-base-200`), porque aí o
+  `.drawer-overlay` escurece a página atrás; de `lg` para cima é `lg:bg-transparent`.
+  Por isso os hovers do cabeçalho e do cartão usam `bg-base-content/10` (e não `bg-base-200`, que seria
+  invisível sobre o próprio fundo). `scripts/ui-shell.sh` falha se o `<aside>` voltar a ser uma ilha.
+  O inset do conteúdo é `.drawer-side` com `p-1.5 lg:p-2` + margem/raio no `.drawer-content` (custom.css).
   Estado ativo resolvido **no servidor** (`jakarta.servlet.forward.request_uri` + `aria-current`), por prefixo
   mais longo; a navegação vive em `navGroups` (`Grupo@href|Rótulo|ícone#...`).
 - `fragments/topbar.jspf`: `navbar` no formato do `SiteHeader` — linha única com `border-b`, gatilho do drawer,
