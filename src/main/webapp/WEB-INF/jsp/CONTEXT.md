@@ -27,6 +27,14 @@ Views JSP/JSTL dos controllers web; prefixo/sufixo em `application.properties`.
 - `scripts/ui-shell.sh` verifica o shell (estrutura, ícones, grupos, item ativo, cartão do usuário) sobre o
   HTML de `baseline/html-shell/`; roda depois de `scripts/ui-routes.sh shell`.
 
+## Componentes próprios (`WEB-INF/tags`, prefixo `ui`)
+- `ui:drawer` — painel lateral que desliza da borda: topo (título + descrição + X), slot
+  livre no meio (`<jsp:doBody/>`) e rodapé (Salvar + Fechar). Declarado em
+  `WEB-INF/tags/drawer.tag` e liberado pelo prefixo `ui` em `fragments/taglibs.jspf`.
+  Comportamento em `static/js/drawer.js` (`AppDrawer`, evento `drawer:fechado`).
+  **Precisa ser incluído fora de `.page-content`** (filho direto do `<body>`).
+  Hoje usado em uma única tela: `admin/areas/lista.jsp`.
+
 ## Fragmentos de conteúdo
 - `vazio.jspf`: estado vazio — `vazioTitulo` (opcional), `vazioMensagem`, `vazioCompacto`.
 - `reserva-status.jspf`: badge de status de reserva com cor semântica — `reservaStatus`.

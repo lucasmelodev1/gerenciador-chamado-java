@@ -21,6 +21,7 @@
 @import "tailwindcss" source(none);
 
 @source "../../../webapp/WEB-INF/jsp";
+@source "../../../webapp/WEB-INF/tags";
 @source "../js";
 @source not "../js/vendor";
 

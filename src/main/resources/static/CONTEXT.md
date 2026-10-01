@@ -26,6 +26,12 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
 ## JS
 - `core` (`window.AppDom`), `alerts`, `forms` (`data-confirm`, `data-password-*`, `data-character-*`,
   `data-auto-submit`), `tables` (`data-filter-*`) e `calendar.js` (agendas mês/semana do admin e do morador).
+- `drawer.js` (`window.AppDrawer`): abre/fecha o `ui:drawer` e reemite o fechamento como evento
+  `drawer:fechado` (`detail = { id, valor }`, borbulha). Hooks: `data-drawer`, `data-drawer-abrir`,
+  `data-drawer-fechar`, `data-drawer-aberto`, `data-drawer-backdrop`. Como não há `<dialog>`, Esc,
+  foco preso no painel, devolução do foco e trava de scroll da página são implementados aqui.
+  Carregado em todas as páginas (é inerte sem `data-drawer`); o visual fica em `custom.css`
+  sob `.app-drawer*`, junto do `prefers-reduced-motion`.
 - `layout.js` foi removido: o drawer da daisyUI dispensa toggle por JS e a navegação ativa é server-side.
 - `js/vendor/fullcalendar/`, `css/vendor/fullcalendar/`: FullCalendar 7.1.0 vendorizado para uso offline,
   carregado quando a view define `calendarAssets`.

@@ -4,6 +4,8 @@
 <script src="${ctx}/js/alerts.js"></script>
 <script src="${ctx}/js/forms.js"></script>
 <script src="${ctx}/js/tables.js"></script>
+<%-- Drawer lateral (S23): inerte em paginas sem `data-drawer`, por isso carrega sempre. --%>
+<script src="${ctx}/js/drawer.js"></script>
 <c:if test="${calendarAssets}">
     <script src="${ctx}/js/vendor/fullcalendar/fullcalendar.global.min.js"></script>
     <script src="${ctx}/js/vendor/fullcalendar/theme-classic.global.min.js"></script>
