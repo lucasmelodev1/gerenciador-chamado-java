@@ -523,6 +523,73 @@ Whole-block dead-code detection correctly refuses to split those.
 **Final shape:** 36 templates (34 + `vazio.jspf`, `reserva-status.jspf`), 5 vendored fonts,
 bundle 133,365 B, legacy CSS **1085 → 608 lines (−44 %)**.
 
+# P7 — S19 Sidebar `dashboard-01` (shadcn) — **GATE PASS**
+
+Escopo pedido: implementar a **lateral** do bloco `dashboard-01` do shadcn usando componentes da daisyUI,
+**sem alterar o CSS da daisyUI** — só layout, tipografia e uso de cor. Ícones Tabler/Lucide, cantos
+arredondados e o **cartão do usuário dentro da lateral**.
+
+Referência lida: `https://ui.shadcn.com/r/styles/new-york-v4/dashboard-01.json` (`app-sidebar.tsx`,
+`nav-main.tsx`, `nav-user.tsx`, `site-header.tsx`). O bloco é React/TSX sobre Base UI e **não é portável**;
+foi reaproveitado o *layout*, não o código.
+
+## O que mudou
+
+| Arquivo | Mudança |
+|---|---|
+| `fragments/sidebar.jspf` | 3 slots do `dashboard-01`: cabeçalho (marca + ícone), conteúdo (grupos com rótulo + itens com ícone) e rodapé com o **cartão do usuário** (`avatar` + `dropdown` com o logout). Variante *inset* (`p-2 lg:p-3` + painel `rounded-box`). Nav reorganizada em grupos (`navGroups`) |
+| `fragments/topbar.jspf` | `SiteHeader`: linha única com `border-b`, gatilho, separador e título da tela. Perfil e logout **saíram** daqui (sem duplicar identidade) |
+| `fragments/icone.jspf` | **novo** — 20 ícones Tabler outline 3.31.0 como markup (`<c:choose>`); sem bundler, o pacote npm não é consumível no JSP |
+| `fragments/head.jspf` | materializa `${_csrf.token}` no `<head>` (ver regressão abaixo) |
+| `css/custom.css` | painel *inset* do `drawer-content`; topbar de linha única; `.app-sidebar .menu` (geometria) |
+| `scripts/ui-shell.sh` | **novo** — verificador do shell sobre o HTML renderizado + checagem de fonte do CSRF |
+
+**CSS da daisyUI: intocado.** Componentes usados: `drawer`, `menu`, `avatar avatar-placeholder`, `dropdown
+dropdown-top`, `badge`, `navbar`, `btn`. Os únicos ajustes de geometria são dois, escopados em `.app-sidebar`
+e fora de cascade layer — necessário porque `@layer daisyui` vem **depois** de `@layer utilities`
+(offsets 8.172 vs 8.155), então `.menu{width:fit-content;padding:.5rem}` não cede a utilitário do Tailwind.
+
+## Regressão encontrada e corrigida — CSRF × buffer de 8 KB
+
+Os ícones inline inflaram o começo do `<body>` e empurraram o form que contém o `_csrf` para depois do
+buffer de resposta do Tomcat. O `CookieCsrfTokenRepository` só escreve `XSRF-TOKEN` quando o token é
+resolvido; com a resposta já comprometida o `Set-Cookie` se perde, a sessão fica sem token e **todo POST
+autenticado passa a responder 403** — inclusive o logout.
+
+| Build | Offset do form `_csrf` em `GET /admin` | `Set-Cookie: XSRF-TOKEN` | `POST /logout` |
+|---|---|---|---|
+| HEAD/S18 (topbar) | 8.179 B | emitido **por 13 B de margem** | 302 → `/login?logout=true` |
+| S19 (ícones inline) | 18.635 B | **perdido** | **403** |
+| S19 + correção no `head.jspf` | 18.646 B | emitido | 302 → `/login?logout=true` |
+
+Confirmado por comparação direta: `git stash` → rebuild → o mesmo fluxo passa no HEAD e falhava no S19.
+A causa raiz é estrutural (qualquer página grande quebrava os POSTs, e o HEAD estava a 13 B do limite);
+por isso a correção é resolver o token no início da resposta, e não encolher a página.
+
+## Verificação (a partir do artefato final)
+
+| # | Check | Result |
+|---|---|---|
+| 1 | matriz de rotas, 3 perfis | **26/26** |
+| 2 | `scripts/ui-shell.sh` | **25/25** páginas autenticadas — estrutura, 20 ícones, grupos, item ativo, cartão do usuário |
+| 3 | self-test negativo do verificador | **7/7 sabotagens detectadas** (avatar, ícone, ativo, grupo, ícone de fallback, logout na topbar, título) |
+| 4 | CSRF/logout ao vivo, 3 perfis | `XSRF-TOKEN` emitido · `/logout` → **302** · sessão encerrada **sim** (form a 18.646 B) |
+| 5 | suíte + gate de cobertura | **153 testes, 0 falhas, `BUILD SUCCESS`** |
+| 6 | `scripts/ui-invariants.sh check` | `INVARIANTS OK` (inclui `no changes under src/main/java, src/main/resources/db, pom.xml`) |
+| 7 | bundle CSS | 133.365 → **139.804 B** (+6.439: `avatar`, `dropdown`, `menu-title`, utilitários) |
+| 8 | item ativo correto | prefixo mais longo, exatamente **1** `menu-active` + 1 `aria-current` por página |
+
+## Custos e limites
+
+- **Peso por página (ícones inline):** `/admin` 11.763 → **26.263 B**, `/morador` 18.870 B,
+  `/colaborador/chamados` 14.815 B. Com gzip o acréscimo cai bastante. Um sprite SVG externo reduziria
+  isso, mas `<use href="arquivo.svg#id">` não é verificável aqui (sem navegador) — ficou inline.
+- **Ícones: 20 declarados, 20 em uso** (15 na navegação + `marca`, `menu`, `opcoes`, `perfil`, `sair`).
+  `icone.jspf` tem um `<c:otherwise>` que emite um círculo neutro, para que um alias desconhecido não quebre
+  o build do JSP; `ui-shell.sh` falha se ele aparecer.
+- **Sem navegador:** cantos, sombras, espaçamento, `avatar` circular da daisyUI (o do shadcn é quadrado
+  arredondado — mantido o padrão da daisyUI) e o menu do cartão do usuário seguem **sem verificação visual**.
+
 ## Known limitations (carried to the end)
 
 1. **No browser in this environment.** Every verification is DOM/CSS-level. Button/alert colours, spacing,
