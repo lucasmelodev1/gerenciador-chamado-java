@@ -31,6 +31,7 @@ FROZEN_HOOKS=(
     data-character-count data-character-output
     data-auto-submit
     data-filter-input data-filter-target data-filter-table
+    data-drawer data-drawer-abrir data-drawer-fechar data-drawer-aberto data-drawer-backdrop
     data-alert data-dismiss-alert
     data-page
     data-view data-referencia data-base-url data-modo

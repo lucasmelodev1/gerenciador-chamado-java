@@ -689,6 +689,72 @@ frio deixaria a moldura amarelada. Os acentos (`--primary #0d5c63`, `--accent #d
 | 7 | CSRF/logout ao vivo, 3 perfis | cookie `XSRF-TOKEN` emitido · `/logout` **302** · sessão encerrada |
 | 8 | escopo de backend | nenhuma mudança em `src/main/java`, `db/`, `pom.xml` |
 
+# P8 — S23 Drawer lateral (substitui o modal) — **GATE PASS**
+
+Dois problemas relatados sobre o componente da S22: as bordas horizontais da tela não escureciam como o
+meio, e o componente deveria ser um **drawer**, não um `<dialog>`.
+
+## Problema 1 — as bordas claras: causa e correção
+
+Não era o `::backdrop`: a daisyUI aplica **`display: none`** nele e pinta o escurecimento no próprio
+elemento `.modal` (`background-color: oklch(0% 0 0/.4)`). O componente estava renderizado **dentro de
+`.page-content`**, e o legado tem:
+
+```css
+.page-content > * { width: min(100%, 1360px); margin-inline: auto; }
+```
+
+Como o legado não está em cascade layer, ele **vence** o `width: 100%` da daisyUI. Acima de 1360 px o
+elemento escurecido ficava com 1360 px e centralizado — exatamente as bordas claras relatadas. O
+`animation: fadeLift ... both` da mesma regra ainda deixava um `transform` no elemento.
+
+**Correção estrutural:** o componente passa a ser renderizado **fora de `.page-content`**, como filho
+direto do `<body>`, e o backdrop virou um elemento próprio (`position: fixed; inset: 0`) em vez de depender
+do `.modal`. `ui-drawer.sh` agora **falha** se o drawer ou o backdrop aparecerem antes de `</main>`.
+
+## Problema 2 — de `<dialog>` para drawer
+
+Trocado por dois elementos irmãos — backdrop e `<aside>` — animados por `translate`. Sem `<dialog>`, o
+comportamento que ele daria de graça passou a ser explícito no JS: Esc, foco preso no painel, devolução do
+foco e trava de scroll.
+
+| Antes (S22) | Depois (S23) |
+|---|---|
+| `<dialog class="modal">` centrado | `<aside class="app-drawer app-drawer--sm app-drawer--end">` deslizando da direita |
+| escurecimento pelo `.modal`, espremido pelo legado | `<div class="app-drawer-backdrop">` irmão, `position: fixed; inset: 0` |
+| fechar por `method="dialog"` + `.modal-backdrop` | `data-drawer-fechar`, clique no backdrop e Esc, no JS |
+| foco/scroll nativos | `role="dialog"` + `aria-modal`, focus trap, trava de scroll |
+| `ui:modal`, `modal.js`, `AppModal`, `modal:fechado` | `ui:drawer`, `drawer.js`, `AppDrawer`, `drawer:fechado` |
+| `.app-modal` (larguras) | `.app-drawer*` (topo, corpo com scroll, rodapé, tamanhos, lados) |
+
+As três faixas continuam iguais: topo (título + descrição + X), slot livre no meio
+(`<jsp:doBody/>`, agora a única região com scroll) e rodapé (Salvar + Fechar). O `<form>` segue no meio, com
+o Salvar no rodapé ligado por `form="<id>-form"`, e o `_csrf` continua dentro do componente. Novos atributos:
+`lado` (`end`/`start`) além de `tamanho` (`sm` padrão/estreito, `md`, `lg`).
+
+## Verificação — `bash scripts/ui-drawer.sh`
+
+| # | Check | Result |
+|---|---|---|
+| 1 | contrato do markup nos **dois** estados | OK — topo, slot, rodapé, X, backdrop, `_csrf`, e **nenhum `<dialog>`** na página |
+| 2 | **posição** | drawer e backdrop renderizados **depois de `</main>`** (fora de `.page-content`) |
+| 3 | escopo | `ui:drawer` usado **só** em `admin/areas/lista.jsp`; `modal.tag`/`modal.js` não existem mais |
+| 4 | fluxo criar → editar → remover pelo form do drawer | `302` nos três, banco conferido a cada passo (remoção é *soft delete*, `deleted_at`) |
+| 5 | resíduo | removido ao fim; a fixture volta a ter só "Piscina" |
+| 6 | **comportamento do JS executado** | `node scripts/ui-drawer-js.mjs` → **13/13**, self-test negativo **6/6** |
+| 7 | matriz de rotas | **26/26** |
+| 8 | `scripts/ui-shell.sh` | `SHELL OK` |
+| 9 | `scripts/ui-invariants.sh check` | `INVARIANTS OK` |
+| 10 | suíte | **153 testes, 0 falhas, `BUILD SUCCESS`** |
+| 11 | escopo de backend | nenhuma mudança em `src/main/java`, `db/`, `pom.xml` |
+
+O caso 6 cobre o que a S22 não cobria: o JS agora é **executado** num DOM mínimo em Node (não há navegador
+aqui), incluindo clique no backdrop, Esc, focus trap, trava de scroll e abertura server-side. Continua sem
+cobrir o que depende do motor do navegador — a animação do `translate` e o layout real das faixas.
+
+**Snapshot de invariantes renovado** de novo: os hooks `data-modal*` saíram de `FROZEN_HOOKS` e entraram
+`data-drawer`, `data-drawer-abrir`, `data-drawer-fechar`, `data-drawer-aberto` e `data-drawer-backdrop`.
+
 ## Known limitations (carried to the end)
 
 1. **No browser in this environment.** Every verification is DOM/CSS-level. Button/alert colours, spacing,
@@ -699,3 +765,9 @@ frio deixaria a moldura amarelada. Os acentos (`--primary #0d5c63`, `--accent #d
    remaining legacy rule whose selector matches a daisyUI component still wins. The fix — declaring the
    legacy layer *before* Tailwind's — depends on (2) being finished.
 4. **Dark mode, pill-button radius and the pt-BR accent decision remain open** (plan §11).
+5. **The drawer's logic is executed; its rendering is not.** `ui-drawer-js.mjs` runs the real `drawer.js`
+   against a minimal DOM in Node, so open/close, the `drawer:fechado` event, the backdrop click, Esc, the
+   focus trap and the scroll lock are actually executed. What still cannot be checked here is everything that
+   depends on the browser engine: the `translate` animation, `100dvh`, the `position: fixed` stacking against
+   the shell, and the real layout of the three bands. The `_csrf` lesson of S19 stands — source-level
+   agreement is not proof of behaviour.
