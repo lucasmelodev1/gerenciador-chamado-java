@@ -3,11 +3,11 @@
 <html lang="pt-BR">
 <%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
 <body data-page="admin-tipos-chamado">
-<div class="app-shell">
+<div class="drawer lg:drawer-open">
     <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="app-main">
+    <div class="drawer-content">
         <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main class="page-content">
+        <main id="conteudo-principal" class="page-content">
             <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
             <c:set var="tipoChamadoAction" value="${ctx}/admin/tipos-chamado" />
             <c:if test="${not empty tipoChamadoEdicao}">
@@ -16,6 +16,7 @@
 
             <section class="two-column-grid">
                 <article class="card">
+                    <div class="card-body">
                     <div class="section-header">
                         <div>
                             <p class="eyebrow">Catalogo</p>
@@ -30,42 +31,43 @@
                         </c:if>
                         <label class="field">
                             <span>Titulo</span>
-                            <input type="text" name="titulo" value="${tipoChamadoForm.titulo}" placeholder="Vazamento" maxlength="255" required>
+                            <input class="input w-full" type="text" name="titulo" value="${tipoChamadoForm.titulo}" placeholder="Vazamento" maxlength="255" required>
                         </label>
                         <label class="field">
                             <span>Prazo maximo em horas</span>
-                            <input type="number" min="1" name="prazoHoras" value="${tipoChamadoForm.prazoHoras}" required>
+                            <input class="input w-full" type="number" min="1" name="prazoHoras" value="${tipoChamadoForm.prazoHoras}" required>
                         </label>
                         <div class="button-row">
                             <button type="submit" class="btn btn-primary">
                                 <c:choose><c:when test="${not empty tipoChamadoEdicao}">Salvar tipo</c:when><c:otherwise>Cadastrar tipo</c:otherwise></c:choose>
                             </button>
                             <c:if test="${not empty tipoChamadoEdicao}">
-                                <a href="${ctx}/admin/tipos-chamado" class="btn btn-secondary">Cancelar</a>
+                                <a href="${ctx}/admin/tipos-chamado" class="btn">Cancelar</a>
                             </c:if>
                         </div>
                     </form>
+                                    </div>
                 </article>
 
                 <article class="card">
+                    <div class="card-body">
                     <div class="section-header">
                         <div>
                             <p class="eyebrow">Parametros de abertura</p>
                             <h2>Tipos cadastrados</h2>
                         </div>
-                        <input type="search" class="table-search" placeholder="Filtrar localmente" data-filter-input data-filter-target="tipos-table">
+                        <input type="search" class="input input-sm" placeholder="Filtrar localmente" data-filter-input data-filter-target="tipos-table">
                     </div>
 
                     <c:choose>
                         <c:when test="${empty tiposChamado}">
-                            <div class="empty-state">
-                                <h3>Nenhum tipo cadastrado</h3>
-                                <p>Cadastre os motivos de abertura de chamado para os moradores.</p>
-                            </div>
+                            <c:set var="vazioTitulo" value="Nenhum tipo cadastrado" />
+                            <c:set var="vazioMensagem" value="Cadastre os motivos de abertura de chamado para os moradores." />
+                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
                         </c:when>
                         <c:otherwise>
-                            <div class="table-wrap">
-                                <table class="data-table" data-filter-table="tipos-table">
+                            <div class="overflow-x-auto">
+                                <table class="table table-zebra" data-filter-table="tipos-table">
                                     <thead>
                                     <tr>
                                         <th>Titulo</th>
@@ -91,13 +93,14 @@
 
                     <div class="pagination">
                         <c:if test="${tiposChamadoPage.hasPrevious}">
-                            <a class="btn btn-secondary" href="${ctx}/admin/tipos-chamado?page=${tiposChamadoPage.page - 1}&size=${tiposChamadoPage.size}">Anterior</a>
+                            <a class="btn" href="${ctx}/admin/tipos-chamado?page=${tiposChamadoPage.page - 1}&size=${tiposChamadoPage.size}">Anterior</a>
                         </c:if>
                         <span>Pagina ${tiposChamadoPage.page + 1} de ${tiposChamadoPage.totalPages == 0 ? 1 : tiposChamadoPage.totalPages}</span>
                         <c:if test="${tiposChamadoPage.hasNext}">
-                            <a class="btn btn-secondary" href="${ctx}/admin/tipos-chamado?page=${tiposChamadoPage.page + 1}&size=${tiposChamadoPage.size}">Proxima</a>
+                            <a class="btn" href="${ctx}/admin/tipos-chamado?page=${tiposChamadoPage.page + 1}&size=${tiposChamadoPage.size}">Proxima</a>
                         </c:if>
                     </div>
+                                    </div>
                 </article>
             </section>
         </main>

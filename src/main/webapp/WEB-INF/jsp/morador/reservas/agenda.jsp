@@ -3,11 +3,11 @@
 <html lang="pt-BR">
 <%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
 <body data-page="morador-reservas-agenda">
-<div class="app-shell">
+<div class="drawer lg:drawer-open">
     <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="app-main">
+    <div class="drawer-content">
         <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main class="page-content">
+        <main id="conteudo-principal" class="page-content">
             <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
 
             <c:set var="agendaModo" value="morador" />

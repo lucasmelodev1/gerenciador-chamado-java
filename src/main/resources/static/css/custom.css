@@ -1,0 +1,70 @@
+/*
+ * CSS proprio do projeto (UI-REWRITE-MAP.md §8.2).
+ *
+ * Ordem de carregamento em head.jspf:
+ *   app.build.css  -> Tailwind + daisyUI (tema "chamados")
+ *   custom.css     -> este arquivo
+ *   base/layout/components/responsive.css -> legado, removido ate S17
+ *
+ * Enquanto o legado existir ele vence nas classes que colidem com a daisyUI
+ * (.card, .btn, .alert, .divider, .timeline). Por isso aqui ficam apenas as
+ * regras do shell novo, que nao existem nem na daisyUI nem no legado.
+ * Fallbacks sao declarados nos tokens legados (--shadow-soft etc.) para que a
+ * remocao do base.css em S17 nao quebre estas regras silenciosamente.
+ */
+
+/* Topbar "frosted": identidade herdada, reescrita com tokens do tema daisyUI. */
+.app-topbar {
+    position: sticky;
+    top: 1rem;
+    z-index: 20;
+    margin: 1.125rem 2rem 0;
+    padding: 1rem 1.5rem;
+    border: 1px solid color-mix(in oklab, var(--color-base-100) 72%, transparent);
+    border-radius: var(--radius-box);
+    background: color-mix(in oklab, var(--color-base-100) 72%, transparent);
+    box-shadow: var(--shadow-soft, 0 14px 32px rgb(18 32 51 / 0.08));
+    backdrop-filter: blur(16px);
+}
+
+@media (max-width: 1023px) {
+    .app-topbar {
+        margin-inline: 1.25rem;
+    }
+}
+
+/* O shell novo nao usa mais `.app-shell`/`.app-main`; o daisyUI controla o grid do
+   drawer. Este bloco garante que o conteudo ocupe a coluna restante em telas grandes. */
+.drawer-content {
+    min-width: 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Acessibilidade (S8)
+ * ------------------------------------------------------------------------ */
+
+/* O legado desliga o indicador de foco (.btn:focus-visible e .field *:focus usam
+   `outline: none`). Como o legado carrega DEPOIS deste arquivo, ele venceria pela
+   ordem do cascade; por isso o !important. Este bloco sai em S17, quando o legado
+   for removido e o foco voltar a ser responsabilidade dos componentes daisyUI. */
+body :is(.btn, .field input, .field select, .field textarea, a, summary):focus-visible {
+    outline: 2px solid var(--color-primary) !important;
+    outline-offset: 2px;
+}
+
+/* Respeita "prefers-reduced-motion": a animacao de entrada de .page-content vem do
+   base.css e o drawer usa transicao de transform. */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    body[data-page] .page-content > * {
+        animation: none !important;
+    }
+
+    .drawer-side,
+    .drawer-overlay {
+        transition: none !important;
+    }
+}

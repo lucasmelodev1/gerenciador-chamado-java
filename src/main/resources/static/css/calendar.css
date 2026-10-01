@@ -1,54 +1,35 @@
 /* Calendario de reservas (FullCalendar). Ajusta os tokens --fc-classic-* a paleta do app. */
 :root {
-    --fc-classic-primary: var(--primary);
+    --fc-classic-primary: var(--color-primary, var(--primary));
     --fc-classic-primary-foreground: #ffffff;
-    --fc-classic-button: var(--primary);
-    --fc-classic-button-border: var(--primary-strong);
-    --fc-classic-button-strong: var(--primary-strong);
-    --fc-classic-button-strong-border: var(--primary-strong);
-    --fc-classic-button-outline: var(--line-strong);
+    --fc-classic-button: var(--color-primary, var(--primary));
+    --fc-classic-button-border: var(--color-primary, var(--primary-strong));
+    --fc-classic-button-strong: var(--color-primary, var(--primary-strong));
+    --fc-classic-button-strong-border: var(--color-primary, var(--primary-strong));
+    --fc-classic-button-outline: var(--color-base-300, var(--line-strong));
     --fc-classic-button-foreground: #ffffff;
-    --fc-classic-event: var(--primary);
+    --fc-classic-event: var(--color-primary, var(--primary));
     --fc-classic-event-contrast: #ffffff;
-    --fc-classic-background-event: var(--accent);
-    --fc-classic-highlight: var(--primary-soft);
-    --fc-classic-today: var(--accent-soft);
-    --fc-classic-now: var(--danger);
-    --fc-classic-background: var(--panel-strong);
+    --fc-classic-background-event: var(--color-accent, var(--accent));
+    --fc-classic-highlight: color-mix(in oklab, var(--color-primary, var(--color-primary, var(--primary))) 12%, transparent);
+    --fc-classic-today: color-mix(in oklab, var(--color-accent, var(--color-accent, var(--accent))) 16%, transparent);
+    --fc-classic-now: var(--color-error, var(--danger));
+    --fc-classic-background: var(--color-base-100, var(--panel-strong));
     --fc-classic-faint: rgba(18, 32, 51, 0.04);
     --fc-classic-muted: rgba(18, 32, 51, 0.08);
     --fc-classic-strong: rgba(18, 32, 51, 0.14);
-    --fc-classic-foreground: var(--ink);
-    --fc-classic-faint-foreground: var(--muted);
-    --fc-classic-muted-foreground: var(--muted);
-    --fc-classic-border: var(--line);
-    --fc-classic-strong-border: var(--line-strong);
-}
-
-.calendar-toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 16px;
-}
-
-.calendar-toolbar .field {
-    min-width: 240px;
+    --fc-classic-foreground: var(--color-base-content, var(--ink));
+    --fc-classic-faint-foreground: color-mix(in oklab, var(--color-base-content, var(--ink)) 60%, transparent);
+    --fc-classic-muted-foreground: color-mix(in oklab, var(--color-base-content, var(--ink)) 60%, transparent);
+    --fc-classic-border: var(--color-base-300, var(--line));
+    --fc-classic-strong-border: var(--color-base-300, var(--line-strong));
 }
 
 .calendar-mes {
     align-self: center;
     font-family: var(--font-serif);
     font-size: 1.1rem;
-    color: var(--ink);
-}
-
-.calendar-view-toggle {
-    display: inline-flex;
-    gap: 6px;
-    margin-left: auto;
+    color: var(--color-base-content, var(--ink));
 }
 
 #calendar {

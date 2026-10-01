@@ -1,8 +1,9 @@
+<%-- layout.js foi removido em S7: o drawer da daisyUI dispensa o toggle controlado por
+     JS e o estado ativo da navegacao passou a ser resolvido no servidor (aria-current). --%>
 <script src="${ctx}/js/core.js"></script>
 <script src="${ctx}/js/alerts.js"></script>
 <script src="${ctx}/js/forms.js"></script>
 <script src="${ctx}/js/tables.js"></script>
-<script src="${ctx}/js/layout.js"></script>
 <c:if test="${calendarAssets}">
     <script src="${ctx}/js/vendor/fullcalendar/fullcalendar.global.min.js"></script>
     <script src="${ctx}/js/vendor/fullcalendar/theme-classic.global.min.js"></script>

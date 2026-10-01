@@ -3,21 +3,22 @@
 <html lang="pt-BR">
 <%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
 <body data-page="morador-chamado-detalhe">
-<div class="app-shell">
+<div class="drawer lg:drawer-open">
     <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="app-main">
+    <div class="drawer-content">
         <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main class="page-content">
+        <main id="conteudo-principal" class="page-content">
             <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
 
             <section class="detail-grid">
                 <article class="card">
+                    <div class="card-body">
                     <div class="section-header">
                         <div>
                             <p class="eyebrow">Acompanhamento</p>
                             <h2>${chamado.tipoChamadoTitulo}</h2>
                         </div>
-                        <span class="status-pill">${chamado.statusNome}</span>
+                        <span class="badge badge-ghost">${chamado.statusNome}</span>
                     </div>
                     <div class="detail-list">
                         <div><span>Unidade</span><strong>${chamado.unidadeIdentificacao}</strong></div>
@@ -37,9 +38,11 @@
                             <button type="submit" class="btn btn-primary">Reabrir chamado</button>
                         </form>
                     </c:if>
+                                    </div>
                 </article>
 
                 <article class="card">
+                    <div class="card-body">
                     <div class="section-header">
                         <div>
                             <p class="eyebrow">Interacoes</p>
@@ -52,28 +55,28 @@
                             <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
                             <label class="field">
                                 <span>Adicionar comentario</span>
-                                <textarea name="mensagem" rows="4" maxlength="255" required data-character-count></textarea>
+                                <textarea class="textarea w-full" name="mensagem" rows="4" maxlength="255" required data-character-count></textarea>
                                 <small class="field-hint" data-character-output>0 caracteres</small>
                             </label>
                             <label class="field">
                                 <span>Anexo do comentario</span>
-                                <input type="file" name="arquivo">
+                                <input class="file-input" type="file" name="arquivo">
                                 <small class="field-hint">Opcional. Disponivel apenas no comentario enviado pelo morador. Tamanho maximo: 5 MB.</small>
                             </label>
                             <button type="submit" class="btn btn-primary">Comentar</button>
                         </form>
                     </c:if>
                     <c:if test="${chamado.finalizado}">
-                        <div class="empty-state compact">
-                            <p>Chamados finalizados ficam bloqueados para novos comentarios ate serem reabertos.</p>
-                        </div>
+                        <c:set var="vazioMensagem" value="Chamados finalizados ficam bloqueados para novos comentarios ate serem reabertos." />
+                        <c:set var="vazioCompacto" value="${true}" />
+                        <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
                     </c:if>
 
                     <c:choose>
                         <c:when test="${empty comentarios}">
-                            <div class="empty-state compact">
-                                <p>Nenhuma interacao registrada ainda.</p>
-                            </div>
+                            <c:set var="vazioMensagem" value="Nenhuma interacao registrada ainda." />
+                            <c:set var="vazioCompacto" value="${true}" />
+                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
                         </c:when>
                         <c:otherwise>
                             <div class="timeline">
@@ -92,7 +95,7 @@
                                                             <strong>${anexoComentario.nomeArquivo}</strong>
                                                             <span>${anexoComentario.contentType} • ${anexoComentario.tamanhoFormatado}</span>
                                                         </div>
-                                                        <a href="${ctx}/morador/chamados/${chamado.id}/comentarios/${comentario.id}/anexos/${anexoComentario.id}" class="btn btn-secondary">Baixar anexo</a>
+                                                        <a href="${ctx}/morador/chamados/${chamado.id}/comentarios/${comentario.id}/anexos/${anexoComentario.id}" class="btn">Baixar anexo</a>
                                                     </div>
                                                 </c:forEach>
                                             </div>
@@ -102,9 +105,11 @@
                             </div>
                         </c:otherwise>
                     </c:choose>
+                                    </div>
                 </article>
 
                 <article class="card">
+                    <div class="card-body">
                     <div class="section-header">
                         <div>
                             <p class="eyebrow">Arquivos</p>
@@ -117,23 +122,23 @@
                             <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
                             <label class="field">
                                 <span>Adicionar arquivo</span>
-                                <input type="file" name="arquivo" required>
+                                <input class="file-input" type="file" name="arquivo" required>
                             </label>
                             <small class="field-hint">Tamanho maximo: 5 MB.</small>
                             <button type="submit" class="btn btn-primary">Enviar anexo</button>
                         </form>
                     </c:if>
                     <c:if test="${chamado.finalizado}">
-                        <div class="empty-state compact">
-                            <p>Chamados finalizados nao aceitam novos anexos ate serem reabertos.</p>
-                        </div>
+                        <c:set var="vazioMensagem" value="Chamados finalizados nao aceitam novos anexos ate serem reabertos." />
+                        <c:set var="vazioCompacto" value="${true}" />
+                        <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
                     </c:if>
 
                     <c:choose>
                         <c:when test="${empty anexos}">
-                            <div class="empty-state compact">
-                                <p>Nenhum anexo registrado ainda.</p>
-                            </div>
+                            <c:set var="vazioMensagem" value="Nenhum anexo registrado ainda." />
+                            <c:set var="vazioCompacto" value="${true}" />
+                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
                         </c:when>
                         <c:otherwise>
                             <div class="stack-list">
@@ -143,12 +148,13 @@
                                             <strong>${anexo.nomeArquivo}</strong>
                                             <span>${anexo.contentType} • ${anexo.tamanhoFormatado}</span>
                                         </div>
-                                        <a href="${ctx}/morador/chamados/${chamado.id}/anexos/${anexo.id}" class="btn btn-secondary">Baixar</a>
+                                        <a href="${ctx}/morador/chamados/${chamado.id}/anexos/${anexo.id}" class="btn">Baixar</a>
                                     </div>
                                 </c:forEach>
                             </div>
                         </c:otherwise>
                     </c:choose>
+                                    </div>
                 </article>
             </section>
         </main>

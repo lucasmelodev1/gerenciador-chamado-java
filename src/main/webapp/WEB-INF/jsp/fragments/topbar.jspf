@@ -1,22 +1,36 @@
-<header class="topbar">
-    <div>
-        <p class="eyebrow">${currentUserRoleLabel}</p>
-        <h1>${pageTitle}</h1>
-        <p class="topbar-meta">Fluxo visual unificado para operacao, acompanhamento e atendimento.</p>
+<%--
+    Shell: barra superior como daisyUI `navbar`.
+
+    O hamburguer agora e um <label for="app-drawer"> que aciona o drawer da sidebar
+    (substitui o antigo par button/backdrop controlado por layout.js).
+--%>
+<header class="app-topbar navbar">
+    <div class="navbar-start gap-3">
+        <label for="app-drawer" class="btn btn-square btn-ghost lg:hidden"
+               aria-controls="app-drawer" aria-label="Abrir menu">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </label>
+
+        <div class="min-w-0">
+            <p class="eyebrow">${currentUserRoleLabel}</p>
+            <h1 class="font-display text-2xl font-bold">${pageTitle}</h1>
+            <p class="m-0 max-w-[52ch] text-sm text-base-content/60">
+                Fluxo visual unificado para operacao, acompanhamento e atendimento.
+            </p>
+        </div>
     </div>
-    <div class="topbar-actions">
-        <button type="button" class="icon-button mobile-nav-button" data-sidebar-toggle aria-label="Abrir menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-        <div class="profile-chip">
+
+    <div class="navbar-end gap-3">
+        <div class="hidden flex-col items-end sm:flex">
             <strong>${currentUserEmail}</strong>
-            <span>${currentUserRoleLabel}</span>
+            <span class="text-sm text-base-content/60">${currentUserRoleLabel}</span>
         </div>
         <form method="post" action="${ctx}/logout" class="inline-form">
             <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-            <button type="submit" class="btn btn-secondary">Sair</button>
+            <button type="submit" class="btn">Sair</button>
         </form>
     </div>
 </header>

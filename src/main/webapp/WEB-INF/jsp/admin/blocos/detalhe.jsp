@@ -3,11 +3,11 @@
 <html lang="pt-BR">
 <%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
 <body data-page="admin-bloco-detalhe">
-<div class="app-shell">
+<div class="drawer lg:drawer-open">
     <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="app-main">
+    <div class="drawer-content">
         <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main class="page-content">
+        <main id="conteudo-principal" class="page-content">
             <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
 
             <section class="hero-card">
@@ -20,24 +20,24 @@
             </section>
 
             <section class="card">
+                <div class="card-body">
                 <div class="section-header">
                     <div>
                         <p class="eyebrow">Geracao automatica</p>
                         <h2>Unidades do bloco</h2>
                     </div>
-                    <a href="${ctx}/admin/blocos" class="btn btn-secondary">Voltar</a>
+                    <a href="${ctx}/admin/blocos" class="btn">Voltar</a>
                 </div>
 
                 <c:choose>
                     <c:when test="${empty unidades}">
-                        <div class="empty-state">
-                            <h3>Nenhuma unidade encontrada</h3>
-                            <p>Verifique se o bloco foi gerado corretamente.</p>
-                        </div>
+                        <c:set var="vazioTitulo" value="Nenhuma unidade encontrada" />
+                        <c:set var="vazioMensagem" value="Verifique se o bloco foi gerado corretamente." />
+                        <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
                     </c:when>
                     <c:otherwise>
-                        <div class="table-wrap">
-                            <table class="data-table">
+                        <div class="overflow-x-auto">
+                            <table class="table table-zebra">
                                 <thead>
                                 <tr>
                                     <th>Identificacao</th>
@@ -53,7 +53,7 @@
                                         <td>
                                             <c:choose>
                                                 <c:when test="${empty unidade.moradores}">
-                                                    <span class="status-pill neutral">Sem moradores</span>
+                                                    <span class="badge badge-neutral">Sem moradores</span>
                                                 </c:when>
                                                 <c:otherwise>
                                                     <div class="stack-list">
@@ -77,13 +77,14 @@
 
                 <div class="pagination">
                     <c:if test="${unidadesPage.hasPrevious}">
-                        <a class="btn btn-secondary" href="${ctx}/admin/blocos/${bloco.id}?page=${unidadesPage.page - 1}&size=${unidadesPage.size}">Anterior</a>
+                        <a class="btn" href="${ctx}/admin/blocos/${bloco.id}?page=${unidadesPage.page - 1}&size=${unidadesPage.size}">Anterior</a>
                     </c:if>
                     <span>Pagina ${unidadesPage.page + 1} de ${unidadesPage.totalPages == 0 ? 1 : unidadesPage.totalPages}</span>
                     <c:if test="${unidadesPage.hasNext}">
-                        <a class="btn btn-secondary" href="${ctx}/admin/blocos/${bloco.id}?page=${unidadesPage.page + 1}&size=${unidadesPage.size}">Proxima</a>
+                        <a class="btn" href="${ctx}/admin/blocos/${bloco.id}?page=${unidadesPage.page + 1}&size=${unidadesPage.size}">Proxima</a>
                     </c:if>
                 </div>
+                            </div>
             </section>
         </main>
     </div>

@@ -1,0 +1,16 @@
+# Contexto de build enxuto para `docker compose build`.
+# Sem isto o daemon recebe node_modules, .git e os artefatos de baseline.
+
+.git
+.gitignore
+node_modules
+.npm-cache
+baseline
+target
+.idea
+.settings
+.classpath
+.project
+.factorypath
+*.md
+diagrama-relacional.drawio.svg

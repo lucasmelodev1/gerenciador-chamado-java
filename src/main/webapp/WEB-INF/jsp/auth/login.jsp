@@ -20,20 +20,21 @@
 
     <section class="auth-panel auth-form-panel">
         <div class="card">
+            <div class="card-body">
             <p class="eyebrow">Acesso</p>
             <h2>Entrar</h2>
 
             <c:if test="${param.error eq 'true'}">
-                <div class="alert alert-danger" data-alert>
+                <div role="alert" class="alert alert-error" data-alert>
                     <span>Email ou senha invalidos.</span>
-                    <button type="button" class="alert-close" data-dismiss-alert aria-label="Fechar">×</button>
+                    <button type="button" class="btn btn-sm btn-ghost" data-dismiss-alert aria-label="Fechar">×</button>
                 </div>
             </c:if>
 
             <c:if test="${param.logout eq 'true'}">
-                <div class="alert alert-success" data-alert>
+                <div role="alert" class="alert alert-success" data-alert>
                     <span>Sessao encerrada com sucesso.</span>
-                    <button type="button" class="alert-close" data-dismiss-alert aria-label="Fechar">×</button>
+                    <button type="button" class="btn btn-sm btn-ghost" data-dismiss-alert aria-label="Fechar">×</button>
                 </div>
             </c:if>
 
@@ -41,19 +42,20 @@
                 <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
                 <label class="field">
                     <span>Email</span>
-                    <input type="email" name="username" placeholder="voce@condominio.com" required autofocus>
+                    <input class="input w-full" type="email" name="username" placeholder="voce@condominio.com" required autofocus>
                 </label>
 
                 <label class="field">
                     <span>Senha</span>
                     <div class="password-field">
-                        <input type="password" name="password" placeholder="Informe sua senha" required data-password-input>
-                        <button type="button" class="ghost-button" data-password-toggle>Mostrar</button>
+                        <input class="input w-full" type="password" name="password" placeholder="Informe sua senha" required data-password-input>
+                        <button type="button" class="btn btn-ghost" data-password-toggle>Mostrar</button>
                     </div>
                 </label>
 
                 <button type="submit" class="btn btn-primary btn-block">Entrar</button>
             </form>
+                    </div>
         </div>
     </section>
 </main>

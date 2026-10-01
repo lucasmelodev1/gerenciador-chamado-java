@@ -1,42 +1,103 @@
-<aside class="sidebar" data-sidebar>
-    <div class="brand-block">
-        <span class="brand-chip">Central de Operacoes</span>
-        <a href="${ctx}${currentUserHome}" class="brand-mark">${appName}</a>
-        <p>Operacao do condominio em um unico fluxo.</p>
-    </div>
+<%--
+    Shell: navegacao lateral como daisyUI `drawer`.
 
-    <nav class="nav-list">
-        <a href="${ctx}${currentUserHome}" class="nav-link">Inicio</a>
+    Estrutura esperada pela pagina que inclui este fragmento (as 26 telas usam o mesmo
+    wrapper, ajustado em S7):
+        <div class="drawer lg:drawer-open">
+            <%@ include sidebar.jspf %>      <-- emite .drawer-toggle + .drawer-side
+            <div class="drawer-content"> ...topbar + main... </div>
+        </div>
 
-        <c:if test="${isAdministrador}">
-            <a href="${ctx}/admin/blocos" class="nav-link">Blocos</a>
-            <a href="${ctx}/admin/areas" class="nav-link">Areas</a>
-            <a href="${ctx}/admin/reservas" class="nav-link">Reservas</a>
-            <a href="${ctx}/admin/reservas/agenda" class="nav-link">Agenda</a>
-            <a href="${ctx}/admin/usuarios" class="nav-link">Usuarios</a>
-            <a href="${ctx}/admin/vinculos-morador" class="nav-link">Vincular Morador</a>
-            <a href="${ctx}/admin/escopo-colaborador" class="nav-link">Escopo Colaborador</a>
-            <a href="${ctx}/admin/tipos-chamado" class="nav-link">Tipos de Chamado</a>
-            <a href="${ctx}/admin/status-chamado" class="nav-link">Status</a>
-            <a href="${ctx}/admin/chamados" class="nav-link">Chamados</a>
-        </c:if>
+    O estado ativo da navegacao e resolvido NO SERVIDOR (aria-current + menu-active),
+    substituindo o antigo `initActiveNav` do layout.js, que casava por path no cliente
+    e piscava a cada carregamento. O primeiro item que casar vence, por isso a lista
+    esta ordenada do caminho mais especifico para o mais generico.
+--%>
+<%--
+    Caminho da requisicao sem o context path.
 
-        <c:if test="${isMorador}">
-            <a href="${ctx}/morador/chamados" class="nav-link">Meus Chamados</a>
-            <a href="${ctx}/morador/chamados/novo" class="nav-link">Abrir Chamado</a>
-            <a href="${ctx}/morador/reservas" class="nav-link">Minhas Reservas</a>
-            <a href="${ctx}/morador/reservas/agenda" class="nav-link">Agenda</a>
-            <a href="${ctx}/morador/reservas/nova" class="nav-link">Reservar Area</a>
-        </c:if>
+    NAO usar `pageContext.request.requestURI`: como o controller faz forward para o JSP,
+    o container reescreve a URI para o alvo do forward, ou seja o caminho do PROPRIO JSP
+    (ex.: /WEB-INF/jsp/admin/blocos/lista.jsp) — nenhum link casaria. O caminho original
+    esta no atributo de forward da spec Servlet. Ver baseline/EVIDENCE.md > S7.
+--%>
+<c:set var="navPath" value="${requestScope['jakarta.servlet.forward.request_uri']}" />
+<c:if test="${empty navPath}">
+    <c:set var="navPath" value="${pageContext.request.requestURI}" />
+</c:if>
+<c:set var="navContext" value="${requestScope['jakarta.servlet.forward.context_path']}" />
+<c:if test="${empty navContext}">
+    <c:set var="navContext" value="${ctx}" />
+</c:if>
+<c:if test="${not empty navContext and fn:startsWith(navPath, navContext)}">
+    <c:set var="navPath" value="${fn:substringAfter(navPath, navContext)}" />
+</c:if>
 
-        <c:if test="${isColaborador}">
-            <a href="${ctx}/colaborador/chamados" class="nav-link">Fila de Atendimento</a>
-        </c:if>
-    </nav>
+<%-- Acessibilidade (S8): primeiro elemento focavel da pagina. Fica visivel apenas
+     quando recebe foco por teclado. Alvo: <main id="conteudo-principal"> das 25 telas. --%>
+<a href="#conteudo-principal"
+   class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-box focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-content">
+    Pular para o conteudo
+</a>
 
-    <div class="sidebar-footer">
-        <span>Perfil ativo</span>
-        <strong>${currentUserRoleLabel}</strong>
-    </div>
-</aside>
-<button type="button" class="sidebar-backdrop" data-sidebar-backdrop aria-label="Fechar menu"></button>
+<input id="app-drawer" type="checkbox" class="drawer-toggle" aria-label="Alternar menu lateral">
+
+<div class="drawer-side z-30">
+    <label for="app-drawer" class="drawer-overlay" aria-label="Fechar menu"></label>
+
+    <aside class="flex min-h-full w-72 flex-col gap-8 border-r border-base-300 bg-base-100 p-6">
+        <div class="grid gap-2">
+            <span class="badge badge-ghost badge-sm w-fit tracking-widest uppercase">Central de Operacoes</span>
+            <a href="${ctx}${currentUserHome}" class="font-display text-2xl font-bold leading-tight">${appName}</a>
+            <p class="text-sm text-base-content/60">Operacao do condominio em um unico fluxo.</p>
+        </div>
+
+        <nav class="min-h-0 flex-1 overflow-y-auto">
+            <c:choose>
+                <c:when test="${isAdministrador}">
+                    <c:set var="navItems"
+                           value="/admin/reservas/agenda|Agenda;/admin/reservas|Reservas;/admin/blocos|Blocos;/admin/areas|Areas;/admin/vinculos-morador|Vincular Morador;/admin/escopo-colaborador|Escopo Colaborador;/admin/tipos-chamado|Tipos de Chamado;/admin/status-chamado|Status;/admin/usuarios|Usuarios;/admin/chamados|Chamados;/admin|Inicio" />
+                </c:when>
+                <c:when test="${isMorador}">
+                    <c:set var="navItems"
+                           value="/morador/chamados/novo|Abrir Chamado;/morador/chamados|Meus Chamados;/morador/reservas/agenda|Agenda;/morador/reservas/nova|Reservar Area;/morador/reservas|Minhas Reservas;/morador|Inicio" />
+                </c:when>
+                <c:when test="${isColaborador}">
+                    <c:set var="navItems"
+                           value="/colaborador/chamados|Fila de Atendimento;/colaborador|Inicio" />
+                </c:when>
+            </c:choose>
+
+            <ul class="menu menu-lg w-full">
+                <c:set var="navMatched" value="${false}" />
+                <c:forEach var="item" items="${fn:split(navItems, ';')}">
+                    <c:set var="parts" value="${fn:split(item, '|')}" />
+                    <c:set var="href" value="${parts[0]}" />
+                    <c:set var="label" value="${parts[1]}" />
+                    <c:set var="isHome" value="${href eq '/admin' or href eq '/morador' or href eq '/colaborador'}" />
+                    <c:set var="prefixMatch" value="${fn:startsWith(navPath, href)}" />
+                    <c:choose>
+                        <c:when test="${isHome}">
+                            <c:set var="active" value="${not navMatched and navPath eq href}" />
+                        </c:when>
+                        <c:otherwise>
+                            <c:set var="active" value="${not navMatched and prefixMatch}" />
+                        </c:otherwise>
+                    </c:choose>
+                    <c:if test="${active}">
+                        <c:set var="navMatched" value="${true}" />
+                    </c:if>
+                    <li>
+                        <a href="${ctx}${href}"
+                           class="${active ? 'menu-active' : ''}"${active ? ' aria-current="page"' : ''}>${label}</a>
+                    </li>
+                </c:forEach>
+            </ul>
+        </nav>
+
+        <div class="grid gap-1 border-t border-base-300 pt-4">
+            <span class="text-sm text-base-content/60">Perfil ativo</span>
+            <strong>${currentUserRoleLabel}</strong>
+        </div>
+    </aside>
+</div>

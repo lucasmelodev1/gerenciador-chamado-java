@@ -3,14 +3,15 @@
 <html lang="pt-BR">
 <%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
 <body data-page="morador-reservas-lista">
-<div class="app-shell">
+<div class="drawer lg:drawer-open">
     <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="app-main">
+    <div class="drawer-content">
         <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main class="page-content">
+        <main id="conteudo-principal" class="page-content">
             <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
 
             <section class="card">
+                <div class="card-body">
                 <div class="section-header">
                     <div>
                         <p class="eyebrow">Areas comuns</p>
@@ -18,21 +19,20 @@
                     </div>
                     <div class="button-row">
                         <a href="${ctx}/morador/reservas/nova" class="btn btn-primary">Nova reserva</a>
-                        <a href="${ctx}/morador/reservas/agenda" class="btn btn-secondary">Ver agenda</a>
-                        <a href="${ctx}/morador/reservas/disponibilidade" class="btn btn-secondary">Consultar disponibilidade</a>
+                        <a href="${ctx}/morador/reservas/agenda" class="btn">Ver agenda</a>
+                        <a href="${ctx}/morador/reservas/disponibilidade" class="btn">Consultar disponibilidade</a>
                     </div>
                 </div>
 
                 <c:choose>
                     <c:when test="${empty reservas}">
-                        <div class="empty-state">
-                            <h3>Nenhuma reserva encontrada</h3>
-                            <p>Solicite a reserva de uma area comum para planejar o uso.</p>
-                        </div>
+                        <c:set var="vazioTitulo" value="Nenhuma reserva encontrada" />
+                        <c:set var="vazioMensagem" value="Solicite a reserva de uma area comum para planejar o uso." />
+                        <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
                     </c:when>
                     <c:otherwise>
-                        <div class="table-wrap">
-                            <table class="data-table">
+                        <div class="overflow-x-auto">
+                            <table class="table table-zebra">
                                 <thead>
                                 <tr>
                                     <th>Area</th>
@@ -49,11 +49,12 @@
                                         <td>${reserva.areaNome}</td>
                                         <td>${reserva.inicioFormatado}</td>
                                         <td>${reserva.fimFormatado}</td>
-                                        <td><span class="status-pill">${reserva.status}</span></td>
+                                        <td><c:set var="reservaStatus" value="${reserva.status}" />
+<%@ include file="/WEB-INF/jsp/fragments/reserva-status.jspf" %></td>
                                         <td><c:out value="${empty reserva.motivoNegacao ? '-' : reserva.motivoNegacao}" /></td>
                                         <td class="cell-actions">
                                             <c:if test="${reserva.status eq 'Solicitado' or reserva.status eq 'Aprovado'}">
-                                                <form method="post" action="${ctx}/morador/reservas/${reserva.id}" onsubmit="return confirm('Cancelar esta reserva?');">
+                                                <form method="post" action="${ctx}/morador/reservas/${reserva.id}" data-confirm="Cancelar esta reserva?">
                                                     <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
                                                     <input type="hidden" name="_method" value="delete">
                                                     <button type="submit" class="btn btn-link">Cancelar</button>
@@ -70,13 +71,14 @@
 
                 <div class="pagination">
                     <c:if test="${reservasPage.hasPrevious}">
-                        <a class="btn btn-secondary" href="${ctx}/morador/reservas?page=${reservasPage.page - 1}&size=${reservasPage.size}">Anterior</a>
+                        <a class="btn" href="${ctx}/morador/reservas?page=${reservasPage.page - 1}&size=${reservasPage.size}">Anterior</a>
                     </c:if>
                     <span>Pagina ${reservasPage.page + 1} de ${reservasPage.totalPages == 0 ? 1 : reservasPage.totalPages}</span>
                     <c:if test="${reservasPage.hasNext}">
-                        <a class="btn btn-secondary" href="${ctx}/morador/reservas?page=${reservasPage.page + 1}&size=${reservasPage.size}">Proxima</a>
+                        <a class="btn" href="${ctx}/morador/reservas?page=${reservasPage.page + 1}&size=${reservasPage.size}">Proxima</a>
                     </c:if>
                 </div>
+                            </div>
             </section>
         </main>
     </div>

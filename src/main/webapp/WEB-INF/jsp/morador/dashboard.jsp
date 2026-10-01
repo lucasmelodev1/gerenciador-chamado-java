@@ -3,11 +3,11 @@
 <html lang="pt-BR">
 <%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
 <body data-page="morador-dashboard">
-<div class="app-shell">
+<div class="drawer lg:drawer-open">
     <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="app-main">
+    <div class="drawer-content">
         <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main class="page-content">
+        <main id="conteudo-principal" class="page-content">
             <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
 
             <section class="stats-grid">
@@ -28,6 +28,7 @@
 
             <section class="two-column-grid">
                 <article class="card">
+                    <div class="card-body">
                     <div class="section-header">
                         <div>
                             <p class="eyebrow">Acesso vinculado</p>
@@ -44,21 +45,23 @@
                             </div>
                         </c:forEach>
                     </div>
+                                    </div>
                 </article>
 
                 <article class="card">
+                    <div class="card-body">
                     <div class="section-header">
                         <div>
                             <p class="eyebrow">Acompanhamento</p>
                             <h2>Chamados recentes</h2>
                         </div>
-                        <a href="${ctx}/morador/chamados" class="btn btn-secondary">Ver todos</a>
+                        <a href="${ctx}/morador/chamados" class="btn">Ver todos</a>
                     </div>
                     <c:choose>
                         <c:when test="${empty meusChamados}">
-                            <div class="empty-state compact">
-                                <p>Voce ainda nao abriu chamados.</p>
-                            </div>
+                            <c:set var="vazioMensagem" value="Voce ainda nao abriu chamados." />
+                            <c:set var="vazioCompacto" value="${true}" />
+                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
                         </c:when>
                         <c:otherwise>
                             <div class="stack-list">
@@ -68,12 +71,13 @@
                                             <strong>${chamado.tipoChamadoTitulo}</strong>
                                             <span>${chamado.unidadeIdentificacao} - ${chamado.dataAberturaFormatada}</span>
                                         </div>
-                                        <span class="status-pill">${chamado.statusNome}</span>
+                                        <span class="badge badge-ghost">${chamado.statusNome}</span>
                                     </a>
                                 </c:forEach>
                             </div>
                         </c:otherwise>
                     </c:choose>
+                                    </div>
                 </article>
             </section>
         </main>

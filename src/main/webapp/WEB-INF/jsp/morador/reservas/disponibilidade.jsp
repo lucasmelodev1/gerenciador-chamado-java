@@ -3,26 +3,27 @@
 <html lang="pt-BR">
 <%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
 <body data-page="morador-reserva-disponibilidade">
-<div class="app-shell">
+<div class="drawer lg:drawer-open">
     <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="app-main">
+    <div class="drawer-content">
         <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main class="page-content">
+        <main id="conteudo-principal" class="page-content">
             <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
 
             <section class="card">
+                <div class="card-body">
                 <div class="section-header">
                     <div>
                         <p class="eyebrow">Areas comuns</p>
                         <h2>Disponibilidade</h2>
                     </div>
-                    <a href="${ctx}/morador/reservas" class="btn btn-secondary">Minhas reservas</a>
+                    <a href="${ctx}/morador/reservas" class="btn">Minhas reservas</a>
                 </div>
 
                 <form method="get" action="${ctx}/morador/reservas/disponibilidade" class="inline-panel">
                     <label class="field">
                         <span>Area</span>
-                        <select name="areaId" required>
+                        <select class="select w-full" name="areaId" required>
                             <option value="">Selecione uma area</option>
                             <c:forEach items="${areas}" var="area">
                                 <option value="${area.id}" ${areaId eq area.id ? 'selected' : ''}>${area.nome}</option>
@@ -31,25 +32,25 @@
                     </label>
                     <label class="field">
                         <span>Data</span>
-                        <input type="date" name="data" value="${data}" required>
+                        <input class="input w-full" type="date" name="data" value="${data}" required>
                     </label>
                     <button type="submit" class="btn btn-primary">Consultar</button>
                 </form>
 
                 <c:choose>
                     <c:when test="${not consultou}">
-                        <div class="empty-state compact">
-                            <p>Selecione uma area e uma data para consultar a disponibilidade.</p>
-                        </div>
+                        <c:set var="vazioMensagem" value="Selecione uma area e uma data para consultar a disponibilidade." />
+                        <c:set var="vazioCompacto" value="${true}" />
+                        <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
                     </c:when>
                     <c:when test="${empty disponibilidade}">
-                        <div class="empty-state compact">
-                            <p>Nenhuma reserva aprovada ou pendente para esta area nesta data.</p>
-                        </div>
+                        <c:set var="vazioMensagem" value="Nenhuma reserva aprovada ou pendente para esta area nesta data." />
+                        <c:set var="vazioCompacto" value="${true}" />
+                        <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
                     </c:when>
                     <c:otherwise>
-                        <div class="table-wrap">
-                            <table class="data-table">
+                        <div class="overflow-x-auto">
+                            <table class="table table-zebra">
                                 <thead>
                                 <tr>
                                     <th>Inicio</th>
@@ -63,7 +64,8 @@
                                         <td>${reserva.inicioFormatado}</td>
                                         <td>${reserva.fimFormatado}</td>
                                         <td>
-                                            <span class="status-pill">${reserva.status}</span>
+                                            <c:set var="reservaStatus" value="${reserva.status}" />
+                                            <%@ include file="/WEB-INF/jsp/fragments/reserva-status.jspf" %>
                                             <c:if test="${reserva.status eq 'Solicitado'}">
                                                 <small class="field-hint">Pendente, nao garante a ocupacao.</small>
                                             </c:if>
@@ -75,6 +77,7 @@
                         </div>
                     </c:otherwise>
                 </c:choose>
+                            </div>
             </section>
         </main>
     </div>

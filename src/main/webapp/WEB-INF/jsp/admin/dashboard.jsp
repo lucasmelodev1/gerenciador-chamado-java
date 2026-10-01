@@ -3,11 +3,11 @@
 <html lang="pt-BR">
 <%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
 <body data-page="admin-dashboard">
-<div class="app-shell">
+<div class="drawer lg:drawer-open">
     <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="app-main">
+    <div class="drawer-content">
         <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main class="page-content">
+        <main id="conteudo-principal" class="page-content">
             <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
 
             <section class="stats-grid">
@@ -34,11 +34,12 @@
                 <article class="stat-card stat-card-wide">
                     <span>Chamados monitorados</span>
                     <strong>${totalChamados}</strong>
-                    <a href="${ctx}/admin/chamados" class="btn btn-secondary">Abrir fila completa</a>
+                    <a href="${ctx}/admin/chamados" class="btn">Abrir fila completa</a>
                 </article>
             </section>
 
             <section class="card">
+                <div class="card-body">
                 <div class="section-header">
                     <div>
                         <p class="eyebrow">Visao operacional</p>
@@ -49,14 +50,13 @@
 
                 <c:choose>
                     <c:when test="${empty chamadosRecentes}">
-                        <div class="empty-state">
-                            <h3>Nenhum chamado registrado</h3>
-                            <p>Assim que moradores abrirem chamados eles aparecerao aqui.</p>
-                        </div>
+                        <c:set var="vazioTitulo" value="Nenhum chamado registrado" />
+                        <c:set var="vazioMensagem" value="Assim que moradores abrirem chamados eles aparecerao aqui." />
+                        <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
                     </c:when>
                     <c:otherwise>
-                        <div class="table-wrap">
-                            <table class="data-table">
+                        <div class="overflow-x-auto">
+                            <table class="table table-zebra">
                                 <thead>
                                 <tr>
                                     <th>Unidade</th>
@@ -71,7 +71,7 @@
                                     <tr>
                                         <td>${chamado.unidadeIdentificacao}</td>
                                         <td>${chamado.tipoChamadoTitulo}</td>
-                                        <td><span class="status-pill">${chamado.statusNome}</span></td>
+                                        <td><span class="badge badge-ghost">${chamado.statusNome}</span></td>
                                         <td>${chamado.dataAberturaFormatada}</td>
                                         <td class="cell-actions">
                                             <a href="${ctx}/admin/chamados/${chamado.id}" class="btn btn-link">Detalhar</a>
@@ -83,6 +83,7 @@
                         </div>
                     </c:otherwise>
                 </c:choose>
+                            </div>
             </section>
         </main>
     </div>

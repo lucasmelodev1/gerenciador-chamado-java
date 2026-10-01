@@ -3,15 +3,16 @@
 <html lang="pt-BR">
 <%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
 <body data-page="admin-escopo-colaborador">
-<div class="app-shell">
+<div class="drawer lg:drawer-open">
     <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="app-main">
+    <div class="drawer-content">
         <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main class="page-content">
+        <main id="conteudo-principal" class="page-content">
             <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
 
             <section class="two-column-grid">
                 <article class="card">
+                    <div class="card-body">
                     <div class="section-header">
                         <div>
                             <p class="eyebrow">Operacao</p>
@@ -22,11 +23,11 @@
                     <form method="get" action="${ctx}/admin/escopo-colaborador" class="stack-form compact-form">
                         <label class="field">
                             <span>Buscar por e-mail</span>
-                            <input type="text" name="colaboradorEmail" value="${filtroColaboradorEmail}" placeholder="Ex.: ana" />
+                            <input class="input w-full" type="text" name="colaboradorEmail" value="${filtroColaboradorEmail}" placeholder="Ex.: ana" />
                         </label>
                         <label class="field">
                             <span>Colaborador</span>
-                            <select name="colaboradorId" data-auto-submit>
+                            <select class="select w-full" name="colaboradorId" data-auto-submit>
                                 <option value="">Escolha um colaborador</option>
                                 <c:forEach items="${colaboradoresDisponiveis}" var="colaborador">
                                     <option value="${colaborador.id}" ${colaboradorSelecionadoId eq colaborador.id ? 'selected' : ''}>
@@ -37,7 +38,7 @@
                         </label>
                         <div class="button-row">
                             <button type="submit" class="btn btn-primary">Buscar colaborador</button>
-                            <a href="${ctx}/admin/escopo-colaborador" class="btn btn-secondary">Limpar</a>
+                            <a href="${ctx}/admin/escopo-colaborador" class="btn">Limpar</a>
                         </div>
                     </form>
 
@@ -48,14 +49,14 @@
                                 <strong>${colaboradorSelecionado.nome}</strong>
                                 <span>${colaboradorSelecionado.email}</span>
                             </div>
-                            <a href="${ctx}/admin/usuarios/${colaboradorSelecionado.id}" class="btn btn-secondary">Abrir cadastro</a>
+                            <a href="${ctx}/admin/usuarios/${colaboradorSelecionado.id}" class="btn">Abrir cadastro</a>
                         </div>
 
                         <c:choose>
                             <c:when test="${empty tiposChamadoColaborador}">
-                                <div class="empty-state compact">
-                                    <p>Este colaborador ainda nao possui tipos de chamado vinculados.</p>
-                                </div>
+                                <c:set var="vazioMensagem" value="Este colaborador ainda nao possui tipos de chamado vinculados." />
+                                <c:set var="vazioCompacto" value="${true}" />
+                                <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
                             </c:when>
                             <c:otherwise>
                                 <div class="stack-list">
@@ -68,7 +69,7 @@
                                             <form method="post" action="${ctx}/admin/colaboradores/${colaboradorSelecionado.id}/tipos-chamado/${tipoChamado.id}?dashboard=true" data-confirm="Desvincular este tipo de chamado do colaborador?" class="inline-form">
                                                 <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
                                                 <input type="hidden" name="_method" value="delete">
-                                                <button type="submit" class="btn btn-danger">Desvincular</button>
+                                                <button type="submit" class="btn btn-error">Desvincular</button>
                                             </form>
                                         </div>
                                     </c:forEach>
@@ -83,7 +84,7 @@
                             <input type="hidden" name="_method" value="put">
                             <label class="field">
                                 <span>Selecionar tipo de chamado</span>
-                                <select name="tipoChamadoId" required>
+                                <select class="select w-full" name="tipoChamadoId" required>
                                     <option value="">Escolha um tipo</option>
                                     <c:forEach items="${tiposChamadoDisponiveis}" var="tipoChamado">
                                         <c:set var="tipoChamadoJaVinculado" value="${tiposChamadoResponsaveisIds.contains(tipoChamado.id)}" />
@@ -97,9 +98,11 @@
                             <button type="submit" class="btn btn-primary">Vincular tipo de chamado</button>
                         </form>
                     </c:if>
+                                    </div>
                 </article>
 
                 <article class="card">
+                    <div class="card-body">
                     <div class="section-header">
                         <div>
                             <p class="eyebrow">Consulta</p>
@@ -109,14 +112,13 @@
 
                     <c:choose>
                         <c:when test="${empty colaboradoresDisponiveis}">
-                            <div class="empty-state">
-                                <h3>Nenhum colaborador encontrado</h3>
-                                <p>Ajuste o prefixo do e-mail para localizar outro colaborador.</p>
-                            </div>
+                            <c:set var="vazioTitulo" value="Nenhum colaborador encontrado" />
+                            <c:set var="vazioMensagem" value="Ajuste o prefixo do e-mail para localizar outro colaborador." />
+                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
                         </c:when>
                         <c:otherwise>
-                            <div class="table-wrap">
-                                <table class="data-table">
+                            <div class="overflow-x-auto">
+                                <table class="table table-zebra">
                                     <thead>
                                     <tr>
                                         <th>Nome</th>
@@ -145,6 +147,7 @@
                             </div>
                         </c:otherwise>
                     </c:choose>
+                                    </div>
                 </article>
             </section>
         </main>

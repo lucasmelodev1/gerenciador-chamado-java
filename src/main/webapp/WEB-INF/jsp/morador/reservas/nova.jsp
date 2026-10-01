@@ -3,14 +3,15 @@
 <html lang="pt-BR">
 <%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
 <body data-page="morador-reserva-nova">
-<div class="app-shell">
+<div class="drawer lg:drawer-open">
     <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="app-main">
+    <div class="drawer-content">
         <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main class="page-content narrow-content">
+        <main id="conteudo-principal" class="page-content narrow-content">
             <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
 
             <section class="card">
+                <div class="card-body">
                 <div class="section-header">
                     <div>
                         <p class="eyebrow">Areas comuns</p>
@@ -22,7 +23,7 @@
                     <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
                     <label class="field">
                         <span>Unidade</span>
-                        <select name="unidadeId" required>
+                        <select class="select w-full" name="unidadeId" required>
                             <option value="">Selecione uma unidade</option>
                             <c:forEach items="${unidades}" var="unidade">
                                 <option value="${unidade.id}">${unidade.identificacao} - ${unidade.blocoIdentificacao}</option>
@@ -31,7 +32,7 @@
                     </label>
                     <label class="field">
                         <span>Area</span>
-                        <select name="areaId" required>
+                        <select class="select w-full" name="areaId" required>
                             <option value="">Selecione uma area</option>
                             <c:forEach items="${areas}" var="area">
                                 <option value="${area.id}">${area.nome}</option>
@@ -40,17 +41,18 @@
                     </label>
                     <label class="field">
                         <span>Inicio</span>
-                        <input type="datetime-local" name="inicio" required>
+                        <input class="input w-full" type="datetime-local" name="inicio" required>
                     </label>
                     <label class="field">
                         <span>Fim</span>
-                        <input type="datetime-local" name="fim" required>
+                        <input class="input w-full" type="datetime-local" name="fim" required>
                     </label>
                     <div class="button-row">
                         <button type="submit" class="btn btn-primary">Solicitar reserva</button>
-                        <a href="${ctx}/morador/reservas" class="btn btn-secondary">Cancelar</a>
+                        <a href="${ctx}/morador/reservas" class="btn">Cancelar</a>
                     </div>
                 </form>
+                            </div>
             </section>
         </main>
     </div>

@@ -3,15 +3,16 @@
 <html lang="pt-BR">
 <%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
 <body data-page="admin-vinculos-morador">
-<div class="app-shell">
+<div class="drawer lg:drawer-open">
     <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="app-main">
+    <div class="drawer-content">
         <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main class="page-content">
+        <main id="conteudo-principal" class="page-content">
             <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
 
             <section class="two-column-grid">
                 <article class="card">
+                    <div class="card-body">
                     <div class="section-header">
                         <div>
                             <p class="eyebrow">Operacao</p>
@@ -22,11 +23,11 @@
                     <form method="get" action="${ctx}/admin/vinculos-morador" class="stack-form compact-form">
                         <label class="field">
                             <span>Buscar por e-mail</span>
-                            <input type="text" name="moradorEmail" value="${filtroMoradorEmail}" placeholder="Ex.: mar" />
+                            <input class="input w-full" type="text" name="moradorEmail" value="${filtroMoradorEmail}" placeholder="Ex.: mar" />
                         </label>
                         <label class="field">
                             <span>Morador</span>
-                            <select name="moradorId" data-auto-submit>
+                            <select class="select w-full" name="moradorId" data-auto-submit>
                                 <option value="">Escolha um morador</option>
                                 <c:forEach items="${moradoresDisponiveis}" var="morador">
                                     <option value="${morador.id}" ${moradorSelecionadoId eq morador.id ? 'selected' : ''}>
@@ -37,13 +38,13 @@
                         </label>
                         <div class="button-row">
                             <button type="submit" class="btn btn-primary">Buscar morador</button>
-                            <a href="${ctx}/admin/vinculos-morador" class="btn btn-secondary">Limpar</a>
+                            <a href="${ctx}/admin/vinculos-morador" class="btn">Limpar</a>
                         </div>
 
                         <c:if test="${not empty moradorSelecionadoId}">
                             <label class="field">
                                 <span>Bloco</span>
-                                <select name="blocoId" data-auto-submit>
+                                <select class="select w-full" name="blocoId" data-auto-submit>
                                     <option value="">Escolha um bloco</option>
                                     <c:forEach items="${blocosDisponiveis}" var="bloco">
                                         <option value="${bloco.id}" ${blocoSelecionadoId eq bloco.id ? 'selected' : ''}>
@@ -62,14 +63,14 @@
                                 <strong>${moradorSelecionado.nome}</strong>
                                 <span>${moradorSelecionado.email}</span>
                             </div>
-                            <a href="${ctx}/admin/usuarios/${moradorSelecionado.id}" class="btn btn-secondary">Abrir cadastro</a>
+                            <a href="${ctx}/admin/usuarios/${moradorSelecionado.id}" class="btn">Abrir cadastro</a>
                         </div>
 
                         <c:choose>
                             <c:when test="${empty unidadesMorador}">
-                                <div class="empty-state compact">
-                                    <p>Este morador ainda nao possui unidades vinculadas.</p>
-                                </div>
+                                <c:set var="vazioMensagem" value="Este morador ainda nao possui unidades vinculadas." />
+                                <c:set var="vazioCompacto" value="${true}" />
+                                <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
                             </c:when>
                             <c:otherwise>
                                 <div class="stack-list">
@@ -85,7 +86,7 @@
                                                 <c:if test="${not empty blocoSelecionadoId}">
                                                     <input type="hidden" name="blocoId" value="${blocoSelecionadoId}">
                                                 </c:if>
-                                                <button type="submit" class="btn btn-danger">Desvincular</button>
+                                                <button type="submit" class="btn btn-error">Desvincular</button>
                                             </form>
                                         </div>
                                     </c:forEach>
@@ -101,7 +102,7 @@
                                 <input type="hidden" name="blocoId" value="${blocoSelecionadoId}">
                                 <label class="field">
                                     <span>Unidade do bloco selecionado</span>
-                                    <select name="unidadeId" required>
+                                    <select class="select w-full" name="unidadeId" required>
                                         <option value="">Escolha uma unidade</option>
                                         <c:forEach items="${unidadesBloco}" var="unidade">
                                             <option value="${unidade.id}" ${unidade.vinculadaAoMorador ? 'disabled' : ''}>
@@ -115,10 +116,12 @@
                             </form>
                         </c:if>
                     </c:if>
+                                    </div>
                 </article>
 
                 <div class="stack-list">
                     <article class="card">
+                        <div class="card-body">
                         <div class="section-header">
                             <div>
                                 <p class="eyebrow">Base cadastrada</p>
@@ -141,7 +144,7 @@
                             </c:if>
                             <label class="field">
                                 <span>Buscar moradores por e-mail</span>
-                                <input type="text" name="cadastradosEmail" value="${filtroCadastradosEmail}" placeholder="Ex.: mar" />
+                                <input class="input w-full" type="text" name="cadastradosEmail" value="${filtroCadastradosEmail}" placeholder="Ex.: mar" />
                             </label>
                             <div class="button-row">
                                 <button type="submit" class="btn btn-primary">Buscar moradores</button>
@@ -150,14 +153,13 @@
 
                         <c:choose>
                             <c:when test="${empty moradoresCadastrados}">
-                                <div class="empty-state">
-                                    <h3>Nenhum morador encontrado</h3>
-                                    <p>Refine o filtro para localizar um morador cadastrado.</p>
-                                </div>
+                                <c:set var="vazioTitulo" value="Nenhum morador encontrado" />
+                                <c:set var="vazioMensagem" value="Refine o filtro para localizar um morador cadastrado." />
+                                <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
                             </c:when>
                             <c:otherwise>
-                                <div class="table-wrap">
-                                    <table class="data-table">
+                                <div class="overflow-x-auto">
+                                    <table class="table table-zebra">
                                         <thead>
                                         <tr>
                                             <th>Nome</th>
@@ -234,16 +236,18 @@
 
                         <div class="pagination">
                             <c:if test="${moradoresCadastradosPage.hasPrevious}">
-                                <a class="btn btn-secondary" href="${paginaAnteriorCadastradosUrl}">Anterior</a>
+                                <a class="btn" href="${paginaAnteriorCadastradosUrl}">Anterior</a>
                             </c:if>
                             <span>Pagina ${moradoresCadastradosPage.page + 1} de ${moradoresCadastradosPage.totalPages == 0 ? 1 : moradoresCadastradosPage.totalPages}</span>
                             <c:if test="${moradoresCadastradosPage.hasNext}">
-                                <a class="btn btn-secondary" href="${proximaPaginaCadastradosUrl}">Proxima</a>
+                                <a class="btn" href="${proximaPaginaCadastradosUrl}">Proxima</a>
                             </c:if>
                         </div>
+                                            </div>
                     </article>
 
                     <article class="card">
+                        <div class="card-body">
                         <div class="section-header">
                             <div>
                                 <p class="eyebrow">Pendencias</p>
@@ -266,7 +270,7 @@
                             </c:if>
                             <label class="field">
                                 <span>Buscar pendentes por e-mail</span>
-                                <input type="text" name="semUnidadeEmail" value="${filtroSemUnidadeEmail}" placeholder="Ex.: mar" />
+                                <input class="input w-full" type="text" name="semUnidadeEmail" value="${filtroSemUnidadeEmail}" placeholder="Ex.: mar" />
                             </label>
                             <div class="button-row">
                                 <button type="submit" class="btn btn-primary">Buscar pendentes</button>
@@ -275,14 +279,13 @@
 
                         <c:choose>
                             <c:when test="${empty moradoresSemUnidade}">
-                                <div class="empty-state">
-                                    <h3>Nenhum morador pendente</h3>
-                                    <p>Todos os moradores desta consulta ja possuem unidade vinculada.</p>
-                                </div>
+                                <c:set var="vazioTitulo" value="Nenhum morador pendente" />
+                                <c:set var="vazioMensagem" value="Todos os moradores desta consulta ja possuem unidade vinculada." />
+                                <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
                             </c:when>
                             <c:otherwise>
-                                <div class="table-wrap">
-                                    <table class="data-table" data-filter-table="moradores-sem-unidade-table">
+                                <div class="overflow-x-auto">
+                                    <table class="table table-zebra" data-filter-table="moradores-sem-unidade-table">
                                         <thead>
                                         <tr>
                                             <th>Nome</th>
@@ -359,13 +362,14 @@
 
                         <div class="pagination">
                             <c:if test="${moradoresSemUnidadePage.hasPrevious}">
-                                <a class="btn btn-secondary" href="${paginaAnteriorUrl}">Anterior</a>
+                                <a class="btn" href="${paginaAnteriorUrl}">Anterior</a>
                             </c:if>
                             <span>Pagina ${moradoresSemUnidadePage.page + 1} de ${moradoresSemUnidadePage.totalPages == 0 ? 1 : moradoresSemUnidadePage.totalPages}</span>
                             <c:if test="${moradoresSemUnidadePage.hasNext}">
-                                <a class="btn btn-secondary" href="${proximaPaginaUrl}">Proxima</a>
+                                <a class="btn" href="${proximaPaginaUrl}">Proxima</a>
                             </c:if>
                         </div>
+                                            </div>
                     </article>
                 </div>
             </section>

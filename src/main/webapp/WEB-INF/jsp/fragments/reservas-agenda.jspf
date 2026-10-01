@@ -4,36 +4,47 @@
     viewAtual, periodoReferencia, periodoLabel, periodoAnterior, periodoSeguinte, areasFiltro, reservas.
 --%>
 <section class="card">
+    <div class="card-body">
+    <div class="card-body">
     <div class="section-header">
         <div>
             <p class="eyebrow">${agendaEyebrow}</p>
             <h2>${agendaTitulo}</h2>
         </div>
-        <a href="${agendaBase}" class="btn btn-secondary">Ver lista</a>
+        <a href="${agendaBase}" class="btn">Ver lista</a>
     </div>
 
-    <div class="calendar-toolbar">
+    <div class="mb-4 flex flex-wrap items-end justify-between gap-4">
         <label class="field">
             <span>Filtrar por area</span>
-            <select id="filtro-area">
+            <select class="select w-full" id="filtro-area">
                 <option value="">Todas as areas</option>
                 <c:forEach items="${areasFiltro}" var="area">
                     <option value="${area.id}">${fn:escapeXml(area.nome)}</option>
                 </c:forEach>
             </select>
         </label>
-        <div class="button-row">
+
+        <div class="flex flex-wrap items-center gap-3">
             <c:set var="rotuloAnterior" value="${viewAtual eq 'semana' ? 'Semana anterior' : 'Mes anterior'}" />
             <c:set var="rotuloSeguinte" value="${viewAtual eq 'semana' ? 'Proxima semana' : 'Proximo mes'}" />
-            <a class="btn btn-secondary" href="${agendaBase}/agenda?inicio=${periodoAnterior}&view=${viewAtual}">${rotuloAnterior}</a>
-            <span class="calendar-mes">${periodoLabel}</span>
-            <a class="btn btn-secondary" href="${agendaBase}/agenda?inicio=${periodoSeguinte}&view=${viewAtual}">${rotuloSeguinte}</a>
-            <span class="calendar-view-toggle">
-                <a class="btn ${viewAtual eq 'mes' ? 'btn-primary' : 'btn-secondary'}"
+
+            <%-- Navegacao de periodo: join (a daisyUI nao tem componente de paginacao) --%>
+            <div class="join">
+                <a class="btn join-item" href="${agendaBase}/agenda?inicio=${periodoAnterior}&view=${viewAtual}">${rotuloAnterior}</a>
+                <span class="btn join-item btn-disabled calendar-mes">${periodoLabel}</span>
+                <a class="btn join-item" href="${agendaBase}/agenda?inicio=${periodoSeguinte}&view=${viewAtual}">${rotuloSeguinte}</a>
+            </div>
+
+            <%-- Alternancia mes/semana resolvida no servidor (mesmo padrao da navegacao lateral) --%>
+            <div role="tablist" class="tabs tabs-box tabs-sm">
+                <a role="tab" class="tab ${viewAtual eq 'mes' ? 'tab-active' : ''}"
+                   aria-current="${viewAtual eq 'mes' ? 'page' : 'false'}"
                    href="${agendaBase}/agenda?inicio=${periodoReferencia}&view=mes">Mes</a>
-                <a class="btn ${viewAtual eq 'semana' ? 'btn-primary' : 'btn-secondary'}"
+                <a role="tab" class="tab ${viewAtual eq 'semana' ? 'tab-active' : ''}"
+                   aria-current="${viewAtual eq 'semana' ? 'page' : 'false'}"
                    href="${agendaBase}/agenda?inicio=${periodoReferencia}&view=semana">Semana</a>
-            </span>
+            </div>
         </div>
     </div>
 
@@ -59,15 +70,19 @@
                   data-motivo="${fn:escapeXml(r.motivoNegacao)}"></span>
         </c:forEach>
     </div>
+    </div>
+    </div>
 </section>
 
 <section id="reserva-detalhe" class="card reserva-detalhe" hidden>
+    <div class="card-body">
+    <div class="card-body">
     <div class="section-header">
         <div>
             <p class="eyebrow">Reserva</p>
             <h3 class="reserva-titulo"></h3>
         </div>
-        <button type="button" class="btn btn-secondary" id="reserva-fechar">Fechar</button>
+        <button type="button" class="btn" id="reserva-fechar">Fechar</button>
     </div>
     <p class="reserva-meta"></p>
     <p class="reserva-motivo"></p>
@@ -81,14 +96,16 @@
             <form id="form-negar" method="post" class="inline-panel" hidden>
                 <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
                 <input type="hidden" name="_method" value="patch">
-                <input type="text" name="motivo" maxlength="255" placeholder="Motivo da negacao" required>
+                <input class="input w-full" type="text" name="motivo" maxlength="255" placeholder="Motivo da negacao" required>
                 <button type="submit" class="btn btn-link">Negar</button>
             </form>
         </c:if>
-        <form id="form-cancelar" method="post" hidden onsubmit="return confirm('Cancelar esta reserva?');">
+        <form id="form-cancelar" method="post" hidden data-confirm="Cancelar esta reserva?">
             <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
             <input type="hidden" name="_method" value="delete">
             <button type="submit" class="btn btn-link">Cancelar</button>
         </form>
+    </div>
+    </div>
     </div>
 </section>

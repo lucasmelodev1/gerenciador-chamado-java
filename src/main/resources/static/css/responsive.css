@@ -9,9 +9,6 @@
 }
 
 @media (max-width: 980px) {
-    .app-shell {
-        grid-template-columns: 1fr;
-    }
 
     .sidebar {
         position: fixed;
@@ -24,28 +21,6 @@
 
     .sidebar.is-open {
         transform: translateX(0);
-    }
-
-    .sidebar-backdrop {
-        display: block;
-        position: fixed;
-        inset: 0;
-        z-index: 19;
-        border: 0;
-        padding: 0;
-        background: rgba(18, 32, 51, 0.32);
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.2s ease;
-    }
-
-    .sidebar-backdrop.is-visible {
-        opacity: 1;
-        pointer-events: auto;
-    }
-
-    .mobile-nav-button {
-        display: inline-flex;
     }
 
     .topbar {
@@ -99,20 +74,10 @@
         border-radius: 20px;
     }
 
-    .data-table {
-        min-width: 560px;
-    }
-
     .button-row,
     .toolbar-inline,
     .topbar-actions {
         width: 100%;
-    }
-
-    .btn,
-    .ghost-button {
-        width: 100%;
-        justify-content: center;
     }
 
     .password-field {
