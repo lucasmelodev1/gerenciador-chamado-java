@@ -73,7 +73,7 @@
        data-drawer ${drawerAberto}>
     <header class="app-drawer-topo">
         <div class="grid gap-1">
-            <h2 id="${id}-titulo" class="font-display text-lg font-semibold">${titulo}</h2>
+            <h2 id="${id}-titulo" data-drawer-titulo class="font-display text-lg font-semibold">${titulo}</h2>
             <c:if test="${not empty descricao}">
                 <p class="text-sm opacity-70">${descricao}</p>
             </c:if>
@@ -89,8 +89,12 @@
 
     <c:choose>
         <c:when test="${not empty acao}">
-            <form id="${drawerFormId}" method="${drawerMetodo}" action="${acao}" class="app-drawer-corpo">
+            <form id="${drawerFormId}" data-drawer-form method="${drawerMetodo}" action="${acao}" class="app-drawer-corpo">
                 <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
+                <%-- Sobrescrita de metodo para o caso de edicao: o drawer.js preenche a
+                     partir de `data-campo-_method` do gatilho. Vazio = POST (o
+                     HiddenHttpMethodFilter ignora parametro sem valor). --%>
+                <input type="hidden" name="_method" value="">
                 <jsp:doBody />
             </form>
         </c:when>
@@ -101,10 +105,16 @@
         </c:otherwise>
     </c:choose>
 
-    <footer class="app-drawer-rodape">
-        <c:if test="${not empty acao}">
-            <button type="submit" form="${drawerFormId}" class="btn btn-primary">${drawerSalvar}</button>
-        </c:if>
-        <button type="button" class="btn" data-drawer-fechar>${drawerFechar}</button>
-    </footer>
+    <%-- Rodape so com Salvar: o fechamento fica por conta do X no topo, do Esc e do
+         clique fora. Sem `acao` (drawer informativo) o rodape nem e renderizado. --%>
+    <c:if test="${not empty acao}">
+        <footer class="app-drawer-rodape">
+            <button type="submit" form="${drawerFormId}" class="btn btn-primary">
+                <c:set var="icone" value="salvar" />
+                <c:set var="iconeClasse" value="size-4" />
+                <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+                ${drawerSalvar}
+            </button>
+        </footer>
+    </c:if>
 </aside>

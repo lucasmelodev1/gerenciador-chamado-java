@@ -38,6 +38,72 @@
     // id do drawer -> elemento que tinha o foco antes de abrir (para devolver ao fechar)
     var focoAnterior = {};
 
+    // id do drawer -> estado com que o servidor o renderizou (acao e titulo). Serve para
+    // o gatilho "novo" devolver o formulario ao modo de criacao depois de uma edicao.
+    var estadoInicial = {};
+
+    function formDoPainel(painel) {
+        return painel.querySelector("[data-drawer-form]");
+    }
+
+    function tituloDoPainel(painel) {
+        return painel.querySelector("[data-drawer-titulo]");
+    }
+
+    function guardarInicial(painel) {
+        var form = formDoPainel(painel);
+        var titulo = tituloDoPainel(painel);
+        estadoInicial[painel.id] = {
+            acao: form ? form.getAttribute("action") : null,
+            titulo: titulo ? titulo.textContent : null
+        };
+    }
+
+    // Volta o formulario ao que o servidor renderizou: acao original, sem sobrescrita de
+    // metodo e campos com os valores padrao (o `reset()` restaura os `value` do HTML).
+    function reporInicial(painel) {
+        var inicial = estadoInicial[painel.id];
+        var form = formDoPainel(painel);
+        if (form) {
+            if (inicial && inicial.acao !== null) {
+                form.setAttribute("action", inicial.acao);
+            }
+            form.reset();
+        }
+
+        var titulo = tituloDoPainel(painel);
+        if (titulo && inicial && inicial.titulo !== null) {
+            titulo.textContent = inicial.titulo;
+        }
+    }
+
+    // Aplica o que o gatilho carrega: `data-drawer-acao`, `data-drawer-titulo` e um
+    // `data-campo-<name>="<valor>"` por campo do formulario (inclusive `_method`).
+    function aplicarGatilho(painel, gatilho) {
+        var form = formDoPainel(painel);
+        var acao = gatilho.getAttribute("data-drawer-acao");
+        if (form && acao) {
+            form.setAttribute("action", acao);
+        }
+
+        if (form) {
+            Array.from(form.querySelectorAll("[name]")).forEach(function (campo) {
+                var valor = gatilho.getAttribute("data-campo-" + campo.getAttribute("name"));
+                if (valor !== null) {
+                    campo.value = valor;
+                }
+            });
+        }
+
+        var titulo = gatilho.getAttribute("data-drawer-titulo");
+        if (titulo) {
+            var h2 = tituloDoPainel(painel);
+            if (h2) {
+                h2.textContent = titulo;
+            }
+        }
+    }
+
     function painelPorId(id) {
         var alvo = id ? document.getElementById(id) : null;
         return alvo && alvo.hasAttribute("data-drawer") ? alvo : null;
@@ -176,17 +242,38 @@
     document.addEventListener("keydown", aoTeclar);
 
     window.AppDom.onReady(function () {
+        window.AppDom.bySelector("[data-drawer]").forEach(guardarInicial);
+
         window.AppDom.bySelector("[data-drawer-backdrop]").forEach(function (backdrop) {
             backdrop.addEventListener("click", function () {
                 fechar(backdrop.getAttribute("data-drawer-backdrop"));
             });
         });
 
+        // Criar: devolve o formulario ao estado renderizado pelo servidor antes de abrir.
         window.AppDom.bySelector("[data-drawer-abrir]").forEach(function (gatilho) {
             gatilho.addEventListener("click", function (evento) {
-                // O gatilho abre o drawer; nao navega nem envia formulario.
+                // O gatilho abre o drawer; nao navega nem envia formulario — e o que
+                // evita o reload que deixava o drawer fechado depois de editar.
                 evento.preventDefault();
+                var painel = painelPorId(gatilho.getAttribute("data-drawer-abrir"));
+                if (painel) {
+                    reporInicial(painel);
+                }
                 abrir(gatilho.getAttribute("data-drawer-abrir"));
+            });
+        });
+
+        // Editar: mesmo drawer, preenchido com o que o gatilho carrega.
+        window.AppDom.bySelector("[data-drawer-editar]").forEach(function (gatilho) {
+            gatilho.addEventListener("click", function (evento) {
+                evento.preventDefault();
+                var id = gatilho.getAttribute("data-drawer-editar");
+                var painel = painelPorId(id);
+                if (painel) {
+                    aplicarGatilho(painel, gatilho);
+                }
+                abrir(id);
             });
         });
 

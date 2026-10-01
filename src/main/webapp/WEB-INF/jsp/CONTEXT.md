@@ -33,7 +33,9 @@ Views JSP/JSTL dos controllers web; prefixo/sufixo em `application.properties`.
   `WEB-INF/tags/drawer.tag` e liberado pelo prefixo `ui` em `fragments/taglibs.jspf`.
   Comportamento em `static/js/drawer.js` (`AppDrawer`, evento `drawer:fechado`).
   **Precisa ser incluído fora de `.page-content`** (filho direto do `<body>`).
-  Hoje usado em uma única tela: `admin/areas/lista.jsp`.
+  Hoje usado em uma única tela: `admin/areas/lista.jsp`, que **não** usa estado de edição do
+  servidor: o drawer vem sempre fechado e no modo de criação, e os gatilhos
+  `data-drawer-abrir`/`data-drawer-editar` é que preenchem e abrem.
 
 ## Fragmentos de conteúdo
 - `vazio.jspf`: estado vazio — `vazioTitulo` (opcional), `vazioMensagem`, `vazioCompacto`.

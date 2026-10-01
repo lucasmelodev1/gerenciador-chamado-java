@@ -10,16 +10,12 @@
         <main id="conteudo-principal" class="page-content">
             <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
 
-            <%-- Formulario no `ui:drawer` (S23). A tela tem dois estados, e o servidor
-                 renderiza o drawer ja no estado certo:
-                   - `?areaId=<id>`  -> edicao; o drawer abre sozinho (`aberto="true"`);
-                   - sem query       -> cadastro; o botao "Nova area" abre pelo JS. --%>
-            <c:set var="areaEditando" value="${not empty areaEdicao}" />
-            <c:set var="areaAction" value="${ctx}/admin/areas" />
-            <c:if test="${areaEditando}">
-                <c:set var="areaAction" value="${ctx}/admin/areas/${areaEdicao.id}" />
-            </c:if>
-
+            <%-- S23: criar e editar usam o MESMO `ui:drawer`, sem ida ao servidor para
+                 abrir. O drawer e sempre renderizado no modo de criacao; o gatilho
+                 "Editar" carrega a acao da area e os valores nos atributos `data-campo-*`,
+                 que o drawer.js aplica antes de abrir.
+                 Antes isso dependia de `?areaId=`, e o reload era justamente o que
+                 deixava o drawer fechado depois de salvar e exigia um segundo clique. --%>
             <section class="card">
                 <div class="card-body">
                     <div class="section-header">
@@ -30,20 +26,9 @@
                         <div class="toolbar-inline">
                             <input type="search" class="input input-sm" placeholder="Filtrar localmente"
                                    data-filter-input data-filter-target="areas-table">
-
-                            <%-- Em modo edicao o drawer ja esta aberto no estado "editar":
-                                 o botao precisa voltar para a URL limpa, senao abriria o
-                                 mesmo drawer ainda apontando para a area editada. --%>
-                            <c:choose>
-                                <c:when test="${areaEditando}">
-                                    <a class="btn btn-primary btn-sm" href="${ctx}/admin/areas">Nova area</a>
-                                </c:when>
-                                <c:otherwise>
-                                    <button type="button" class="btn btn-primary btn-sm" data-drawer-abrir="drawer-area">
-                                        Nova area
-                                    </button>
-                                </c:otherwise>
-                            </c:choose>
+                            <button type="button" class="btn btn-primary btn-sm" data-drawer-abrir="drawer-area">
+                                Nova area
+                            </button>
                         </div>
                     </div>
 
@@ -69,7 +54,13 @@
                                             <td>${area.nome}</td>
                                             <td>${area.status}</td>
                                             <td class="cell-actions">
-                                                <a href="${ctx}/admin/areas?areaId=${area.id}" class="btn btn-link">Editar</a>
+                                                <button type="button" class="btn btn-link"
+                                                        data-drawer-editar="drawer-area"
+                                                        data-drawer-titulo="Editar area"
+                                                        data-drawer-acao="${ctx}/admin/areas/${area.id}"
+                                                        data-campo-_method="patch"
+                                                        data-campo-nome="${fn:escapeXml(area.nome)}"
+                                                        data-campo-status="${fn:escapeXml(area.status)}">Editar</button>
                                                 <form method="post" action="${ctx}/admin/areas/${area.id}" data-confirm="Remover esta area? As reservas existentes serao preservadas.">
                                                     <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
                                                     <input type="hidden" name="_method" value="delete">
@@ -103,25 +94,19 @@
      `.page-content > * { width: min(100%, 1360px); margin-inline: auto }`, que espremeria
      o backdrop do drawer e deixaria as bordas da tela claras. Ver custom.css > Drawer. --%>
 <ui:drawer id="drawer-area"
-           titulo="${areaEditando ? 'Editar area' : 'Nova area'}"
-           descricao="${areaEditando ? 'Atualize os dados do espaco e salve.' : 'Cadastre um espaco do condominio para uso nas reservas.'}"
-           acao="${areaAction}"
-           rotuloSalvar="${areaEditando ? 'Salvar area' : 'Cadastrar area'}"
-           aberto="${areaEditando ? 'true' : 'false'}">
-    <c:if test="${areaEditando}">
-        <input type="hidden" name="_method" value="patch">
-    </c:if>
-
+           titulo="Nova area"
+           descricao="Cadastre um espaco do condominio para uso nas reservas."
+           acao="${ctx}/admin/areas">
     <label class="field">
         <span>Nome</span>
-        <input class="input w-full" type="text" name="nome" value="${areaForm.nome}" placeholder="Piscina" maxlength="255" required>
+        <input class="input w-full" type="text" name="nome" placeholder="Piscina" maxlength="255" required>
     </label>
 
     <label class="field">
         <span>Status</span>
         <select class="select w-full" name="status" required>
             <c:forEach items="${statusAreaDisponiveis}" var="statusArea">
-                <option value="${statusArea.valor}" ${areaForm.status eq statusArea.valor ? 'selected' : ''}>${statusArea.valor}</option>
+                <option value="${statusArea.valor}">${statusArea.valor}</option>
             </c:forEach>
         </select>
     </label>
