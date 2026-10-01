@@ -6,30 +6,63 @@
  *   custom.css     -> este arquivo
  *   base/layout/components/responsive.css -> legado, removido ate S17
  *
- * Enquanto o legado existir ele vence nas classes que colidem com a daisyUI
- * (.card, .btn, .alert, .divider, .timeline). Por isso aqui ficam apenas as
- * regras do shell novo, que nao existem nem na daisyUI nem no legado.
- * Fallbacks sao declarados nos tokens legados (--shadow-soft etc.) para que a
- * remocao do base.css em S17 nao quebre estas regras silenciosamente.
+ * ATENCAO a ordem das camadas (medida em app.build.css):
+ *   @layer properties < @layer base < @layer utilities < @layer daisyui
+ * A daisyUI vem DEPOIS de `utilities`, entao uma classe utilitaria do Tailwind NAO
+ * sobrescreve uma declaracao da daisyUI sobre o mesmo elemento e a mesma propriedade.
+ * Por isso os dois ajustes de geometria do shell (S19) moram aqui, sem camada e
+ * escopados em `.app-sidebar`: e o unico lugar onde eles vencem de forma deterministica.
+ * Nenhum arquivo da daisyUI e alterado.
  */
 
-/* Topbar "frosted": identidade herdada, reescrita com tokens do tema daisyUI. */
-.app-topbar {
-    position: sticky;
-    top: 1rem;
-    z-index: 20;
-    margin: 1.125rem 2rem 0;
-    padding: 1rem 1.5rem;
-    border: 1px solid color-mix(in oklab, var(--color-base-100) 72%, transparent);
-    border-radius: var(--radius-box);
-    background: color-mix(in oklab, var(--color-base-100) 72%, transparent);
-    box-shadow: var(--shadow-soft, 0 14px 32px rgb(18 32 51 / 0.08));
-    backdrop-filter: blur(16px);
+/* ---------------------------------------------------------------------------
+ * Shell: painel "inset" (S19)
+ *
+ * O bloco dashboard-01 do shadcn usa a variante `inset`: lateral e conteudo sao duas
+ * superficies separadas, arredondadas, sobre o fundo da pagina (que aqui e o
+ * `--bg` = #f3efe7 = base-200, definido no body do legado).
+ * ------------------------------------------------------------------------ */
+
+/* O fundo da pagina ja e base-200; a folga sai do `p-2 lg:p-3` do `.drawer-side`
+   (que fica no JSP) e das margens abaixo. */
+@media (min-width: 1024px) {
+    .drawer-content {
+        margin: 0.75rem 0.75rem 0.75rem 0;
+        border: 1px solid var(--color-base-300);
+        border-radius: var(--radius-box);
+        background-color: var(--color-base-100);
+        box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    }
 }
 
-@media (max-width: 1023px) {
+/* A daisyUI define `.menu` como `width: fit-content` e `padding: .5rem`; a lateral
+   precisa que o menu ocupe os 288px do painel e que o espacamento venha do container
+   (que separa os grupos). Ajuste de layout, nao de identidade do componente. */
+.app-sidebar .menu {
+    width: 100%;
+    padding: 0;
+}
+
+/* Barra superior: o `SiteHeader` do dashboard-01 e uma linha unica com `border-b`,
+   nao um cartao flutuante. `.navbar` da daisyUI cuida do alinhamento; aqui ficam
+   altura, respiro, filete e o fundo translucido. */
+.app-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    min-height: 3.5rem;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--color-base-300);
+    background: color-mix(in oklab, var(--color-base-100) 88%, transparent);
+    backdrop-filter: blur(12px);
+}
+
+@media (min-width: 1024px) {
     .app-topbar {
-        margin-inline: 1.25rem;
+        /* Acompanha a margem do painel inset para nao "descolar" ao rolar. */
+        top: 0.75rem;
+        /* Raio interno do painel (raio externo menos a borda de 1px). */
+        border-radius: calc(var(--radius-box) - 1px) calc(var(--radius-box) - 1px) 0 0;
     }
 }
 

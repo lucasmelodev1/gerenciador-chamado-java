@@ -10,8 +10,23 @@
 
     O estado ativo da navegacao e resolvido NO SERVIDOR (aria-current + menu-active),
     substituindo o antigo `initActiveNav` do layout.js, que casava por path no cliente
-    e piscava a cada carregamento. O primeiro item que casar vence, por isso a lista
-    esta ordenada do caminho mais especifico para o mais generico.
+    e piscava a cada carregamento. O primeiro item que casar vence, por isso cada grupo
+    lista os caminhos do mais especifico para o mais generico.
+
+    ---------------------------------------------------------------------------
+    S19 — layout do bloco `dashboard-01` do shadcn
+    ---------------------------------------------------------------------------
+    O bloco dashboard-01 organiza a lateral em quatro slots:
+        SidebarHeader  -> marca (icone + nome)
+        SidebarContent -> SidebarGroup/SidebarGroupLabel + SidebarMenu (item = icone + rotulo)
+        SidebarFooter  -> NavUser (avatar + duas linhas + menu)
+    e usa a variante `inset`: o painel e a area de conteudo sao superficies separadas,
+    com cantos arredondados, sobre o fundo da pagina.
+
+    Daqui veio apenas o LAYOUT. Nenhum CSS da daisyUI foi alterado: os slots acima sao
+    `menu`, `avatar`, `dropdown`, `badge` e utilitarios do Tailwind. As duas unicas
+    correcoes de geometria (`.menu` e `width: fit-content` por padrao) estao escopadas
+    em custom.css, sob `.app-sidebar`. Ver baseline/EVIDENCE.md > S19.
 --%>
 <%--
     Caminho da requisicao sem o context path.
@@ -33,6 +48,37 @@
     <c:set var="navPath" value="${fn:substringAfter(navPath, navContext)}" />
 </c:if>
 
+<%--
+    Grupos de navegacao por perfil, no formato:
+        RotuloDoGrupo@href|Texto|aliasDoIcone;/outro|Texto|icone#ProximoGrupo@...
+
+    Os separadores foram escolhidos para nao colidir com nada que apareca nos rotulos
+    (`#` separa grupos, `@` separa grupo de itens, `;` separa itens, `|` separa campos).
+    O alias do icone e resolvido por `fragments/icone.jspf`.
+--%>
+<c:choose>
+    <c:when test="${isAdministrador}">
+        <c:set var="navGroups"
+               value="Operacao@/admin|Inicio|inicio;/admin/chamados|Chamados|chamados;/admin/reservas/agenda|Agenda|agenda;/admin/reservas|Reservas|reservas#Cadastros@/admin/blocos|Blocos|blocos;/admin/areas|Areas|areas;/admin/tipos-chamado|Tipos de Chamado|tipos;/admin/status-chamado|Status|status#Acessos@/admin/usuarios|Usuarios|usuarios;/admin/vinculos-morador|Vincular Morador|vinculos;/admin/escopo-colaborador|Escopo Colaborador|escopo" />
+    </c:when>
+    <c:when test="${isMorador}">
+        <c:set var="navGroups"
+               value="Chamados@/morador|Inicio|inicio;/morador/chamados/novo|Abrir Chamado|abrir;/morador/chamados|Meus Chamados|chamados#Reservas@/morador/reservas/agenda|Agenda|agenda;/morador/reservas/nova|Reservar Area|reservar;/morador/reservas|Minhas Reservas|minhasReservas" />
+    </c:when>
+    <c:when test="${isColaborador}">
+        <c:set var="navGroups"
+               value="Atendimento@/colaborador|Inicio|inicio;/colaborador/chamados|Fila de Atendimento|fila" />
+    </c:when>
+</c:choose>
+
+<%-- Cartao do usuario (NavUser): o modelo autenticado carrega apenas username e perfil,
+     entao o "nome" exibido e a parte local do e-mail e a segunda linha e o perfil. --%>
+<c:set var="navUserHandle" value="${fn:substringBefore(currentUserEmail, '@')}" />
+<c:if test="${empty navUserHandle}">
+    <c:set var="navUserHandle" value="${currentUserEmail}" />
+</c:if>
+<c:set var="navUserInitials" value="${fn:toUpperCase(fn:substring(navUserHandle, 0, 2))}" />
+
 <%-- Acessibilidade (S8): primeiro elemento focavel da pagina. Fica visivel apenas
      quando recebe foco por teclado. Alvo: <main id="conteudo-principal"> das 25 telas. --%>
 <a href="#conteudo-principal"
@@ -42,62 +88,110 @@
 
 <input id="app-drawer" type="checkbox" class="drawer-toggle" aria-label="Alternar menu lateral">
 
-<div class="drawer-side z-30">
+<%-- `p-2 lg:p-3` = o "inset" da shadcn: o painel nao encosta na borda da janela. --%>
+<div class="drawer-side z-30 p-2 lg:p-3">
     <label for="app-drawer" class="drawer-overlay" aria-label="Fechar menu"></label>
 
-    <aside class="flex min-h-full w-72 flex-col gap-8 border-r border-base-300 bg-base-100 p-6">
-        <div class="grid gap-2">
-            <span class="badge badge-ghost badge-sm w-fit tracking-widest uppercase">Central de Operacoes</span>
-            <a href="${ctx}${currentUserHome}" class="font-display text-2xl font-bold leading-tight">${appName}</a>
-            <p class="text-sm text-base-content/60">Operacao do condominio em um unico fluxo.</p>
+    <aside class="app-sidebar flex h-full w-72 flex-col overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-sm">
+
+        <%-- SidebarHeader: icone da marca + nome do app, apontando para a home do perfil. --%>
+        <div class="flex shrink-0 items-center p-2">
+            <a href="${ctx}${currentUserHome}"
+               class="flex w-full items-center gap-2 rounded-field px-2 py-2 transition-colors hover:bg-base-200">
+                <span class="grid size-8 shrink-0 place-items-center rounded-field bg-primary text-primary-content">
+                    <c:set var="icone" value="marca" />
+                    <c:set var="iconeClasse" value="size-5" />
+                    <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+                </span>
+                <span class="font-display truncate text-base font-semibold">${appName}</span>
+            </a>
         </div>
 
-        <nav class="min-h-0 flex-1 overflow-y-auto">
-            <c:choose>
-                <c:when test="${isAdministrador}">
-                    <c:set var="navItems"
-                           value="/admin/reservas/agenda|Agenda;/admin/reservas|Reservas;/admin/blocos|Blocos;/admin/areas|Areas;/admin/vinculos-morador|Vincular Morador;/admin/escopo-colaborador|Escopo Colaborador;/admin/tipos-chamado|Tipos de Chamado;/admin/status-chamado|Status;/admin/usuarios|Usuarios;/admin/chamados|Chamados;/admin|Inicio" />
-                </c:when>
-                <c:when test="${isMorador}">
-                    <c:set var="navItems"
-                           value="/morador/chamados/novo|Abrir Chamado;/morador/chamados|Meus Chamados;/morador/reservas/agenda|Agenda;/morador/reservas/nova|Reservar Area;/morador/reservas|Minhas Reservas;/morador|Inicio" />
-                </c:when>
-                <c:when test="${isColaborador}">
-                    <c:set var="navItems"
-                           value="/colaborador/chamados|Fila de Atendimento;/colaborador|Inicio" />
-                </c:when>
-            </c:choose>
-
-            <ul class="menu menu-lg w-full">
-                <c:set var="navMatched" value="${false}" />
-                <c:forEach var="item" items="${fn:split(navItems, ';')}">
-                    <c:set var="parts" value="${fn:split(item, '|')}" />
-                    <c:set var="href" value="${parts[0]}" />
-                    <c:set var="label" value="${parts[1]}" />
-                    <c:set var="isHome" value="${href eq '/admin' or href eq '/morador' or href eq '/colaborador'}" />
-                    <c:set var="prefixMatch" value="${fn:startsWith(navPath, href)}" />
-                    <c:choose>
-                        <c:when test="${isHome}">
-                            <c:set var="active" value="${not navMatched and navPath eq href}" />
-                        </c:when>
-                        <c:otherwise>
-                            <c:set var="active" value="${not navMatched and prefixMatch}" />
-                        </c:otherwise>
-                    </c:choose>
-                    <c:if test="${active}">
-                        <c:set var="navMatched" value="${true}" />
+        <%-- SidebarContent: SidebarGroup (rotulo) + SidebarMenu (item = icone + rotulo). --%>
+        <nav class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-2 pb-2"
+             aria-label="Navegacao principal">
+            <c:set var="navMatched" value="${false}" />
+            <c:forEach var="navGroup" items="${fn:split(navGroups, '#')}">
+                <c:set var="navGroupParts" value="${fn:split(navGroup, '@')}" />
+                <div class="grid gap-1">
+                    <c:if test="${not empty navGroupParts[0]}">
+                        <p class="px-2 text-xs font-semibold tracking-wider uppercase opacity-60">${navGroupParts[0]}</p>
                     </c:if>
-                    <li>
-                        <a href="${ctx}${href}"
-                           class="${active ? 'menu-active' : ''}"${active ? ' aria-current="page"' : ''}>${label}</a>
-                    </li>
-                </c:forEach>
-            </ul>
+
+                    <ul class="menu w-full">
+                        <c:forEach var="navItem" items="${fn:split(navGroupParts[1], ';')}">
+                            <c:set var="parts" value="${fn:split(navItem, '|')}" />
+                            <c:set var="href" value="${parts[0]}" />
+                            <c:set var="label" value="${parts[1]}" />
+                            <c:set var="isHome" value="${href eq '/admin' or href eq '/morador' or href eq '/colaborador'}" />
+                            <c:set var="prefixMatch" value="${fn:startsWith(navPath, href)}" />
+                            <c:choose>
+                                <c:when test="${isHome}">
+                                    <c:set var="active" value="${not navMatched and navPath eq href}" />
+                                </c:when>
+                                <c:otherwise>
+                                    <c:set var="active" value="${not navMatched and prefixMatch}" />
+                                </c:otherwise>
+                            </c:choose>
+                            <c:if test="${active}">
+                                <c:set var="navMatched" value="${true}" />
+                            </c:if>
+                            <li>
+                                <a href="${ctx}${href}"
+                                   class="${active ? 'menu-active' : ''}"${active ? ' aria-current="page"' : ''}>
+                                    <c:set var="icone" value="${parts[2]}" />
+                                    <c:set var="iconeClasse" value="size-4 shrink-0" />
+                                    <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+                                    <%-- `min-w-0` porque o item do menu e um grid de 3
+                                         colunas e o item de grid nasce com `min-width:auto`,
+                                         o que impediria o `truncate`. --%>
+                                    <span class="min-w-0 truncate">${label}</span>
+                                </a>
+                            </li>
+                        </c:forEach>
+                    </ul>
+                </div>
+            </c:forEach>
         </nav>
 
-        <div class="grid gap-1 border-t border-base-300 pt-4">
-            <span class="text-sm text-base-content/60">Perfil ativo</span>
-            <strong>${currentUserRoleLabel}</strong>
+        <%-- SidebarFooter: cartao do usuario. O `form` fica FORA do menu e o botao o
+             referencia por `form="..."` — assim o item do menu e o proprio <button> e a
+             daisyUI o estiliza, em vez de estilizar um <form> intermediario. --%>
+        <div class="shrink-0 border-t border-base-300 p-2">
+            <form id="app-logout" method="post" action="${ctx}/logout" class="hidden">
+                <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
+            </form>
+
+            <div class="dropdown dropdown-top w-full">
+                <div tabindex="0" role="button"
+                     class="flex w-full cursor-pointer items-center gap-2 rounded-field p-2 text-left transition-colors hover:bg-base-200 focus-visible:bg-base-200">
+                    <%-- `avatar-placeholder` exige um <div> como filho (o seletor da
+                         daisyUI e `.avatar-placeholder > div`), que centraliza o texto. --%>
+                    <div class="avatar avatar-placeholder shrink-0">
+                        <div class="h-8 w-8 bg-neutral text-xs font-semibold text-neutral-content">${navUserInitials}</div>
+                    </div>
+                    <span class="grid min-w-0 flex-1 leading-tight">
+                        <span class="truncate text-sm font-medium">${navUserHandle}</span>
+                        <span class="truncate text-xs opacity-60">${currentUserRoleLabel}</span>
+                    </span>
+                    <c:set var="icone" value="opcoes" />
+                    <c:set var="iconeClasse" value="size-4 shrink-0 opacity-60" />
+                    <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+                </div>
+
+                <ul tabindex="0"
+                    class="dropdown-content menu z-50 w-full rounded-box border border-base-300 bg-base-100 p-2 shadow-lg">
+                    <li class="menu-title"><span class="truncate">${currentUserEmail}</span></li>
+                    <li>
+                        <button type="submit" form="app-logout" class="text-error">
+                            <c:set var="icone" value="sair" />
+                            <c:set var="iconeClasse" value="size-4 shrink-0" />
+                            <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+                            <span>Sair</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
         </div>
     </aside>
 </div>

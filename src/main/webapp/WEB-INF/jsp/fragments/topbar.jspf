@@ -1,36 +1,36 @@
 <%--
     Shell: barra superior como daisyUI `navbar`.
 
-    O hamburguer agora e um <label for="app-drawer"> que aciona o drawer da sidebar
+    S19 — alinhada ao `SiteHeader` do bloco dashboard-01 do shadcn: linha unica de
+    altura fixa, `border-b` e o titulo da tela ao lado do gatilho da lateral. O perfil
+    e o logout sairam daqui e passaram a viver no cartao do usuario (NavUser), no rodape
+    da lateral — o dashboard-01 nao duplica a identidade do usuario no topo.
+
+    O hamburguer e um <label for="app-drawer"> que aciona o drawer da sidebar
     (substitui o antigo par button/backdrop controlado por layout.js).
 --%>
 <header class="app-topbar navbar">
-    <div class="navbar-start gap-3">
-        <label for="app-drawer" class="btn btn-square btn-ghost lg:hidden"
+    <div class="navbar-start gap-1">
+        <label for="app-drawer" class="btn btn-square btn-sm btn-ghost lg:hidden"
                aria-controls="app-drawer" aria-label="Abrir menu">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                 stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
+            <c:set var="icone" value="menu" />
+            <c:set var="iconeClasse" value="size-5" />
+            <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
         </label>
 
-        <div class="min-w-0">
-            <p class="eyebrow">${currentUserRoleLabel}</p>
-            <h1 class="font-display text-2xl font-bold">${pageTitle}</h1>
-            <p class="m-0 max-w-[52ch] text-sm text-base-content/60">
-                Fluxo visual unificado para operacao, acompanhamento e atendimento.
-            </p>
-        </div>
+        <%-- Separador vertical: o `divider divider-horizontal` da daisyUI exige altura do
+             pai; um filete de 1px e o mesmo resultado com menos acoplamento ao layout. --%>
+        <span class="mx-2 hidden h-4 w-px shrink-0 bg-base-300 lg:block" aria-hidden="true"></span>
+
+        <h1 class="font-display truncate text-lg font-semibold">${pageTitle}</h1>
     </div>
 
-    <div class="navbar-end gap-3">
-        <div class="hidden flex-col items-end sm:flex">
-            <strong>${currentUserEmail}</strong>
-            <span class="text-sm text-base-content/60">${currentUserRoleLabel}</span>
-        </div>
-        <form method="post" action="${ctx}/logout" class="inline-form">
-            <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-            <button type="submit" class="btn">Sair</button>
-        </form>
+    <div class="navbar-end gap-2">
+        <span class="badge badge-ghost badge-sm gap-1">
+            <c:set var="icone" value="perfil" />
+            <c:set var="iconeClasse" value="size-3.5 shrink-0" />
+            <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+            ${currentUserRoleLabel}
+        </span>
     </div>
 </header>

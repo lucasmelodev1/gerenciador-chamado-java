@@ -7,7 +7,9 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
   `@source` explícitos com `source(none)` — sem isso o scan varre o repositório e emite componentes citados
   apenas em documentação.
 - `css/app.build.css`: **gerado** (`npm run build:css` ou estágio `frontend` do Dockerfile); não versionado.
-- `css/custom.css`: shell (topbar "frosted") e acessibilidade (foco visível, `prefers-reduced-motion`).
+- `css/custom.css`: shell — painel *inset* do `drawer-content` e topbar (linha única com `border-b`) —,
+  dois ajustes de geometria escopados em `.app-sidebar` (a daisyUI vem depois de `utilities` no cascade, então
+  `.menu{width:fit-content;padding:.5rem}` precisa ser sobrescrito fora de layer) e acessibilidade.
 - `css/calendar.css`: tema do FullCalendar; tokens `--fc-classic-*` apontam para as variáveis da daisyUI,
   com os tokens legados como fallback.
 - `css/fonts/`: Inter (variável, títulos) e Noto Sans 400/500/600/700 (texto). Ficam sob `/css/` porque o
