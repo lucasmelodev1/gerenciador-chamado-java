@@ -139,10 +139,12 @@
     --color-error: #b64134;
     --color-error-content: #fff3f1;
 
-    /* --radius-sm 12px, --radius-lg 24px; campos seguem os inputs de 14px do projeto */
-    --radius-selector: 0.75rem;
-    --radius-field: 0.875rem;
-    --radius-box: 1.5rem;
+    /* S20: raios reduzidos (~1/3 menores). Os valores anteriores
+       (0.75 / 0.875 / 1.5rem) vinham do legado (--radius-sm 12px / --radius-lg 24px)
+       e deixavam o shell e os cards arredondados demais. */
+    --radius-selector: 0.5rem;
+    --radius-field: 0.625rem;
+    --radius-box: 1rem;
 
     --size-selector: 0.25rem;
     --size-field: 0.25rem;

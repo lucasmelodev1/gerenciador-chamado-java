@@ -5,11 +5,15 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
 ## CSS
 - `css/app.css`: entry do Tailwind CSS 4 + daisyUI 5 (tema `chamados`), tipografia (Inter/Noto Sans) e
   `@source` explícitos com `source(none)` — sem isso o scan varre o repositório e emite componentes citados
-  apenas em documentação.
+  apenas em documentação. Também define a escala de raios do tema (`--radius-box: 1rem`,
+  `--radius-field: .625rem`, `--radius-selector: .5rem`), reduzida em S20.
 - `css/app.build.css`: **gerado** (`npm run build:css` ou estágio `frontend` do Dockerfile); não versionado.
 - `css/custom.css`: shell — painel *inset* do `drawer-content` e topbar (linha única com `border-b`) —,
   dois ajustes de geometria escopados em `.app-sidebar` (a daisyUI vem depois de `utilities` no cascade, então
-  `.menu{width:fit-content;padding:.5rem}` precisa ser sobrescrito fora de layer) e acessibilidade.
+  `.menu{width:fit-content;padding:.5rem}` precisa ser sobrescrito fora de layer), o token `--card-p` (respiro
+  interno dos cards) e acessibilidade.
+  **Raio:** o legado tem valores fixos (`base.css` e `components.css`/`responsive.css`) que vencem a daisyUI por
+  não estar em layer — ao mexer no raio, ajuste os dois lados, senão cards e `stat-card` divergem do shell.
 - `css/calendar.css`: tema do FullCalendar; tokens `--fc-classic-*` apontam para as variáveis da daisyUI,
   com os tokens legados como fallback.
 - `css/fonts/`: Inter (variável, títulos) e Noto Sans 400/500/600/700 (texto). Ficam sob `/css/` porque o

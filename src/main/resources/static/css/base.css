@@ -18,9 +18,11 @@
     --shadow: 0 22px 40px rgba(18, 32, 51, 0.08);
     --shadow-soft: 0 14px 32px rgba(18, 32, 51, 0.08);
     --shadow-strong: 0 28px 60px rgba(18, 32, 51, 0.14);
-    --radius-lg: 24px;
-    --radius-md: 18px;
-    --radius-sm: 12px;
+    /* S20: reduzidos junto com os tokens da daisyUI (app.css) para o raio ser
+       consistente nas telas que ainda usam estas variaveis. */
+    --radius-lg: 16px;
+    --radius-md: 12px;
+    --radius-sm: 8px;
     --font-sans: "Noto Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
     --font-serif: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }

@@ -23,11 +23,11 @@
  * `--bg` = #f3efe7 = base-200, definido no body do legado).
  * ------------------------------------------------------------------------ */
 
-/* O fundo da pagina ja e base-200; a folga sai do `p-2 lg:p-3` do `.drawer-side`
+/* O fundo da pagina ja e base-200; a folga sai do `p-1.5 lg:p-2` do `.drawer-side`
    (que fica no JSP) e das margens abaixo. */
 @media (min-width: 1024px) {
     .drawer-content {
-        margin: 0.75rem 0.75rem 0.75rem 0;
+        margin: 0.5rem 0.5rem 0.5rem 0;
         border: 1px solid var(--color-base-300);
         border-radius: var(--radius-box);
         background-color: var(--color-base-100);
@@ -43,6 +43,13 @@
     padding: 0;
 }
 
+/* Respiro interno dos cards. A daisyUI le `var(--card-p, 1.5rem)` em `.card-body`;
+   declarar o token aqui (fora de layer, entao vence) reduz o padding de 24px para
+   20px em todas as telas sem tocar no CSS da daisyUI. */
+:root {
+    --card-p: 1.25rem;
+}
+
 /* Barra superior: o `SiteHeader` do dashboard-01 e uma linha unica com `border-b`,
    nao um cartao flutuante. `.navbar` da daisyUI cuida do alinhamento; aqui ficam
    altura, respiro, filete e o fundo translucido. */
@@ -50,8 +57,8 @@
     position: sticky;
     top: 0;
     z-index: 20;
-    min-height: 3.5rem;
-    padding: 0.5rem 1rem;
+    min-height: 3.25rem;
+    padding: 0.375rem 0.75rem;
     border-bottom: 1px solid var(--color-base-300);
     background: color-mix(in oklab, var(--color-base-100) 88%, transparent);
     backdrop-filter: blur(12px);
@@ -60,7 +67,7 @@
 @media (min-width: 1024px) {
     .app-topbar {
         /* Acompanha a margem do painel inset para nao "descolar" ao rolar. */
-        top: 0.75rem;
+        top: 0.5rem;
         /* Raio interno do painel (raio externo menos a borda de 1px). */
         border-radius: calc(var(--radius-box) - 1px) calc(var(--radius-box) - 1px) 0 0;
     }

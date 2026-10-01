@@ -71,7 +71,7 @@ for arq in sorted(DIR.glob("*.html")):
     m = re.search(r'<div class="drawer-side.*?</aside>', h, re.S)
     if not m: bad("lateral ausente"); continue
     sb = m.group(0)
-    for frag in [SIDEBAR, 'drawer-side z-30 p-2 lg:p-3', 'avatar avatar-placeholder',
+    for frag in [SIDEBAR, 'drawer-side z-30 p-1.5 lg:p-2', 'avatar avatar-placeholder',
                  'dropdown dropdown-top', 'id="app-logout"', 'action="/logout"',
                  'aria-label="Navegacao principal"', '<li class="menu-title">',
                  '<button type="submit" form="app-logout" class="text-error">', '>Sair</span>']:

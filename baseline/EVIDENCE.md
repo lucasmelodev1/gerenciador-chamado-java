@@ -590,6 +590,59 @@ por isso a correção é resolver o token no início da resposta, e não encolhe
 - **Sem navegador:** cantos, sombras, espaçamento, `avatar` circular da daisyUI (o do shadcn é quadrado
   arredondado — mantido o padrão da daisyUI) e o menu do cartão do usuário seguem **sem verificação visual**.
 
+# P7.1 — S20 Raios menores e espaçamento mais justo — **GATE PASS**
+
+Pedido: "gaps menores e menos raio de borda em geral". Aplicado no tema, no shell e — obrigatoriamente —
+também no CSS legado.
+
+## Por que o legado precisou ser tocado
+
+O legado não está em cascade layer, então ele **vence** a daisyUI onde define a mesma propriedade. Mexer só
+nos tokens do tema deixaria `stat-card`, `list-row`, `description-box`, `empty-state` e o `auth-panel` com os
+raios antigos — e, abaixo de 640 px, `responsive.css` força `.card` para o raio dele, ignorando o tema.
+Os dois lados foram ajustados para o raio ser consistente.
+
+## Raios
+
+| Alvo | Antes | Depois |
+|---|---|---|
+| `--radius-box` (tema) | 1.5rem / 24px | **1rem / 16px** |
+| `--radius-field` (tema) | 0.875rem / 14px | **0.625rem / 10px** |
+| `--radius-selector` (tema) | 0.75rem / 12px | **0.5rem / 8px** |
+| `--radius-lg` / `-md` / `-sm` (legado) | 24 / 18 / 12px | **16 / 12 / 8px** |
+| `.stat-card` | 24px | 16px |
+| `.detail-list div` | 16px | 10px |
+| `.description-box`, `.list-row`, `.empty-state` | 18 / 18 / 20px | **12px** |
+| `.auth-panel` (login) | 32px | 20px |
+| `.card` em `≤640px` (legado) | 20px | 14px |
+
+## Espaçamento
+
+| Alvo | Antes | Depois |
+|---|---|---|
+| `.drawer-side` (inset da lateral) | `p-2 lg:p-3` | **`p-1.5 lg:p-2`** |
+| painel do conteúdo (`drawer-content`) | margem 12px | **8px** |
+| topbar: `min-height` / `padding` / `top` sticky | 3.5rem / .5rem 1rem / 12px | **3.25rem / .375rem .75rem / 8px** |
+| grupos da navegação | `gap-3`, `px-2 pb-2` | **`gap-1.5`, `px-1.5 pb-1.5`** |
+| itens dentro do grupo | `gap-1` | **`gap-0.5`** |
+| cabeçalho e rodapé da lateral | `p-2` | **`p-1.5`** |
+| `.page-content` | `padding 24px 32px 40px`, `gap 24px` | **`18px 24px 28px`, `gap 16px`** |
+| respiro interno dos cards (`--card-p`) | 1.5rem / 24px | **1.25rem / 20px** |
+
+## Verificação
+
+| # | Check | Result |
+|---|---|---|
+| 1 | tokens no bundle | `--radius-box:1rem`, `--radius-field:.625rem`, `--radius-selector:.5rem` |
+| 2 | utilitários emitidos | `p-1.5`, `px-1.5`, `pb-1.5`, `gap-1.5`, `gap-0.5`, `lg:p-2` |
+| 3 | matriz de rotas | **26/26** |
+| 4 | `scripts/ui-shell.sh` | **SHELL OK** (25 páginas + checagens de fonte) |
+| 5 | `scripts/ui-invariants.sh check` | `INVARIANTS OK` |
+| 6 | CSRF/logout ao vivo, 3 perfis | cookie `XSRF-TOKEN` emitido · `/logout` **302** · sessão encerrada |
+| 7 | escopo de backend | nenhuma mudança em `src/main/java`, `db/`, `pom.xml` |
+
+O shell verificado (`ui-shell.sh`) foi atualizado junto: ele fixa a string de classes do `.drawer-side`.
+
 ## Known limitations (carried to the end)
 
 1. **No browser in this environment.** Every verification is DOM/CSS-level. Button/alert colours, spacing,

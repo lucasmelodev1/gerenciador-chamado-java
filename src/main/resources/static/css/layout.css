@@ -7,7 +7,7 @@
 }
 
 .auth-panel {
-    border-radius: 32px;
+    border-radius: 20px;
     padding: 40px;
 }
 
@@ -61,9 +61,9 @@
 }
 
 .page-content {
-    padding: 24px 32px 40px;
+    padding: 18px 24px 28px;
     display: grid;
-    gap: 24px;
+    gap: 16px;
     align-content: start;
 }
 

@@ -88,14 +88,14 @@
 
 <input id="app-drawer" type="checkbox" class="drawer-toggle" aria-label="Alternar menu lateral">
 
-<%-- `p-2 lg:p-3` = o "inset" da shadcn: o painel nao encosta na borda da janela. --%>
-<div class="drawer-side z-30 p-2 lg:p-3">
+<%-- `p-1.5 lg:p-2` = o "inset" da shadcn: o painel nao encosta na borda da janela. --%>
+<div class="drawer-side z-30 p-1.5 lg:p-2">
     <label for="app-drawer" class="drawer-overlay" aria-label="Fechar menu"></label>
 
     <aside class="app-sidebar flex h-full w-72 flex-col overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-sm">
 
         <%-- SidebarHeader: icone da marca + nome do app, apontando para a home do perfil. --%>
-        <div class="flex shrink-0 items-center p-2">
+        <div class="flex shrink-0 items-center p-1.5">
             <a href="${ctx}${currentUserHome}"
                class="flex w-full items-center gap-2 rounded-field px-2 py-2 transition-colors hover:bg-base-200">
                 <span class="grid size-8 shrink-0 place-items-center rounded-field bg-primary text-primary-content">
@@ -108,12 +108,12 @@
         </div>
 
         <%-- SidebarContent: SidebarGroup (rotulo) + SidebarMenu (item = icone + rotulo). --%>
-        <nav class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-2 pb-2"
+        <nav class="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto px-1.5 pb-1.5"
              aria-label="Navegacao principal">
             <c:set var="navMatched" value="${false}" />
             <c:forEach var="navGroup" items="${fn:split(navGroups, '#')}">
                 <c:set var="navGroupParts" value="${fn:split(navGroup, '@')}" />
-                <div class="grid gap-1">
+                <div class="grid gap-0.5">
                     <c:if test="${not empty navGroupParts[0]}">
                         <p class="px-2 text-xs font-semibold tracking-wider uppercase opacity-60">${navGroupParts[0]}</p>
                     </c:if>
@@ -157,7 +157,7 @@
         <%-- SidebarFooter: cartao do usuario. O `form` fica FORA do menu e o botao o
              referencia por `form="..."` — assim o item do menu e o proprio <button> e a
              daisyUI o estiliza, em vez de estilizar um <form> intermediario. --%>
-        <div class="shrink-0 border-t border-base-300 p-2">
+        <div class="shrink-0 border-t border-base-300 p-1.5">
             <form id="app-logout" method="post" action="${ctx}/logout" class="hidden">
                 <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
             </form>
