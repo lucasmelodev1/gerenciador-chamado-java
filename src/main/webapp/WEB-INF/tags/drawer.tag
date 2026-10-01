@@ -44,6 +44,7 @@
 --%>
 <%@ tag pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ attribute name="id" required="true" description="id do painel; tambem nomeia o form interno" %>
 <%@ attribute name="titulo" required="true" %>
 <%@ attribute name="descricao" required="false" %>
@@ -54,6 +55,7 @@
 <%@ attribute name="rotuloSalvar" required="false" %>
 <%@ attribute name="rotuloFechar" required="false" %>
 <%@ attribute name="aberto" required="false" description="true abre o drawer no carregamento" %>
+<%@ attribute name="travar" required="false" description="campos separados por virgula que a EDICAO nao pode mudar; a criacao pode" %>
 
 <c:set var="drawerMetodo" value="${empty metodo ? 'post' : metodo}" />
 <c:set var="drawerTamanho" value="${empty tamanho ? 'sm' : tamanho}" />
@@ -89,12 +91,23 @@
 
     <c:choose>
         <c:when test="${not empty acao}">
-            <form id="${drawerFormId}" data-drawer-form method="${drawerMetodo}" action="${acao}" class="app-drawer-corpo">
+            <form id="${drawerFormId}" data-drawer-form method="${drawerMetodo}" action="${acao}"
+                  class="app-drawer-corpo"<c:if test="${not empty travar}"> data-drawer-travar="${travar}"</c:if>>
                 <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
                 <%-- Sobrescrita de metodo para o caso de edicao: o drawer.js preenche a
                      partir de `data-campo-_method` do gatilho. Vazio = POST (o
                      HiddenHttpMethodFilter ignora parametro sem valor). --%>
                 <input type="hidden" name="_method" value="">
+                <%-- Espelho de cada campo travado. Os dois nascem no HTML com o MESMO
+                     `name` e so um fica habilitado por vez: no modo criacao o espelho
+                     esta `disabled` (e o controle visivel e que envia); no modo edicao o
+                     drawer.js desabilita o controle visivel e habilita o espelho, porque
+                     campo `disabled` nao e enviado. Ver drawer.js > alternarTravados. --%>
+                <c:forEach items="${fn:split(travar, ',')}" var="campoTravado">
+                    <c:if test="${not empty campoTravado}">
+                        <input type="hidden" name="${campoTravado}" data-drawer-espelho="${campoTravado}" disabled>
+                    </c:if>
+                </c:forEach>
                 <jsp:doBody />
             </form>
         </c:when>

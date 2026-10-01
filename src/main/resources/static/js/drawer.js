@@ -69,6 +69,7 @@
                 form.setAttribute("action", inicial.acao);
             }
             form.reset();
+            alternarTravados(form, false);
         }
 
         var titulo = tituloDoPainel(painel);
@@ -77,8 +78,49 @@
         }
     }
 
+    // Valor de um campo do gatilho. Duas formas, as duas suportadas:
+    //   1. `data-campo-<name>="<valor>"` no proprio botao (formato da S23);
+    //   2. `<input data-campo="<name>" value="<valor>">` DENTRO do botao (S26, o formato
+    //      que o tag `ui:acao-editar` usa).
+    // A forma 2 vence quando as duas definem o mesmo campo: como `value` de um input, o
+    // dado do usuario passa pelo escape normal do HTML e nao precisa de codificacao em
+    // string (um nome com `;` ou `|` quebraria qualquer formato concatenado).
+    function valorDoGatilho(gatilho, nome) {
+        var filho = gatilho.querySelector('[data-campo="' + nome + '"]');
+        if (filho) {
+            return filho.value;
+        }
+        return gatilho.getAttribute("data-campo-" + nome);
+    }
+
+    // Campos que a edicao NAO pode mudar (ex.: o perfil de um usuario — o servidor
+    // recusa a troca). O par controle visivel + espelho escondido ja vem renderizado
+    // pelo `ui:drawer`; aqui so se escolhe qual dos dois envia, porque campo
+    // `disabled` nao e submetido.
+    function nomesTravados(form) {
+        var lista = form.getAttribute("data-drawer-travar");
+        return lista ? lista.split(/[,\s]+/).filter(Boolean) : [];
+    }
+
+    function alternarTravados(form, travado) {
+        nomesTravados(form).forEach(function (nome) {
+            var campo = form.querySelector('[name="' + nome + '"]:not([data-drawer-espelho])');
+            var espelho = form.querySelector('[data-drawer-espelho="' + nome + '"]');
+            if (!campo || !espelho) {
+                return;
+            }
+            if (travado) {
+                espelho.value = campo.value;
+            } else {
+                espelho.value = "";
+            }
+            campo.disabled = travado;
+            espelho.disabled = !travado;
+        });
+    }
+
     // Aplica o que o gatilho carrega: `data-drawer-acao`, `data-drawer-titulo` e um
-    // `data-campo-<name>="<valor>"` por campo do formulario (inclusive `_method`).
+    // valor por campo do formulario (inclusive `_method`), nas duas formas acima.
     function aplicarGatilho(painel, gatilho) {
         var form = formDoPainel(painel);
         var acao = gatilho.getAttribute("data-drawer-acao");
@@ -88,11 +130,12 @@
 
         if (form) {
             Array.from(form.querySelectorAll("[name]")).forEach(function (campo) {
-                var valor = gatilho.getAttribute("data-campo-" + campo.getAttribute("name"));
-                if (valor !== null) {
+                var valor = valorDoGatilho(gatilho, campo.getAttribute("name"));
+                if (valor !== null && valor !== undefined) {
                     campo.value = valor;
                 }
             });
+            alternarTravados(form, true);
         }
 
         var titulo = gatilho.getAttribute("data-drawer-titulo");
@@ -264,13 +307,17 @@
             });
         });
 
-        // Editar: mesmo drawer, preenchido com o que o gatilho carrega.
+        // Editar: mesmo drawer, preenchido com o que o gatilho carrega. Passa antes pelo
+        // estado inicial porque nem todo campo e declarado pelo gatilho (a `senha` de
+        // usuario, por exemplo): sem o reset, o que foi digitado numa edicao vazaria
+        // para a edicao seguinte.
         window.AppDom.bySelector("[data-drawer-editar]").forEach(function (gatilho) {
             gatilho.addEventListener("click", function (evento) {
                 evento.preventDefault();
                 var id = gatilho.getAttribute("data-drawer-editar");
                 var painel = painelPorId(id);
                 if (painel) {
+                    reporInicial(painel);
                     aplicarGatilho(painel, gatilho);
                 }
                 abrir(id);

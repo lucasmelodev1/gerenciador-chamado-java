@@ -20,6 +20,12 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 WEBAPP="src/main/webapp"
+
+# Os coletores contam SO markup. O `CONTEXT.md` de cada diretorio vive dentro de
+# `src/main/webapp` e, sem este filtro, escrever um `name="_method"` ou um `data-*` na
+# documentacao movia o floor — foi o que aconteceu na S26, quando as telas passaram a ser
+# montadas por tags e os CONTEXT.md comecaram a citar o markup que eles emitem.
+MARKUP=(--include='*.jsp' --include='*.jspf' --include='*.tag')
 CONTROLLERS="src/main/java/br/com/dunnastecnologia/chamados/infrastructure/controller/web"
 SNAP="baseline/invariants"
 
@@ -61,16 +67,16 @@ collect_view_names() {
 }
 
 collect_action_urls() {
-    grep -rhoE 'action="[^"]*"' "$WEBAPP" | sed -E 's/^action="//; s/"$//' | sort | uniq -c \
+    grep -rhoE 'action="[^"]*"' "${MARKUP[@]}" "$WEBAPP" | sed -E 's/^action="//; s/"$//' | sort | uniq -c \
         | sed -E 's/^ +//'
 }
 
 collect_counts() {
-    printf 'method_inputs=%s\n'  "$(grep -rho 'name="_method"' "$WEBAPP" | wc -l | tr -d ' ')"
-    printf 'csrf_includes=%s\n'  "$(grep -rho 'fragments/csrf.jspf' "$WEBAPP" | wc -l | tr -d ' ')"
-    printf 'multipart_forms=%s\n' "$(grep -rho 'enctype="multipart/form-data"' "$WEBAPP" | wc -l | tr -d ' ')"
-    printf 'confirmations=%s\n'  "$(( $(grep -rho 'data-confirm' "$WEBAPP" | wc -l) + $(grep -rho 'onsubmit="return confirm' "$WEBAPP" | wc -l) ))"
-    printf 'utf8_decls=%s\n'     "$(grep -rhoE 'charset=UTF-8|pageEncoding="UTF-8"' "$WEBAPP" | wc -l | tr -d ' ')"
+    printf 'method_inputs=%s\n'  "$(grep -rho 'name="_method"' "${MARKUP[@]}" "$WEBAPP" | wc -l | tr -d ' ')"
+    printf 'csrf_includes=%s\n'  "$(grep -rho 'fragments/csrf.jspf' "${MARKUP[@]}" "$WEBAPP" | wc -l | tr -d ' ')"
+    printf 'multipart_forms=%s\n' "$(grep -rho 'enctype="multipart/form-data"' "${MARKUP[@]}" "$WEBAPP" | wc -l | tr -d ' ')"
+    printf 'confirmations=%s\n'  "$(( $(grep -rho 'data-confirm' "${MARKUP[@]}" "$WEBAPP" | wc -l) + $(grep -rho 'onsubmit="return confirm' "${MARKUP[@]}" "$WEBAPP" | wc -l) ))"
+    printf 'utf8_decls=%s\n'     "$(grep -rhoE 'charset=UTF-8|pageEncoding="UTF-8"' "${MARKUP[@]}" "$WEBAPP" | wc -l | tr -d ' ')"
     printf 'jacoco_includes=%s\n' "$(grep -c '<include>br/com/dunnastecnologia/chamados/\(domain\|infrastructure\)' pom.xml)"
     printf 'jacoco_min=%s\n'     "$(grep -A3 COVEREDRATIO pom.xml | grep -oE '<minimum>[0-9.]+' | grep -oE '[0-9.]+')"
 }
@@ -78,14 +84,14 @@ collect_counts() {
 collect_hooks() {
     local hook
     for hook in "${FROZEN_HOOKS[@]}"; do
-        printf '%s\t%s\n' "$(grep -rho "$hook" "$WEBAPP" | wc -l | tr -d ' ')" "$hook"
+        printf '%s\t%s\n' "$(grep -rho "$hook" "${MARKUP[@]}" "$WEBAPP" | wc -l | tr -d ' ')" "$hook"
     done
 }
 
 collect_calendar() {
     local sel
     for sel in "${FROZEN_CALENDAR[@]}"; do
-        printf '%s\t%s\n' "$(grep -rhoF "$sel" "$WEBAPP" | wc -l | tr -d ' ')" "$sel"
+        printf '%s\t%s\n' "$(grep -rhoF "$sel" "${MARKUP[@]}" "$WEBAPP" | wc -l | tr -d ' ')" "$sel"
     done
 }
 

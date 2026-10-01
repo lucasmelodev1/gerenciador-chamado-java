@@ -10,26 +10,24 @@
         <main id="conteudo-principal" class="page-content">
             <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
 
-            <%-- S23: criar e editar usam o MESMO `ui:drawer`, sem ida ao servidor para
-                 abrir. O drawer e sempre renderizado no modo de criacao; o gatilho
-                 "Editar" carrega a acao da area e os valores nos atributos `data-campo-*`,
-                 que o drawer.js aplica antes de abrir.
-                 Antes isso dependia de `?areaId=`, e o reload era justamente o que
-                 deixava o drawer fechado depois de salvar e exigia um segundo clique. --%>
+            <%-- Criar e editar usam o MESMO `ui:drawer`, sem ida ao servidor para abrir.
+                 O drawer e sempre renderizado no modo de criacao; `ui:acao-editar` carrega
+                 a acao e os valores da linha, que o drawer.js aplica antes de abrir.
+                 Antes isso dependia de `?areaId=`, e o reload era justamente o que deixava
+                 o drawer fechado depois de salvar e exigia um segundo clique. --%>
             <section class="card">
                 <div class="card-body">
-                    <div class="section-header">
-                        <div>
-                            <p class="eyebrow">Espacos do condominio</p>
-                            <h2>Areas cadastradas</h2>
-                        </div>
-                        <div class="toolbar-inline">
-                            <input type="search" class="input input-sm" placeholder="Filtrar localmente"
-                                   data-filter-input data-filter-target="areas-table">
-                            <button type="button" class="btn btn-primary btn-sm" data-drawer-abrir="drawer-area">
-                                Nova area
-                            </button>
-                        </div>
+                    <%-- S26: cabecalho, filtros e acoes saem dos tags `ui:*` documentados em
+                         WEB-INF/tags/CONTEXT.md. A tela so declara o que e dela: titulos,
+                         colunas e os valores de cada linha. --%>
+                    <ui:card-head titulo="Areas cadastradas" descricao="Espacos do condominio">
+                        <button type="button" class="btn btn-primary btn-sm" data-drawer-abrir="drawer-area">
+                            Nova area
+                        </button>
+                    </ui:card-head>
+
+                    <div class="app-card-filtros">
+                        <ui:busca alvo="areas-table" rotulo="Pesquisar areas" />
                     </div>
 
                     <c:choose>
@@ -45,27 +43,31 @@
                                     <tr>
                                         <th>Nome</th>
                                         <th>Status</th>
-                                        <th></th>
+                                        <%-- Coluna sem rotulo visivel: as acoes passaram a ser so
+                                             icone (com tooltip), entao o texto vive aqui, para
+                                             quem nao ve o icone. --%>
+                                        <th><span class="sr-only">Acoes</span></th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     <c:forEach items="${areas}" var="area">
                                         <tr>
                                             <td>${area.nome}</td>
-                                            <td>${area.status}</td>
-                                            <td class="cell-actions">
-                                                <button type="button" class="btn btn-link"
-                                                        data-drawer-editar="drawer-area"
-                                                        data-drawer-titulo="Editar area"
-                                                        data-drawer-acao="${ctx}/admin/areas/${area.id}"
-                                                        data-campo-_method="patch"
-                                                        data-campo-nome="${fn:escapeXml(area.nome)}"
-                                                        data-campo-status="${fn:escapeXml(area.status)}">Editar</button>
-                                                <form method="post" action="${ctx}/admin/areas/${area.id}" data-confirm="Remover esta area? As reservas existentes serao preservadas.">
-                                                    <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                                                    <input type="hidden" name="_method" value="delete">
-                                                    <button type="submit" class="btn btn-error">Remover</button>
-                                                </form>
+                                            <%-- Status e um conjunto FECHADO de dois valores (CHECK na
+                                                 migration V19), entao o mapeamento pode ser literal.
+                                                 Mesma ideia de `fragments/reserva-status.jspf`. --%>
+                                            <td>
+                                                <ui:badge variante="${area.status eq 'Ativo' ? 'success' : 'neutral'}">${area.status}</ui:badge>
+                                            </td>
+                                            <td class="cell-actions app-tabela-acoes">
+                                                <ui:acao-editar drawer="drawer-area" titulo="Editar area"
+                                                                acao="${ctx}/admin/areas/${area.id}">
+                                                    <input type="hidden" data-campo="nome" value="${fn:escapeXml(area.nome)}">
+                                                    <input type="hidden" data-campo="status" value="${fn:escapeXml(area.status)}">
+                                                </ui:acao-editar>
+                                                <ui:acao-form acao="${ctx}/admin/areas/${area.id}"
+                                                              icone="remover" rotulo="Remover" perigo="true"
+                                                              confirmacao="Remover esta area? As reservas existentes serao preservadas." />
                                             </td>
                                         </tr>
                                     </c:forEach>

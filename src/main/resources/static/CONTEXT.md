@@ -14,6 +14,26 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
   dois ajustes de geometria escopados em `.app-sidebar` (a daisyUI vem depois de `utilities` no cascade, então
   `.menu{width:fit-content;padding:.5rem}` precisa ser sobrescrito fora de layer), o token `--card-p` (respiro
   interno dos cards) e acessibilidade.
+  Também o **cabeçalho de card de listagem** (S24): `.app-card-head` é uma linha (`flex-direction: row` +
+  `space-between`) com a descrição e o título num bloco de `gap: 2px` à esquerda e a ação primária à direita,
+  fechada por um filete (`border-bottom: 1px solid var(--color-base-300)`) que a separa da faixa de filtros
+  `.app-card-filtros`. São classes **novas** de propósito: `.section-header`/`.toolbar-inline` são legado sem
+  layer (carregam depois deste arquivo) e a `responsive.css` as empilha abaixo de 900px — contra o alinhamento
+  em linha. Como o `<h2>` deixa de casar com `.section-header h2`, `.app-card-head h2` repõe a tipografia
+  (o preflight do Tailwind zera o tamanho do título). `scripts/ui-tabelas.sh` confere tudo isso.
+  A **variante `--campos`** é para a faixa que é um `<form method="get">` com rótulo acima do
+  controle: alinha as ações pela base. Ela existe porque `.app-card-filtros` não está em layer e
+  venceria o utilitário `items-end` do Tailwind.
+  Também a **coluna de ações das tabelas** (S25): `.app-tabela-acoes` alinha à direita (`flex-end`) e zera o
+  `padding-inline: 1rem` que a daisyUI dá a toda `th/td`, para a ação encostar na borda da tabela; o `form`
+  fica `display: flex` (senão a folga de descida da linha desalinha os dois ícones) e há hover próprio, porque
+  o `base-200` do `btn-ghost` some sobre a linha zebrada. `.app-btn-perigo` pinta o ícone de excluir com
+  `--color-error` — `btn-ghost btn-error` não serve: `.btn:hover{color:var(--btn-fg)}` e o `--btn-fg` do
+  `btn-error` é quase branco. Os botões usam `btn-square` normalmente.
+  **Camadas aninhadas:** dentro da daisyUI (`daisyui.l1` > `l1.l2` > `l1.l2.l3` > `l1.l2.l3.l4`), para
+  declarações **normais** o layer **pai vence o filho** ("non-nested styles in a layer have precedence over
+  normal nested styles"). É o que faz o `.btn:hover` de `l1` sobrepor o `color` do `.btn-ghost` de `l1.l2.l3` —
+  e é o motivo dos dois ajustes de cor acima. O `btn-square` funciona: ele mora no layer pai do `.btn`.
   **Raio:** o legado tem valores fixos (`base.css` e `components.css`/`responsive.css`) que vencem a daisyUI por
   não estar em layer — ao mexer no raio, ajuste os dois lados, senão cards e `stat-card` divergem do shell.
 - `css/calendar.css`: tema do FullCalendar; tokens `--fc-classic-*` apontam para as variáveis da daisyUI,
@@ -31,9 +51,14 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
   `data-drawer-titulo`, `data-drawer-abrir`, `data-drawer-editar`, `data-drawer-fechar`,
   `data-drawer-aberto`, `data-drawer-backdrop`. Como não há `<dialog>`, Esc, foco preso no painel,
   devolução do foco e trava de scroll da página são implementados aqui. Também faz o **conteúdo
-  dinâmico**: `data-drawer-editar` aplica `data-drawer-acao`/`data-drawer-titulo`/`data-campo-*` no
-  formulário, e `data-drawer-abrir` o devolve ao estado que o servidor renderizou (`reset()`), de modo
-  que criar e editar usam o mesmo drawer sem reload. Carregado em todas as páginas (é inerte sem
+  dinâmico**: `data-drawer-editar` passa pelo estado renderizado e depois aplica
+  `data-drawer-acao`/`data-drawer-titulo` e os campos do gatilho; `data-drawer-abrir` devolve tudo ao
+  estado que o servidor renderizou (`reset()`), de modo que criar e editar usam o mesmo drawer sem
+  reload. Os campos vêm de duas formas: `data-campo-<name>` no botão (formato da S23) ou
+  `<input data-campo="<name>">` dentro do botão (S26, a que `ui:acao-editar` usa — `value` de input
+  aceita qualquer dado de usuário sem codificação em string). Com `data-drawer-travar` no formulário,
+  os campos listados ficam desabilitados na edição e um espelho escondido com o mesmo `name` assume o
+  envio (`disabled` não é submetido); a criação desfaz. Carregado em todas as páginas (é inerte sem
   `data-drawer`); o visual fica em `custom.css` sob `.app-drawer*`, junto do `prefers-reduced-motion`.
 - `layout.js` foi removido: o drawer da daisyUI dispensa toggle por JS e a navegação ativa é server-side.
 - `js/vendor/fullcalendar/`, `css/vendor/fullcalendar/`: FullCalendar 7.1.0 vendorizado para uso offline,

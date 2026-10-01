@@ -805,6 +805,312 @@ aberto, em vez de confiar na leitura do código.
 **Snapshot de invariantes renovado** de novo: os hooks `data-modal*` saíram de `FROZEN_HOOKS` e entraram
 `data-drawer`, `data-drawer-abrir`, `data-drawer-fechar`, `data-drawer-aberto` e `data-drawer-backdrop`.
 
+## S24 — Cabeçalho de tabela e faixa de filtros (tela de areas)
+
+### O que mudou
+
+A tela de areas deixou de usar a composição legada `.section-header` + `.toolbar-inline`, em que busca e
+ação dividiam a linha do título, com `align-items: flex-start` e `gap: 16px`. Agora:
+
+- **cabeçalho** (`.app-card-head`) — uma linha com descrição e título **colados** (bloco de `gap: 2px`, contra
+  os 8px de `margin-bottom` do `.eyebrow`) à esquerda e o botão "Nova area" à direita (`space-between`);
+- **filete** — `border-bottom: 1px solid var(--color-base-300)` na base do cabeçalho, separando-o dos filtros;
+- **faixa de filtros** (`.app-card-filtros`) — um container flexível abaixo do filete, hoje com um único filtro:
+  a busca, com `placeholder="Pesquisar..."` e a lupa Tabler `search` **dentro da moldura, à esquerda do texto**.
+
+### Por que classes novas em vez de reaproveitar `.section-header`
+
+Três razões, todas verificadas no cascade real:
+
+1. `.section-header`/`.toolbar-inline` são legado **sem cascade layer** e carregam *depois* de `custom.css`,
+   então venceriam qualquer regra nova de mesma especificidade;
+2. `responsive.css` força `flex-direction: column` nelas abaixo de 900px — contra o alinhamento em linha pedido;
+3. nelas a busca pertence à linha do título, e aqui ela pertence aos filtros.
+
+Com classes novas nenhuma regra precisa de `!important`. O custo é que o `<h2>` deixa de casar com
+`.section-header h2`, e o preflight do Tailwind zera o tamanho do título: por isso `.app-card-head h2` repõe
+`font-size: 1.5rem` + `var(--font-display)`. `ui-tabelas.sh` (entao `ui-areas.sh`) falha se essa regra desaparecer.
+
+### A lupa dentro do campo, sem posicionamento absoluto
+
+O `.input` da daisyUI é `display: inline-flex; align-items: center; gap: .5rem` e já zera o `input` interno
+(`background: transparent; border: none; width: 100%`). Ou seja: basta um `<label class="input input-sm">`
+com o `<svg>` **antes** do `<input>` e o ícone fica dentro da moldura, alinhado à esquerda — sem
+`position: absolute`, sem wrapper extra e sem utilitário novo no bundle. O ícone é `size-4 shrink-0 opacity-60`.
+
+### Risco real da mudança
+
+O `tables.js` descobre o campo com `document.querySelectorAll("[data-filter-input]")`. Envolver a busca num
+`<label>` muda a posição dela na árvore, então era esse o ponto a provar — não o CSS. `ui-tables-js.mjs`
+executa o `tables.js` de verdade sobre o cenário novo: **11/11 casos**, incluindo descoberta dentro do
+`label`, filtro *case-insensitive* com `trim`, `data-filter-target` roteando entre duas tabelas e o casamento
+por qualquer célula da linha.
+
+### Verificação
+
+| # | Check | Result |
+|---|---|---|
+| 1 | markup renderizado: cabeçalho com 1 botão, sem `<input>`/`<svg>` dentro; descrição e título juntos e nessa ordem | OK |
+| 2 | faixa de filtros **depois** do cabeçalho; busca é `label.input` com a lupa **antes** do campo; `placeholder="Pesquisar..."` | OK |
+| 3 | `.toolbar-inline`, `.section-header` e `Filtrar localmente` não aparecem mais na tela | OK |
+| 4 | CSS: `flex-direction: row` + `space-between` + filete + `gap: 2px`; `.app-card-head h2` repõe a tipografia. Self-test negativo: **4/4** | OK |
+| 5 | bundle: `.input{display:inline-flex}`, `.input input{...}`, `.input-sm`, `.size-4`, `.shrink-0`, `.opacity-60` presentes | OK |
+| 6 | self-test negativo (markup): **8/8** — placeholder antigo, lupa ausente, lupa **depois** do campo, busca movida para o cabeçalho, `data-filter-input` e `data-filter-target` removidos, `.app-card-filtros` e `.app-card-head__texto` renomeados | OK |
+| 7 | comportamento: **11/11 casos**; self-test negativo do harness 3/3 | OK |
+| 8 | filtro **local**: `listarAreas` sem parâmetro de busca e `tables.js` sem `fetch`/`XHR`/`URLSearchParams`/`location.` | OK |
+| 9 | matriz de rotas · `ui-shell.sh` · `ui-drawer.sh` · `ui-invariants.sh` · suíte | 26/26 · OK · OK · `INVARIANTS OK` · **153 testes, 0 falhas** |
+
+Os self-tests de 4 e 6 não são um passo manual à parte: são a segunda metade da seção A e B de
+`ui-areas.sh`, rodando sobre o **próprio HTML/CSS real** a cada execução. Cada sabotagem também confere que
+alterou o arquivo — foi o que pegou, durante o desenvolvimento, duas sabotagens escritas com `sed` que nunca
+casavam e por isso "passavam" sem medir nada.
+
+Nenhuma linha de Java, migration ou `pom.xml` foi alterada (o `ui-invariants.sh` confere isso por `git diff`
+contra o commit-base). `app.build.css` saiu **idêntico** do `npm run build:css`: a mudança não introduziu
+utilitário novo, só reusou o que já estava no bundle — que é justamente o que o check 5 passa a travar.
+
+## S25 — Coluna de acoes: encostada na direita, so icone + tooltip
+
+### O que mudou
+
+Na tabela de areas, a ultima coluna virou um **cluster de acoes encostado na borda direita** da tabela:
+
+- **encostada de verdade.** A daisyUI da `padding-inline: 1rem` a toda `th/td`
+  (`.table :where(th,td)`) e a daisyUI nao distingue a ultima coluna. `.app-tabela-acoes` zera esse
+  padding na celula de acoes e alinha o conteudo com `justify-content: flex-end` — sem isso a acao
+  ficava flutuando no meio de uma coluna mais larga que o conteudo.
+- **so icone.** "Editar" e "Remover" perderam o texto: `btn btn-ghost btn-sm btn-square`, com o icone
+  Tabler em `size-4` — o mesmo tamanho dos icones da lateral. Sao o lapis (`pencil`) e a lixeira (`trash`),
+  dois aliases novos em `icone.jspf`.
+- **tooltip.** `tooltip` + `data-tip="Editar"` / `data-tip="Remover"`, mais `aria-label` no botao e
+  `<span class="sr-only">Acoes</span>` no `<th>`: o rotulo saiu da tela, nao da arvore de acessibilidade.
+
+### Os dois detalhes que so apareceram medindo
+
+**O balao nao pode ser centralizado.** O `tooltip` da daisyUI centraliza o balao sobre o elemento
+(`left: 50%` + `translateX(-50%)`). Com a acao encostada na borda direita, metade do balao cairia fora da
+tabela — e o `<div class="overflow-x-auto">` em volta, que por ter `overflow-x: auto` tambem vira container
+de rolagem no eixo Y, **cortaria** o balao (alem de poder criar barra de rolagem horizontal no hover).
+A correcao alinha o balao pela direita do botao e deixa a seta centrada no botao, nao no balao.
+
+**O hover do `btn-ghost` some na linha zebrada.** `.btn:hover` pinta `--btn-bg: var(--color-base-200)` — que e
+exatamente o `background-color` que a `.table-zebra` aplica nas linhas pares. A coluna de acoes ganhou um
+hover proprio (`color-mix(base-content 10%)`), visivel nas duas cores de linha.
+
+### Status como badge
+
+A coluna Status deixou de ser texto puro: `badge-success` para `Ativo`, `badge-neutral` para `Inativo`
+(`<span class="badge ...">` dentro da celula). O conjunto e fechado — a migration V19 declara
+`status TEXT NOT NULL CHECK (status IN ('Ativo', 'Inativo'))` — entao o mapeamento pode ser literal no JSP,
+que e o mesmo raciocinio (e a mesma exigencia do Tailwind) documentada em `fragments/reserva-status.jspf`.
+Nao virou fragmento porque o status de area aparece em uma unica tela; o de reserva aparece em varias.
+
+O texto continua sendo o `valor` ("Ativo"), nao o nome do enum, entao nada muda no que o usuario le — so a
+forma. E como o badge fica **dentro** da celula, o `tables.js` continua casando pelo texto: o filtro local
+segue encontrando a linha por "Ativo"/"Inativo".
+
+### Uma suposicao errada que a instrumentacao pegou
+
+A primeira versao deste passo **nao** usou `btn-square`: eu havia concluido, lendo os offsets do bundle, que o
+`.btn-square{padding-inline:0}` (em `daisyui.l1.l2`) perdia para o `.btn{padding-inline:var(--btn-p)}` (em
+`daisyui.l1.l2.l3`), por sub-layer vencer o layer pai, e que o icone transbordaria. Estava **invertido**.
+
+A regra, no CSS Cascade 5, e o contrario para declaracoes normais: *"non-nested styles in a layer have
+precedence over normal nested styles"* — **o layer pai vence o filho**. O `.btn-square`, portanto, funciona
+normalmente (mora no layer pai do `.btn`), e o botao de icone ficou com ele. O que essa regra explica de
+verdade e por que `btn-ghost btn-error` nao serve: `.btn:hover{color:var(--btn-fg)}` vive em `daisyui.l1`, layer
+pai de onde mora o `.btn-ghost`, e o `--btn-fg` do `btn-error` e quase branco — no hover o icone sumiria sobre o
+fundo transparente. Dai a classe propria `.app-btn-perigo`, fora de layer.
+
+Licao registrada no proprio `custom.css`: ler a ordem dos layers no bundle **nao** basta; a direcao da
+precedencia entre layer e sub-layer precisa ser confirmada na especificacao.
+
+### O guard tambem passou a contar so markup
+
+A deriva acima expos um defeito do proprio `ui-invariants.sh`: os coletores fazem `grep`
+sobre **todo** o `src/main/webapp`, e os `CONTEXT.md` moram la dentro. Escrever
+`name="_method"` ou um `data-*` na documentacao movia o floor — e como a S26 fez os
+`CONTEXT.md` citarem o markup que os tags emitem, isso virou uma mina: encurtar um
+comentario derrubava `data-drawer-editar` de 4 para 3 e reprovava o guard.
+
+Correcao: `MARKUP=(--include='*.jsp' --include='*.jspf' --include='*.tag')`, aplicada aos
+sete `grep` que varrem o webapp. O guard passou a medir exatamente o que ele diz medir.
+
+Isso baixou alguns floors, todos por ocorrencia apenas em documentacao:
+
+| Item | Antes | Depois | O que saiu |
+|---|---|---|---|
+| `method_inputs` | 24 | 23 | mencao em `tags/CONTEXT.md` |
+| `csrf_includes` | 32 | 31 | idem |
+| `data-filter-input` / `-target` | 4 | 3 | mencoes em `jsp/CONTEXT.md` |
+| `data-drawer` | 26 | 18 | mencoes em 3 `CONTEXT.md` |
+| `data-drawer-abrir` | 9 | 6 | idem |
+| `data-drawer-editar` | 4 | 1 | idem (sobra a do `ui:acao-editar` que **emite** o hook) |
+| `data-drawer-titulo` | 3 | 2 | idem |
+| `reserva-data` / `reserva-titulo` | 2 | 1 | mencoes em `jsp/CONTEXT.md` |
+
+Depois disso os floors voltaram a ser o **markup real**: qualquer hook removido de um JSP ou
+de um tag volta a reprovar. Verificado item a item: cada linha que baixou tem a ocorrencia
+removida identificada como texto, nao como codigo.
+
+### Verificacao
+
+| # | Check | Result |
+|---|---|---|
+| 1 | markup: toda celula `.cell-actions` tambem tem `.app-tabela-acoes` (comparacao de contagens, para o caso de so uma linha regredir) | OK |
+| 2 | 2 botoes por linha, ambos `btn-square` + `tooltip`, com `data-tip` e `aria-label`; o de excluir com `.app-btn-perigo` | OK |
+| 3 | os icones sao o lapis e a lixeira do Tabler (nao o fallback) e os dois em `size-4` | OK |
+| 4 | nenhum botao de acao com texto (`>` **so** pode vir `<svg>`) e `btn-link`/`btn-error` fora da tela | OK |
+| 5 | CSS: `flex-end` + `padding-inline-end: 0` + `form{display:flex}` + hover próprio + balao à direita | OK |
+| 6 | self-test negativo das secoes A e B: **17/17** e **9/9** (saiu de 8/8 e 4/4 em S24) | OK |
+| 7 | o Status e badge em **todas** as linhas (contagem igual a das linhas) e cada valor com a sua cor | OK |
+| 8 | `ui-drawer.sh` continua verde: o gatilho de editar mudou de classe, entao passou a ser validado por atributo | OK |
+| 9 | matriz de rotas · `ui-shell.sh` · `ui-invariants.sh` · suíte | 26/26 · OK · `INVARIANTS OK` · **153 testes, 0 falhas** |
+
+Os dois self-tests negativos foram, de novo, o que pegou defeito: a sabotagem "celula de acoes sem a classe"
+**passou** na primeira tentativa, porque o `findall` so olhava as celulas que ainda tinham a classe e a
+sabotagem mexia em uma das tres linhas. A checagem agora compara o total de `.cell-actions` com o total de
+`.app-tabela-acoes`, e a sabotagem reprova.
+
+## S26 — O padrao de areas virou framework, e foi para as outras telas de tabela
+
+### O que foi extraido
+
+Tudo o que a S24 e a S25 fizeram **dentro da tela de areas** virou componente em
+`WEB-INF/tags`, para as telas de tabela pararem de repetir a mesma moldura:
+
+| Tag | Substitui |
+|---|---|
+| `ui:card-head` | `.app-card-head` + `.app-card-head__texto` + `.eyebrow` + `<h2>` + o filete |
+| `ui:busca` | o `label.input` + o include do icone `pesquisar` + `data-filter-input`/`data-filter-target` |
+| `ui:badge` | o `<span class="badge badge-X">` repetido a mao |
+| `ui:acao-link` | o `<a class="btn btn-ghost btn-sm btn-square tooltip">` + icone + `data-tip` + `aria-label` |
+| `ui:acao-editar` | o botao de editar + os `data-campo-*` + o `data-campo-_method` |
+| `ui:acao-form` | o `<form>` + `csrf.jspf` + `_method` + o botao de icone (remover/desativar/padrao) |
+
+O contrato, o esqueleto de uma tela nova e os atributos de cada tag estao em
+`src/main/webapp/WEB-INF/tags/CONTEXT.md`. O estilo continua onde estava (`custom.css`),
+porque nao mudou: o que mudou foi quem escreve o markup.
+
+O resultado no tamanho das telas: areas foi de 152 para 119 linhas, usuarios de 119 para 137
+(ganhou drawer de edicao e tres acoes), blocos de 106 para 106 (perdeu o formulario lateral e
+ganhou drawer, cabecalho e filtros), status-chamado de 113 para 125 (virou tabela).
+
+### Onde foi aplicado
+
+| Tela | Criar/editar | Filtros | Acoes de linha | Status |
+|---|---|---|---|---|
+| areas | drawer (ja tinha) | busca local | editar, remover | badge success/neutral |
+| blocos | **drawer** (era formulario lateral) | busca local | ver unidades | — |
+| chamados | **nao tem** (so leitura) | `GET` na faixa | detalhar | badge ghost |
+| status-chamado | **drawer** (era form inline + `?statusId=`) | busca local | editar, tornar padrao | badge Inicial/Disponivel/Reservado |
+| usuarios | **drawer para criar e editar** (editar era pagina de detalhe) | busca local | editar, gerenciar, desativar | badge neutral |
+
+Duas consequencias estruturais:
+
+- **blocos e usuarios perderam a grade de duas colunas.** O cartao de criacao da esquerda virou
+  o drawer; a listagem passou a ocupar o cartao inteiro, como areas. E o preco de ter o mesmo
+  desenho nas cinco telas.
+- **status-chamado deixou de ser `stack-list` de `.list-row`** e virou tabela. Sem a tabela nao
+  haveria onde encaixar a coluna de acoes compartilhada; os tres status reservados ganharam o
+  badge `Reservado` no lugar do antigo botao desabilitado (um `.btn:disabled` tem
+  `pointer-events: none`, entao nem tooltip teria).
+
+### Duas capacidades novas no drawer
+
+**Campos do gatilho como inputs escondidos.** O formato antigo
+(`data-campo-<name>="<valor>"` no proprio botao) nao sobrevive a um tag: o nome do atributo
+teria de ser montado por variavel, e qualquer codificacao em string quebra com dado de usuario
+— um nome com `;` ou `|` corromperia a lista. Agora o corpo do `ui:acao-editar` recebe
+`<input type="hidden" data-campo="nome" value="...">`, que passa pelo escape normal do HTML e
+aceita quantos campos forem. O `drawer.js` le as duas formas (a nova vence), entao o formato da
+S23 continua valido.
+
+**`travar="tipo"`.** Campos que a edicao nao pode mudar mas a criacao pode. O componente
+renderiza um espelho escondido com o mesmo `name`, ja `disabled`; o JS desabilita o controle
+visivel e habilita o espelho ao editar, e desfaz ao criar — necessario porque campo `disabled`
+nao e enviado. Uso hoje: o **perfil do usuario**, que o `PATCH` deriva do papel persistido e o
+servico recusa trocar (`Nao e permitido alterar o tipo do usuario`). O gatilho manda a CHAVE do
+tipo (`usuario.tipo` e o rotulo; a chave sai de `fn:substringAfter(usuario.role, 'ROLE_')`).
+
+Alem disso, o gatilho de edicao passou a **passar pelo estado inicial antes de aplicar**. Sem
+isso, campo que o gatilho nao declara vazaria de uma edicao para a seguinte — a `senha`, que o
+PATCH exige em toda edicao, era o caso concreto.
+
+### O bug que a tela pegou e o verificador nao
+
+A primeira versao do `badge.tag` escrevia, **dentro do comentario JSP do arquivo**, um exemplo
+com a marca de comentario JSP aninhada. Comentario JSP nao aninha: o fechamento de dentro
+fechou o de fora, e todo o resto do comentario virou **texto da pagina** — o comentario inteiro
+apareceu impresso dentro do badge, repetido em cada linha da tabela. Foi o usuario que viu, nao
+o `ui-tabelas.sh`: as checagens procuravam `<span class="badge badge-X">Texto</span>`, que
+continuava casando (o texto vazado ficava **fora** do span).
+
+Correcao: o comentario nao contem mais nenhuma marca literal, e a secao A passou a reprovar
+qualquer `<%--`, `--%>`, `<%@` ou `${` que chegue ao HTML renderizado. A sabotagem
+"marcador de comentario JSP vazando para o HTML" exercita exatamente isso.
+
+Vale registrar o segundo tropeco: ao **documentar** o cuidado, a primeira reescrita do
+comentario voltou a colocar as marcas literais dentro dele e reintroduziu o mesmo bug. O
+comentario agora descreve o risco sem escreve-lo.
+
+### Deriva do snapshot de invariantes, revisada linha a linha
+
+O `ui-invariants.sh` reprovou por tres motivos, todos esperados: consolidar formularios em tags
+muda a contagem de literais que o guard congelava.
+
+| Item | Antes | Depois | Por que |
+|---|---|---|---|
+| `action-urls` | 36 entradas | 31 | 7 acoes viraram o atributo `acao=` de um tag (nao mais `action="..."`); `${acao}` foi de 1 para 2 (drawer + `ui:acao-form`) |
+| `method_inputs` | 26 | 24 | areas −2, status-chamado −2, usuarios −1 saem; `ui:acao-form` +1 e `drawer.tag` +1 entram |
+| `csrf_includes` | 37 | 32 | areas −1, blocos −1, status-chamado −2, usuarios −2 saem; `ui:acao-form` +1 entra |
+| `confirmations` | 12 | **13** | subiu |
+| `utf8_decls` | 3 | **9** | subiu |
+
+A conta fecha arquivo por arquivo e **nenhuma linha sumiu sem substituto**: cada `action`,
+`_method` e `csrf.jspf` que saiu de uma tela reapareceu dentro de `ui:acao-form` (uma vez) ou ja
+existia em `ui:drawer`. O resto dos floors nao se moveu. Snapshot renovado com essa revisao
+registrada.
+
+**Achado colateral:** o guard faz `grep` sobre **todo** o `src/main/webapp`, incluindo `.md`.
+Escrever `name="_method"` num `CONTEXT.md` conta como se fosse codigo (foi o que aconteceu com
+`WEB-INF/tags/CONTEXT.md`, +1 no floor). Fica anotado nas limitacoes.
+
+### Verificacao
+
+| # | Check | Result |
+|---|---|---|
+| 1 | `ui-tabelas.sh` secao A: contrato comum das 5 telas + o que e de cada uma | OK |
+| 2 | self-test negativo do markup: **10/10** sabotagens (inclui o vazamento de marcador JSP) | OK |
+| 3 | self-test negativo do CSS: **10/10** | OK |
+| 4 | `drawer.js` executado: **21/21** casos (campos nos dois formatos, campo travado, sem heranca entre edicoes) | OK |
+| 5 | `tables.js` executado: **11/11** casos; self-test 3/3 | OK |
+| 6 | `ui-drawer.sh`: markup, posicao, fluxo criar→editar→remover e o escopo das 4 telas | OK |
+| 7 | `ui-routes.sh shell` · `ui-shell.sh` | 26/26 · `SHELL OK` |
+| 8 | `ui-invariants.sh check` (com o snapshot renovado) | `INVARIANTS OK` |
+| 9 | `docker compose run --rm test` | **153 testes, 0 falhas** |
+
+O fluxo real de criar→editar→remover continua exercitado ponta a ponta: `ui-drawer.sh` cria uma
+area pelo formulario do drawer, faz o PATCH, segue o `Location` e confere que a pagina nao volta
+com o drawer aberto, e remove (com limpeza do residuo).
+
+### Fica para depois (nao pedido, nao feito)
+
+1. **`admin/usuarios/detalhe.jsp` ainda tem o formulario de edicao** (nome/email/senha), agora
+   duplicando o drawer da listagem. O detalhe continua sendo o lugar dos vinculos de morador e
+   dos tipos do colaborador; unificar exigiria decidir se a edicao sai de la.
+2. **A paginacao e repetida nas 5 telas** (e nas outras quatro) com o mesmo bloco
+   Anterior/Pagina/Proxima. Um `ui:paginacao` com `pagina` + `params` extra resolveria, mas nao
+   faz parte do que foi pedido aqui.
+3. **Os `GET` com `?areaId=`, `?statusId=` e `?tipoId=` continuam nos controllers** e agora sao
+   codigo morto: nenhuma tela aponta para eles. Sao `src/main/java`, congelado pelo guard.
+4. **`tipos-chamado` e as telas de reservas/vinculos/escopo nao foram migradas** — ficaram de
+   fora do escopo combinado (area, bloco, chamado, status, usuario), embora `tipos-chamado` seja
+   quase identica a `areas`.
+5. **O admin de chamados perdeu o subtitulo** "Os chamados mais antigos aparecem primeiro na
+   lista.": o `ui:card-head` tem uma linha de descricao, que ficou com o eyebrow
+   ("Monitoramento"). A frase tambem prometia uma ordenacao que a consulta nao garante.
+
 ## Known limitations (carried to the end)
 
 1. **No browser in this environment.** Every verification is DOM/CSS-level. Button/alert colours, spacing,
@@ -821,3 +1127,8 @@ aberto, em vez de confiar na leitura do código.
    depends on the browser engine: the `translate` animation, `100dvh`, the `position: fixed` stacking against
    the shell, and the real layout of the three bands. The `_csrf` lesson of S19 stands — source-level
    agreement is not proof of behaviour.
+6. **The action tooltips are verified structurally, not visually.** `ui-areas.sh` proves the balloon is
+   anchored to the button's right edge (`right: 0` on `.tooltip[data-tip]:before`, arrow re-centred on the
+   button) and that the `data-tip` wiring is intact. Whether the balloon actually clears the table header
+   vertically and whether `.overflow-x-auto` clips it are exactly the kind of questions only a browser can
+   settle — the arithmetic in S25 says it fits, but that is arithmetic, not observation.

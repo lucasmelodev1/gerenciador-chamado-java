@@ -22,20 +22,49 @@ Views JSP/JSTL dos controllers web; prefixo/sufixo em `application.properties`.
   separador e título da tela. Perfil e logout **não** ficam aqui (migraram para a lateral).
 - `fragments/icone.jspf`: ícones Tabler (outline, 3.31.0) como markup. Contrato: quem inclui define `icone`
   (alias) e `iconeClasse` (ex.: `size-4`); `currentColor` faz o item ativo recolorear o ícone.
+  Alias desconhecido não quebra o build: cai num círculo de fallback (que `ui-shell.sh`/`ui-tabelas.sh` reprovam).
 - `fragments/alerts.jspf`: flash pós-redirect (`alert alert-success|alert-error`).
 - `fragments/scripts.jspf`: `layout.js` não é mais carregado.
 - `scripts/ui-shell.sh` verifica o shell (estrutura, ícones, grupos, item ativo, cartão do usuário) sobre o
   HTML de `baseline/html-shell/`; roda depois de `scripts/ui-routes.sh shell`.
 
 ## Componentes próprios (`WEB-INF/tags`, prefixo `ui`)
-- `ui:drawer` — painel lateral que desliza da borda: topo (título + descrição + X), slot
-  livre no meio (`<jsp:doBody/>`) e rodapé (Salvar + Fechar). Declarado em
-  `WEB-INF/tags/drawer.tag` e liberado pelo prefixo `ui` em `fragments/taglibs.jspf`.
-  Comportamento em `static/js/drawer.js` (`AppDrawer`, evento `drawer:fechado`).
-  **Precisa ser incluído fora de `.page-content`** (filho direto do `<body>`).
-  Hoje usado em uma única tela: `admin/areas/lista.jsp`, que **não** usa estado de edição do
-  servidor: o drawer vem sempre fechado e no modo de criação, e os gatilhos
-  `data-drawer-abrir`/`data-drawer-editar` é que preenchem e abrem.
+- Seis tags montam as telas de tabela: `ui:card-head`, `ui:busca`, `ui:badge`,
+  `ui:acao-link`, `ui:acao-editar`, `ui:acao-form` e `ui:drawer`. Atributos, protocolo de
+  criar/editar e esqueleto de uma tela nova estão em **`WEB-INF/tags/CONTEXT.md`** — leia
+  antes de escrever uma listagem.
+- `ui:drawer` — painel lateral que desliza da borda (topo com título/descrição/X, slot livre
+  no meio e rodapé só com Salvar). **Precisa ser incluído fora de `.page-content`**, como
+  filho direto do `<body>`. A tela não guarda estado de edição do servidor: o drawer vem
+  sempre fechado e no modo de criação, e os gatilhos `data-drawer-abrir`/`data-drawer-editar`
+  é que preenchem e abrem. Comportamento em `static/js/drawer.js` (`AppDrawer`,
+  evento `drawer:fechado`).
+
+## Telas de tabela (S24/S25, extraídas para tags em S26)
+
+As cinco telas de listagem do admin seguem o mesmo desenho, montado com os tags de
+`WEB-INF/tags`: **areas**, **blocos**, **chamados** (só leitura), **status-chamado** e
+**usuarios**. O contrato do desenho — cabeçalho com filete, faixa de filtros, coluna de ações
+encostada na direita, badges e ações só com ícone + tooltip — está documentado em
+`WEB-INF/tags/CONTEXT.md`, junto do esqueleto de uma tela nova.
+
+O que é específico de cada tela fica no JSP: títulos, colunas, o mapeamento de cada badge e os
+valores de cada linha.
+
+- **Criar/editar** vai para o `ui:drawer` nas quatro telas que escrevem. O `perfil` do usuário
+  é o único campo travado (`travar="tipo"`): o servidor recusa a troca.
+- **Filtros**: a busca local (`ui:busca`) em areas, blocos, status-chamado e usuarios;
+  chamados usa um `<form method="get">` na própria faixa (classe `app-card-filtros--campos`),
+  porque seus três filtros vão ao servidor.
+- **Ações**: `ui:acao-form` (remover/desativar/definir padrão), `ui:acao-editar` (abre o
+  drawer) e `ui:acao-link` (Detalhar / Gerenciar / Ver unidades).
+- **status-chamado** era um `stack-list` de `.list-row` e virou tabela, para compartilhar a
+  mesma coluna de ações.
+- Os `GET` com `?areaId=`/`?statusId=`/`?tipoId=` continuam nos controllers, mas nenhuma tela
+  aponta para eles: o drawer substitui aquele estado de edição. **Não remova sem remover o
+  parâmetro no controller**, que é código congelado pelo `ui-invariants.sh`.
+- Contrato com o JS inalterado: `data-filter-input` + `data-filter-target`, filtro local do
+  `tables.js`. Nenhuma listagem de cadastro ganhou parâmetro de busca no servidor.
 
 ## Fragmentos de conteúdo
 - `vazio.jspf`: estado vazio — `vazioTitulo` (opcional), `vazioMensagem`, `vazioCompacto`.

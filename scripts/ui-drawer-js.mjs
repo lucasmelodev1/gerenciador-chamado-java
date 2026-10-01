@@ -217,6 +217,67 @@ function montarCenario({ aberto = false } = {}) {
     };
 }
 
+// ---------------------------------------------------------------- cenario (S26)
+// Campos do gatilho como INPUTS ESCONDIDOS dentro do botao (formato do tag
+// `ui:acao-editar`) + um campo travado, que a edicao nao pode mudar.
+
+function montarCenarioTravado() {
+    const painel = new El("aside", { id: "drawer-usuario", "data-drawer": "" });
+
+    const titulo = new El("h2", { id: "drawer-usuario-titulo", "data-drawer-titulo": "" });
+    titulo.textContent = "Novo usuario";
+    const botaoX = new El("button", { "data-drawer-fechar": "" });
+    const cabecalho = new El("header");
+    [titulo, botaoX].forEach((f) => cabecalho.appendChild(f));
+
+    const form = new El("form", {
+        id: "drawer-usuario-form", "data-drawer-form": "", action: "/admin/usuarios", method: "post",
+        "data-drawer-travar": "tipo",
+    });
+    const campoMetodo = new El("input", { type: "hidden", name: "_method", value: "" });
+    const campoNome = new El("input", { name: "nome", value: "" });
+    const campoTipo = new El("select", { name: "tipo", value: "" });
+    const campoSenha = new El("input", { type: "password", name: "senha", value: "" });
+    // Espelho renderizado pelo `ui:drawer`: mesmo `name`, desabilitado no modo criacao.
+    const espelhoTipo = new El("input", { type: "hidden", name: "tipo", "data-drawer-espelho": "tipo" });
+    espelhoTipo.disabled = true;
+    [campoMetodo, campoNome, campoTipo, campoSenha, espelhoTipo].forEach((f) => form.appendChild(f));
+
+    const botaoSalvar = new El("button", { type: "submit", form: "drawer-usuario-form" });
+    const rodape = new El("footer");
+    rodape.appendChild(botaoSalvar);
+    [cabecalho, form, rodape].forEach((f) => painel.appendChild(f));
+
+    const backdrop = new El("div", { id: "drawer-usuario-backdrop", "data-drawer-backdrop": "drawer-usuario" });
+
+    const gatilhoNovo = new El("button", { "data-drawer-abrir": "drawer-usuario" });
+
+    // "Editar": os valores vao em inputs escondidos DENTRO do botao.
+    const gatilhoEditar = new El("button", {
+        "data-drawer-editar": "drawer-usuario",
+        "data-drawer-titulo": "Editar usuario",
+        "data-drawer-acao": "/admin/usuarios/abc",
+    });
+    [
+        new El("input", { type: "hidden", "data-campo": "_method", value: "patch" }),
+        new El("input", { type: "hidden", "data-campo": "nome", value: "Ana" }),
+        new El("input", { type: "hidden", "data-campo": "tipo", value: "MORADOR" }),
+    ].forEach((f) => gatilhoEditar.appendChild(f));
+
+    const elementos = [painel, backdrop, gatilhoNovo, gatilhoEditar, botaoX, botaoSalvar, campoNome, campoTipo];
+    const ambiente = criarAmbiente(elementos);
+    ambiente.document.body.appendChild(backdrop);
+    ambiente.document.body.appendChild(painel);
+    ambiente.document.body.appendChild(gatilhoNovo);
+    ambiente.document.body.appendChild(gatilhoEditar);
+
+    ambiente.document._disparar("DOMContentLoaded", new CustomEvent("DOMContentLoaded"));
+    return {
+        ...ambiente, painel, backdrop, gatilhoNovo, gatilhoEditar, titulo, form,
+        campoMetodo, campoNome, campoTipo, campoSenha, espelhoTipo,
+    };
+}
+
 // ---------------------------------------------------------------- casos
 
 const casos = [];
@@ -370,6 +431,61 @@ function contextoFechar() {
     const aberto = ambienteAtual.document.querySelectorAll("[data-drawer][data-drawer-aberto]")[0];
     if (aberto) ambienteAtual.AppDrawer.fechar(aberto.id);
 }
+
+// --- campos do gatilho como inputs escondidos + campo travado (S26) ---
+
+caso("o gatilho com inputs escondidos preenche acao, _method, campos e titulo", () => {
+    const { gatilhoEditar, form, campoMetodo, campoNome, campoTipo, titulo, painel } = montarCenarioTravado();
+    gatilhoEditar.clicar();
+
+    assert.equal(form.getAttribute("action"), "/admin/usuarios/abc", "acao deveria ser a do usuario");
+    assert.equal(campoMetodo.value, "patch", "_method deveria virar patch");
+    assert.equal(campoNome.value, "Ana", "o nome deveria vir do input escondido");
+    assert.equal(campoTipo.value, "MORADOR", "o tipo deveria vir do input escondido");
+    assert.equal(titulo.textContent, "Editar usuario", "o titulo deveria mudar");
+    assert.equal(painel.hasAttribute("data-drawer-aberto"), true, "deveria abrir");
+});
+
+caso("campo travado: desabilita o controle e o espelho passa a enviar o valor", () => {
+    const { gatilhoEditar, campoTipo, espelhoTipo } = montarCenarioTravado();
+    gatilhoEditar.clicar();
+
+    assert.equal(campoTipo.disabled, true, "o controle visivel deveria ficar desabilitado na edicao");
+    assert.equal(espelhoTipo.disabled, false, "o espelho deveria assumir o envio");
+    assert.equal(espelhoTipo.value, "MORADOR", "o espelho deveria carregar o valor atual");
+});
+
+caso("campo travado volta ao normal no modo de criacao", () => {
+    const { gatilhoEditar, gatilhoNovo, campoTipo, espelhoTipo } = montarCenarioTravado();
+    gatilhoEditar.clicar();
+    contextoFechar();
+    gatilhoNovo.clicar();
+
+    assert.equal(campoTipo.disabled, false, "a criacao precisa poder escolher o valor");
+    assert.equal(espelhoTipo.disabled, true, "o espelho deveria voltar a ficar fora do envio");
+    assert.equal(espelhoTipo.value, "", "o espelho nao pode vazar o valor da edicao anterior");
+    assert.equal(campoTipo.value, "", "o campo deveria voltar ao padrao do HTML");
+});
+
+caso("o formato antigo (data-campo-* no botao) continua valendo", () => {
+    const { gatilhoEditar, form, campoMetodo, campoNome, campoStatus } = montarCenario();
+    gatilhoEditar.clicar();
+    assert.equal(form.getAttribute("action"), "/admin/areas/abc");
+    assert.equal(campoMetodo.value, "patch");
+    assert.equal(campoNome.value, "Piscina");
+    assert.equal(campoStatus.value, "Inativo");
+});
+
+caso("uma edicao nao herda o que foi digitado na edicao anterior", () => {
+    const { gatilhoEditar, campoSenha } = montarCenarioTravado();
+    gatilhoEditar.clicar();
+    campoSenha.value = "digitado-na-edicao-1";   // a `senha` nao vem do gatilho
+    contextoFechar();
+    gatilhoEditar.clicar();
+
+    assert.equal(campoSenha.value, "", "campo nao declarado pelo gatilho deveria voltar ao padrao");
+    assert.equal(campoSenha.disabled, undefined, "campo comum nao deve ser tocado pelo travamento");
+});
 
 // ---------------------------------------------------------------- execucao
 

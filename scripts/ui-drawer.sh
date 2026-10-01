@@ -94,7 +94,7 @@ else:
     check('Fechar' not in r, "o rodape ainda mostra o rotulo Fechar")
 
 # _method dentro do form, pronto para o gatilho de edicao preencher
-check(re.search(r'<form id="drawer-area-form" data-drawer-form method="post" action="/admin/areas" class="app-drawer-corpo">', d),
+check(re.search(r'<form id="drawer-area-form"[^>]*data-drawer-form[^>]*action="/admin/areas"[^>]*class="app-drawer-corpo"', d),
       "form do drawer sem id/data-hook/action de criacao")
 check(re.search(r'<form id="drawer-area-form"[^>]*>\s*<input type="hidden" name="_csrf"', d), "form do drawer sem _csrf")
 check(re.search(r'<input type="hidden" name="_method" value="">', d), "falta o _method vazio para o modo edicao")
@@ -105,14 +105,24 @@ check('data-drawer-aberto' not in d, "o drawer nao deveria vir aberto do servido
 # gatilhos
 check('<button type="button" class="btn btn-primary btn-sm" data-drawer-abrir="drawer-area">' in h,
       "faltou o gatilho 'Nova area' (data-drawer-abrir)")
-editar = re.search(r'<button type="button" class="btn btn-link"\s+data-drawer-editar="drawer-area".*?</button>', h, re.S)
+# S25: o gatilho de editar virou botao so com icone + tooltip, entao a checagem e por
+# atributo (nao pela classe antiga `btn btn-link`) e o texto sai de cena.
+editar = re.search(r'<button[^>]*data-drawer-editar="drawer-area".*?</button>', h, re.S)
 if not editar:
     falhas.append("faltou o gatilho 'Editar' (data-drawer-editar)")
 else:
     e = editar.group(0)
+    # S26: os campos do gatilho viraram inputs escondidos dentro do botao, entao a
+    # checagem e por `data-campo="<nome>"` (nao mais `data-campo-<nome>`).
     for atributo in ('data-drawer-titulo="Editar area"', 'data-drawer-acao="/admin/areas/',
-                     'data-campo-_method="patch"', 'data-campo-nome="', 'data-campo-status="'):
+                     'data-campo="_method" value="patch"', 'data-campo="nome"', 'data-campo="status"'):
         check(atributo in e, f"gatilho Editar sem {atributo}")
+    check('class="btn btn-ghost btn-sm btn-square tooltip"' in e,
+          "gatilho Editar sem as classes do botao de icone")
+    check('data-tip="Editar"' in e, "gatilho Editar sem tooltip (data-tip)")
+    check('aria-label="Editar"' in e, "gatilho Editar sem rotulo acessivel")
+    check('<svg' in e, "gatilho Editar sem icone")
+    check('>Editar</button>' not in e, "o gatilho Editar ainda mostra o texto")
 
 # backdrop irmao, e os dois FORA de .page-content
 bd = re.search(r'<div id="drawer-area-backdrop" class="app-drawer-backdrop" data-drawer-backdrop="drawer-area"', h)
@@ -134,11 +144,14 @@ then :; else fail=1; fi
 
 # ------------------------------------------------------------------ B. escopo
 
-echo "== B. escopo: usado em uma unica tela =="
+echo "== B. escopo: as telas de cadastro com tabela =="
+# S23 exigia UMA tela; a S26 espalhou o componente pelas telas de tabela com criacao e
+# edicao. Chamados do admin fica de fora: e so leitura. A lista abaixo e fechada de
+# proposito — um `ui:drawer` numa tela nova tem de ser uma decisao, nao um efeito colateral.
 USOS="$(grep -rl '<ui:drawer' src/main/webapp --include='*.jsp' | sort | tr '\n' ' ')"
-ESPERADO="src/main/webapp/WEB-INF/jsp/admin/areas/lista.jsp "
+ESPERADO="src/main/webapp/WEB-INF/jsp/admin/areas/lista.jsp src/main/webapp/WEB-INF/jsp/admin/blocos/lista.jsp src/main/webapp/WEB-INF/jsp/admin/status-chamado/lista.jsp src/main/webapp/WEB-INF/jsp/admin/usuarios/lista.jsp "
 if [ "$USOS" = "$ESPERADO" ]; then
-    ok "o componente e usado so em admin/areas/lista.jsp"
+    ok "o componente e usado nas 4 telas de cadastro com tabela"
 else
     bad "uso inesperado: '$USOS' (esperado '$ESPERADO')"
 fi
@@ -232,6 +245,8 @@ grep -q 'evento.key !== "Tab"'    "$JS" && ok "prende o foco (Tab)" || bad "sem 
 grep -q 'app-drawer-trava-scroll' "$JS" && ok "trava o scroll da pagina" || bad "sem trava de scroll"
 grep -q 'data-drawer-editar'      "$JS" && ok "suporta conteudo dinamico (editar)" || bad "sem gatilho de editar"
 grep -q 'form.reset()'            "$JS" && ok "devolve o form ao modo de criacao" || bad "sem reset do formulario"
+grep -q 'data-campo="'            "$JS" && ok "le os campos declarados como input escondido" || bad "sem leitura dos campos do gatilho"
+grep -q 'data-drawer-travar'      "$JS" && ok "trava os campos que a edicao nao muda" || bad "sem suporte a campo travado"
 grep -q 'js/drawer.js' src/main/webapp/WEB-INF/jsp/fragments/scripts.jspf \
     && ok "carregado por scripts.jspf" || bad "nao e carregado nas paginas"
 

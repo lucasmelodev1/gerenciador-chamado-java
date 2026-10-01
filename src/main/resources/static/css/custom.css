@@ -13,6 +13,14 @@
  * Por isso os dois ajustes de geometria do shell (S19) moram aqui, sem camada e
  * escopados em `.app-sidebar`: e o unico lugar onde eles vencem de forma deterministica.
  * Nenhum arquivo da daisyUI e alterado.
+ *
+ * DENTRO da daisyUI ha sub-layers (`daisyui.l1` > `l1.l2` > `l1.l2.l3` > `l1.l2.l3.l4`) e,
+ * para declaracoes NORMAIS, os estilos do proprio layer vencem os dos seus sub-layers
+ * ("non-nested styles in a layer have precedence over normal nested styles" — CSS Cascade 5).
+ * E o que explica um `.btn:hover` (`daisyui.l1`) sobrepor o `color` do `.btn-ghost`
+ * (`daisyui.l1.l2.l3`) no hover; ver a coluna de acoes (S25). Errar essa direcao leva a
+ * "consertar" o que nao esta quebrado: o `btn-square`, por exemplo, funciona — ele mora no
+ * layer PAI do `.btn`.
  */
 
 /* ---------------------------------------------------------------------------
@@ -78,6 +86,146 @@
    drawer. Este bloco garante que o conteudo ocupe a coluna restante em telas grandes. */
 .drawer-content {
     min-width: 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Cabecalho de card de listagem + faixa de filtros (S24)
+ *
+ * Padrao novo das telas de listagem: descricao e titulo a esquerda, acao primaria
+ * a direita, na MESMA linha; um filete fecha esse cabecalho e os filtros ficam
+ * ABAIXO dele, na propria faixa.
+ *
+ * Nao reusa `.section-header` + `.toolbar-inline` do legado de proposito:
+ *   - aquelas classes nao estao em cascade layer e carregam DEPOIS deste arquivo;
+ *   - `responsive.css` as empilha (`flex-direction: column`) abaixo de 900px, contra
+ *     o alinhamento em linha pedido aqui;
+ *   - la a busca divide a linha do titulo com o botao, e aqui ela pertence aos filtros.
+ * Com classes novas o legado nao alcanca o bloco e nenhuma regra precisa de !important.
+ * ------------------------------------------------------------------------ */
+
+.app-card-head {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    padding-bottom: 1rem;
+    /* O filete que separa o cabecalho da faixa de filtros logo abaixo. */
+    border-bottom: 1px solid var(--color-base-300);
+}
+
+.app-card-head__texto {
+    display: grid;
+    /* 2px: a descricao e o titulo viram um bloco unico. O respiro extra que existia
+       (8px de margin-bottom do `.eyebrow`) empurrava o titulo para longe. */
+    gap: 0.125rem;
+    min-width: 0;
+}
+
+/* O espaco entre a descricao e o titulo passa a vir do `gap` acima. A regra do
+   `.eyebrow` (legado, sem layer) tem especificidade menor que esta, entao perde. */
+.app-card-head__texto .eyebrow {
+    margin-bottom: 0;
+}
+
+/* Mesma receita de `.section-header h2` (components.css), que este cabecalho nao usa.
+   Sem ela o preflight do Tailwind (`@layer base`) zera o tamanho do <h2>. */
+.app-card-head h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.5rem;   /* text-2xl */
+    line-height: 2rem;
+    font-weight: 600;    /* font-semibold */
+}
+
+/* Mantem a acao encostada na direita tambem quando o cabecalho quebra linha em
+   telas estreitas (com `space-between` sozinho ela cairia para a esquerda). */
+.app-card-head > .btn {
+    margin-inline-start: auto;
+}
+
+/* Faixa de filtros. Hoje so a busca, mas o container e flexivel: os proximos
+   filtros sao irmaos dentro dele, sem mexer no cabecalho.
+   O `margin-bottom` soma ao `gap: .5rem` do `.card-body`: sem ele a tabela ficaria a
+   apenas 8px da barra de busca. */
+.app-card-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Variante para a faixa que e um formulario GET com rotulo acima do controle
+   (`.field`): as acoes alinham pela BASE dos controles, nao pelo centro da caixa.
+   Precisa existir porque `.app-card-filtros` nao esta em layer e venceria o
+   utilitario `items-end` do Tailwind. */
+.app-card-filtros--campos {
+    align-items: flex-end;
+}
+
+/* ---------------------------------------------------------------------------
+ * Coluna de acoes das tabelas + botoes so com icone (S25)
+ *
+ * O `.table :where(th,td){padding-inline:1rem}` da daisyUI deixa a ultima celula a
+ * 16px da borda; zerado aqui (fora de layer, entao vence) a acao encosta na borda
+ * direita da tabela.
+ *
+ * Os botoes usam o `btn-square` da daisyUI normalmente. A regra de precedencia entre
+ * layers aninhados vale a pena registrar, porque ela explica os dois ajustes de cor
+ * abaixo: para declaracoes NORMAIS, os estilos do proprio layer vencem os dos seus
+ * sub-layers ("non-nested styles in a layer have precedence over normal nested
+ * styles"). Ou seja, `daisyui.l1` vence `daisyui.l1.l2`, que vence `daisyui.l1.l2.l3`.
+ * ------------------------------------------------------------------------ */
+
+/* `.cell-actions` (legado) ja e um flex; aqui entram o alinhamento a direita, o
+   espacamento curto entre os dois icones e o padding zerado da ultima celula. */
+.app-tabela-acoes {
+    justify-content: flex-end;
+    gap: 0.25rem;
+    padding-inline-end: 0;
+}
+
+/* Sem isto o `form` que envolve o botao de remover fica alguns px mais alto que o
+   botao (ele e inline-level e sobra a folga de descida da linha), e os dois icones
+   saem do eixo um do outro. */
+.app-tabela-acoes form {
+    display: flex;
+}
+
+/* Hover previsivel tambem nas linhas zebradas: o `.btn:hover` pinta `base-200`, que
+   e exatamente o fundo das linhas pares da `.table-zebra`. */
+.app-tabela-acoes .btn:hover {
+    background-color: color-mix(in oklab, var(--color-base-content) 10%, transparent);
+}
+
+/* Acao destrutiva. `btn-ghost btn-error` NAO serve: o `.btn-error` define
+   `--btn-fg: --color-error-content` (quase branco) e o `.btn:hover{color:var(--btn-fg)}`
+   vive em `daisyui.l1` — layer PAI de onde mora o `.btn-ghost` — entao no hover o icone
+   fica quase branco sobre o fundo transparente. Fora de layer, esta regra vence. */
+.app-btn-perigo {
+    color: var(--color-error);
+}
+
+.app-tabela-acoes .app-btn-perigo:hover {
+    background-color: color-mix(in oklab, var(--color-error) 12%, transparent);
+}
+
+/* O balao alinha pela DIREITA do botao. Centralizado (padrao da daisyUI) ele vazaria
+   para fora da tabela, e o `.overflow-x-auto` em volta — que vira container de rolagem
+   nos DOIS eixos — cortaria o balao da ultima coluna. */
+.app-tabela-acoes .tooltip[data-tip]:before {
+    left: auto;
+    right: 0;
+    transform: translateY(var(--tt-pos, 0.25rem));
+}
+
+/* A seta segue centrada no BOTAO (o balao e mais largo que ele). */
+.app-tabela-acoes .tooltip:after {
+    left: auto;
+    right: calc(50% - 0.3125rem);
+    transform: translateY(var(--tt-pos, 0.25rem));
 }
 
 /* ---------------------------------------------------------------------------

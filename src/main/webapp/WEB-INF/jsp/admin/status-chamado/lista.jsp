@@ -9,53 +9,21 @@
         <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
         <main id="conteudo-principal" class="page-content">
             <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
-            <c:set var="statusChamadoAction" value="${ctx}/admin/status-chamado" />
-            <c:if test="${not empty statusEdicao}">
-                <c:set var="statusChamadoAction" value="${ctx}/admin/status-chamado/${statusEdicao.id}" />
-            </c:if>
-            <c:set var="statusEdicaoBloqueada" value="${statusEdicaoBloqueada eq true}" />
 
-            <section class="two-column-grid">
-                <article class="card">
-                    <div class="card-body">
-                    <div class="section-header">
-                        <div>
-                            <p class="eyebrow">Fluxo</p>
-                            <h2><c:choose><c:when test="${not empty statusEdicao}">Editar status</c:when><c:otherwise>Novo status</c:otherwise></c:choose></h2>
-                        </div>
-                    </div>
+            <%-- A lista era um `stack-list` de `.list-row`; virou tabela para usar a mesma
+                 coluna de acoes das outras telas. Os tres status reservados do sistema
+                 (Finalizado, Atrasado, Solicitado) nao recebem gatilho de edicao: o
+                 servidor recusa a troca de nome deles. --%>
+            <section class="card">
+                <div class="card-body">
+                    <ui:card-head titulo="Status configurados" descricao="Estados do chamado">
+                        <button type="button" class="btn btn-primary btn-sm" data-drawer-abrir="drawer-status">
+                            Novo status
+                        </button>
+                    </ui:card-head>
 
-                    <form method="post" action="${statusChamadoAction}" class="stack-form">
-                        <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                        <c:if test="${not empty statusEdicao}">
-                            <input type="hidden" name="_method" value="patch">
-                        </c:if>
-                        <label class="field">
-                            <span>Nome do status</span>
-                            <input class="input w-full" type="text" name="nome" value="${statusChamadoForm.nome}" placeholder="Em atendimento" maxlength="255" required ${statusEdicaoBloqueada ? 'disabled' : ''}>
-                        </label>
-                        <c:if test="${statusEdicaoBloqueada}">
-                            <p class="helper-text">Os status Finalizado, Atrasado e Solicitado sao reservados e nao podem ser editados.</p>
-                        </c:if>
-                        <div class="button-row">
-                            <button type="submit" class="btn btn-primary" ${statusEdicaoBloqueada ? 'disabled' : ''}>
-                                <c:choose><c:when test="${not empty statusEdicao}">Salvar status</c:when><c:otherwise>Cadastrar status</c:otherwise></c:choose>
-                            </button>
-                            <c:if test="${not empty statusEdicao}">
-                                <a href="${ctx}/admin/status-chamado" class="btn">Cancelar</a>
-                            </c:if>
-                        </div>
-                    </form>
-                                    </div>
-                </article>
-
-                <article class="card">
-                    <div class="card-body">
-                    <div class="section-header">
-                        <div>
-                            <p class="eyebrow">Estados do chamado</p>
-                            <h2>Status configurados</h2>
-                        </div>
+                    <div class="app-card-filtros">
+                        <ui:busca alvo="status-table" rotulo="Pesquisar status" />
                     </div>
 
                     <c:choose>
@@ -65,30 +33,51 @@
                             <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
                         </c:when>
                         <c:otherwise>
-                            <div class="stack-list">
-                                <c:forEach items="${statusChamado}" var="status">
-                                    <div class="list-row status-row">
-                                        <div>
-                                            <strong>${status.nome}</strong>
-                                            <span><c:if test="${status.inicialPadrao}">Status inicial padrao</c:if><c:if test="${not status.inicialPadrao}">Disponivel para fluxo operacional</c:if></span>
-                                        </div>
-                                        <div class="button-row">
-                                            <c:if test="${status.editavel}">
-                                                <a href="${ctx}/admin/status-chamado?statusId=${status.id}" class="btn">Editar</a>
-                                            </c:if>
-                                            <c:if test="${not status.editavel}">
-                                                <span class="btn disabled" aria-disabled="true">Reservado</span>
-                                            </c:if>
-                                            <form method="post" action="${ctx}/admin/status-chamado/${status.id}/inicial-padrao" class="inline-form" data-confirm="Definir este status como inicial padrao?">
-                                                <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                                                <input type="hidden" name="_method" value="patch">
-                                                <button type="submit" class="btn btn-primary" ${status.inicialPadrao ? 'disabled' : ''}>
-                                                    Tornar padrao
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </c:forEach>
+                            <div class="overflow-x-auto">
+                                <table class="table table-zebra" data-filter-table="status-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Situacao</th>
+                                        <th><span class="sr-only">Acoes</span></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <c:forEach items="${statusChamado}" var="status">
+                                        <tr>
+                                            <td>${status.nome}</td>
+                                            <td>
+                                                <span class="flex flex-wrap items-center gap-1">
+                                                    <c:choose>
+                                                        <c:when test="${status.inicialPadrao}">
+                                                            <ui:badge variante="success">Inicial</ui:badge>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <ui:badge variante="neutral">Disponivel</ui:badge>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                    <c:if test="${not status.editavel}">
+                                                        <ui:badge variante="ghost">Reservado</ui:badge>
+                                                    </c:if>
+                                                </span>
+                                            </td>
+                                            <td class="cell-actions app-tabela-acoes">
+                                                <c:if test="${status.editavel}">
+                                                    <ui:acao-editar drawer="drawer-status" titulo="Editar status"
+                                                                    acao="${ctx}/admin/status-chamado/${status.id}">
+                                                        <input type="hidden" data-campo="nome" value="${fn:escapeXml(status.nome)}">
+                                                    </ui:acao-editar>
+                                                </c:if>
+                                                <c:if test="${not status.inicialPadrao}">
+                                                    <ui:acao-form acao="${ctx}/admin/status-chamado/${status.id}/inicial-padrao"
+                                                                  metodo="patch" icone="padrao" rotulo="Tornar padrao"
+                                                                  confirmacao="Definir este status como inicial padrao?" />
+                                                </c:if>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                    </tbody>
+                                </table>
                             </div>
                         </c:otherwise>
                     </c:choose>
@@ -102,12 +91,23 @@
                             <a class="btn" href="${ctx}/admin/status-chamado?page=${statusChamadoPage.page + 1}&size=${statusChamadoPage.size}">Proxima</a>
                         </c:if>
                     </div>
-                                    </div>
-                </article>
+                </div>
             </section>
         </main>
     </div>
 </div>
+
+<%-- Fora de `.page-content`: o legado espremeria o backdrop. Ver custom.css > Drawer. --%>
+<ui:drawer id="drawer-status"
+           titulo="Novo status"
+           descricao="Um status por etapa do atendimento. O inicial e o que o chamado recebe ao abrir."
+           acao="${ctx}/admin/status-chamado">
+    <label class="field">
+        <span>Nome do status</span>
+        <input class="input w-full" type="text" name="nome" value="${statusChamadoForm.nome}" placeholder="Em atendimento" maxlength="255" required>
+    </label>
+</ui:drawer>
+
 <%@ include file="/WEB-INF/jsp/fragments/scripts.jspf" %>
 </body>
 </html>
