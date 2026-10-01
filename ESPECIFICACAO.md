@@ -38,6 +38,5 @@ surface area para bugs).
 3. Evitar grandes funções pl/SQL, pois são extremamente difíceis de atualizar e debugar, sendo um pesadelo em produção e atrasando o tempo de solução de bugs que passam por essa camada. Views complexas demais e triggers fazem sentido, mas não funções de query básicas.
 
 # Interpretações
-1. O código atual usa muito pl/SQL, e eu interpreto isso como um futuro débito técnico, porque engessa 
-atualizações lógicas, pois migrations no banco de dados são mais difíceis de atualizar 
-do que apenas códigos na camada de serviço.
+1. O código atual usa muito pl/SQL, e eu interpreto isso como um futuro débito técnico, porque engessa atualizações lógicas, pois migrations no banco de dados são mais difíceis de atualizar do que apenas códigos na camada de serviço.
+2. Código atual usa TIMESTAMP WITHOUT TIMEZONE, e isso é um bug esperando pra acontecer. Devido ao escopo da aplicação, eu não vou alterar isso, mas em um aplicação real e em produção, eu investiria sim 2 dias para fazer as migrations da seguinte forma: Primeiro, criamos um lock de escrita no postgres para limitar a escrita de até 10 mil linhas por vez, para não criar downtime. Criamos uma nova coluna com time zone e clonamos os dados da coluna atual para a nova coluna e criamos um trigger para manter elas sincronizadas e botamos em produção. No próximo deploy, trocamos todas as leituras e escritas de tempo para essa coluna nova e apagamos a coluna antiga. Caso seja desejável, depois podemos fazer um processo similar para renomear essa coluna para o nome antigo.
