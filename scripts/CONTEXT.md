@@ -27,7 +27,7 @@ novo depois de qualquer restart, senão `ui-routes.sh` falha as 26 rotas.
 | `ui-routes.sh` | Matriz de rotas nos modos `baseline\|shell\|new`; grava o HTML renderizado em `baseline/html-{modo}/` |
 | `ui-shell.sh` | Confere o HTML já gravado: estrutura da lateral (`dashboard-01`), 20 ícones Tabler, grupos, item ativo (prefixo mais longo), cartão do usuário e a topbar. Mais duas checagens de **fonte**: `head.jspf` materializa `${_csrf.token}` e todas as páginas incluem `head.jspf` |
 | `ui-drawer.sh` | Componente `ui:drawer`: contrato do markup nos dois estados (cadastro/edição), **posição fora de `.page-content`**, escopo (usado em **uma** tela), fluxo real criar→editar→remover pelo formulário do drawer (com limpeza do resíduo) e contrato do `drawer.js` |
-| `ui-drawer-js.mjs` | Executa o `drawer.js` num DOM mínimo em Node (não há navegador no ambiente): abrir/fechar, evento de fechamento, clique no backdrop, Esc, focus trap, trava de scroll e abertura server-side. Chamado por `ui-drawer.sh`; self-test negativo: 6/6 sabotagens detectadas |
+| `ui-drawer-js.mjs` | Executa o `drawer.js` num DOM mínimo em Node (não há navegador no ambiente): abrir/fechar, evento de fechamento, clique no backdrop, Esc, focus trap, trava de scroll, abertura server-side e o **conteúdo dinâmico** (editar preenche, novo reseta). Chamado por `ui-drawer.sh`; self-test negativo: 6/6 sabotagens detectadas |
 | `ui-invariants.sh` | Congela o contrato que os JSPs compartilham com controllers, JS, testes e build (`snapshot`/`check`). Verifica também o escopo de backend |
 
 ## CSRF (ler antes de mexer no shell)

@@ -3,8 +3,8 @@
  *
  * O ambiente nao tem browser, entao a unica forma de EXECUTAR o JS (em vez de so
  * inspecionar a fonte) e um DOM minimo em Node. Nao e um teste de renderizacao: e um
- * teste da logica de abrir/fechar/evento/foco — que e onde mora o risco real, ainda
- * mais agora que o componente nao usa <dialog> e todo o comportamento e manual.
+ * teste da logica de abrir/fechar/evento/foco/conteudo — que e onde mora o risco real,
+ * ainda mais agora que o componente nao usa <dialog> e todo o comportamento e manual.
  *
  *   node scripts/ui-drawer-js.mjs      -> imprime os casos e sai 1 na primeira falha
  *
@@ -64,6 +64,18 @@ class El {
             remove: (c) => this.classes.delete(c),
             contains: (c) => this.classes.has(c),
         };
+        // suficiente para `input.value` / `form.reset()` do drawer
+        this.valorPadrao = this.hasAttribute("value") ? this.getAttribute("value") : "";
+        this.value = this.valorPadrao;
+        this.textContent = "";
+    }
+    reset() {
+        const visitar = (no) => no._filhos.forEach((f) => {
+            f.value = f.valorPadrao;
+            visitar(f);
+        });
+        visitar(this);
+        return this;
     }
     hasAttribute(n) { return Object.prototype.hasOwnProperty.call(this.attrs, n); }
     getAttribute(n) { return this.hasAttribute(n) ? this.attrs[n] : null; }
@@ -85,15 +97,15 @@ class El {
         }
         return null;
     }
-    matches(sel) {
-        return casar(this, sel);
+    matches(sel) { return casar(this, sel); }
+    querySelector(sel) {
+        return this.querySelectorAll(sel)[0] || null;
     }
     querySelectorAll(sel) {
-        // suficiente para os seletores que o drawer.js usa
         const alvos = sel.split(",").map((s) => s.trim());
         const achados = [];
         const visitar = (no) => no._filhos.forEach((f) => {
-            if (alvos.some((a) => f.matches(a))) achados.push(f);
+            if (alvos.some((a) => casar(f, a))) achados.push(f);
             visitar(f);
         });
         visitar(this);
@@ -146,33 +158,63 @@ function criarAmbiente(elementos) {
 }
 
 // ---------------------------------------------------------------- cenario
+// Espelha o markup de drawer.tag + o gatilho de editar da tela de areas.
 
 function montarCenario({ aberto = false } = {}) {
-    // <aside id="drawer-area" data-drawer> = topo (X + titulo) + corpo + rodape
     const painel = new El("aside", { id: "drawer-area", "data-drawer": "" });
-    const titulo = new El("h2", { id: "drawer-area-titulo" });
+
+    const titulo = new El("h2", { id: "drawer-area-titulo", "data-drawer-titulo": "" });
+    titulo.textContent = "Nova area";
     const botaoX = new El("button", { "data-drawer-fechar": "" });
-    const campoNome = new El("input", { name: "nome" });
-    const botaoSalvar = new El("button", { type: "submit" });
-    const botaoFecharRodape = new El("button", { "data-drawer-fechar": "" });
-    [titulo, botaoX, campoNome, botaoSalvar, botaoFecharRodape].forEach((f) => painel.appendChild(f));
+    const cabecalho = new El("header");
+    [titulo, botaoX].forEach((f) => cabecalho.appendChild(f));
+
+    const form = new El("form", {
+        id: "drawer-area-form", "data-drawer-form": "", action: "/admin/areas", method: "post",
+    });
+    const campoMetodo = new El("input", { type: "hidden", name: "_method", value: "" });
+    const campoNome = new El("input", { name: "nome", value: "" });
+    const campoStatus = new El("select", { name: "status", value: "" });
+    [campoMetodo, campoNome, campoStatus].forEach((f) => form.appendChild(f));
+
+    const botaoSalvar = new El("button", { type: "submit", form: "drawer-area-form" });
+    const rodape = new El("footer");
+    rodape.appendChild(botaoSalvar);
+
+    [cabecalho, form, rodape].forEach((f) => painel.appendChild(f));
 
     const backdrop = new El("div", { id: "drawer-area-backdrop", "data-drawer-backdrop": "drawer-area" });
+
+    // "Nova area"
     const gatilho = new El("button", { "data-drawer-abrir": "drawer-area" });
+
+    // "Editar" de uma linha da tabela
+    const gatilhoEditar = new El("button", {
+        "data-drawer-editar": "drawer-area",
+        "data-drawer-titulo": "Editar area",
+        "data-drawer-acao": "/admin/areas/abc",
+        "data-campo-_method": "patch",
+        "data-campo-nome": "Piscina",
+        "data-campo-status": "Inativo",
+    });
 
     if (aberto) {
         painel.setAttribute("data-drawer-aberto", "");
         backdrop.setAttribute("data-drawer-aberto", "");
     }
 
-    const elementos = [painel, backdrop, gatilho, botaoX, botaoFecharRodape, campoNome];
+    const elementos = [painel, backdrop, gatilho, gatilhoEditar, botaoX, botaoSalvar, campoNome, campoStatus];
     const ambiente = criarAmbiente(elementos);
     ambiente.document.body.appendChild(backdrop);
     ambiente.document.body.appendChild(painel);
     ambiente.document.body.appendChild(gatilho);
+    ambiente.document.body.appendChild(gatilhoEditar);
 
     ambiente.document._disparar("DOMContentLoaded", new CustomEvent("DOMContentLoaded"));
-    return { ...ambiente, painel, backdrop, gatilho, botaoX, botaoFecharRodape, campoNome };
+    return {
+        ...ambiente, painel, backdrop, gatilho, gatilhoEditar, botaoX, botaoSalvar,
+        form, titulo, campoMetodo, campoNome, campoStatus,
+    };
 }
 
 // ---------------------------------------------------------------- casos
@@ -186,11 +228,11 @@ caso("o gatilho data-drawer-abrir abre, trava o scroll e nao navega", () => {
     assert.equal(painel.hasAttribute("data-drawer-aberto"), true, "o painel deveria abrir");
     assert.equal(backdrop.hasAttribute("data-drawer-aberto"), true, "o backdrop deveria aparecer");
     assert.equal(body.classes.has("app-drawer-trava-scroll"), true, "deveria travar o scroll");
-    assert.equal(ev.defaultPrevented, true, "o gatilho nao pode navegar/enviar form");
+    assert.equal(ev.defaultPrevented, true, "o gatilho nao pode navegar (era o reload que quebrava)");
 });
 
 caso("abrir move o foco para o primeiro focavel do painel", () => {
-    const { contexto, document, painel, botaoX } = montarCenario();
+    const { contexto, document, botaoX } = montarCenario();
     contexto.AppDrawer.abrir("drawer-area");
     assert.equal(document.activeElement, botaoX, "o foco deveria ir para dentro do painel");
 });
@@ -232,17 +274,17 @@ caso("Esc com o drawer fechado nao emite evento", () => {
     assert.equal(painel.disparados.filter((e) => e.type === "drawer:fechado").length, 0);
 });
 
-caso("o botao de fechar do rodape fecha o painel ancestral", () => {
-    const { contexto, painel, botaoFecharRodape } = montarCenario();
+caso("o X fecha o painel ancestral", () => {
+    const { contexto, painel, botaoX } = montarCenario();
     contexto.AppDrawer.abrir("drawer-area");
-    botaoFecharRodape.clicar();
-    assert.equal(painel.hasAttribute("data-drawer-aberto"), false, "o X/rodape deveria fechar");
+    botaoX.clicar();
+    assert.equal(painel.hasAttribute("data-drawer-aberto"), false, "o X deveria fechar");
 });
 
 caso("Tab no ultimo focavel volta para o primeiro", () => {
-    const { contexto, painel, botaoX, botaoFecharRodape, document } = montarCenario();
+    const { contexto, painel, botaoX, botaoSalvar, document } = montarCenario();
     contexto.AppDrawer.abrir("drawer-area");
-    document.activeElement = botaoFecharRodape;              // ultimo focavel
+    document.activeElement = botaoSalvar;                    // ultimo focavel
     const ev = painel.teclar("Tab");
     document._disparar("keydown", ev);
     assert.equal(ev.defaultPrevented, true, "deveria interceptar o Tab");
@@ -250,13 +292,13 @@ caso("Tab no ultimo focavel volta para o primeiro", () => {
 });
 
 caso("Shift+Tab no primeiro focavel vai para o ultimo", () => {
-    const { contexto, painel, botaoX, botaoFecharRodape, document } = montarCenario();
+    const { contexto, painel, botaoX, botaoSalvar, document } = montarCenario();
     contexto.AppDrawer.abrir("drawer-area");
-    document.activeElement = botaoX;                          // primeiro focavel
+    document.activeElement = botaoX;                         // primeiro focavel
     const ev = painel.teclar("Tab", true);
     document._disparar("keydown", ev);
     assert.equal(ev.defaultPrevented, true);
-    assert.equal(document.activeElement, botaoFecharRodape, "deveria ir para o ultimo");
+    assert.equal(document.activeElement, botaoSalvar, "deveria ir para o ultimo");
 });
 
 caso("abrir e idempotente (nao reemite drawer:aberto)", () => {
@@ -282,11 +324,52 @@ caso("aberto=true do servidor: ja aberto, foca e trava o scroll", () => {
     assert.notEqual(document.activeElement, body, "deveria focar dentro do painel");
 });
 
+// --- conteudo dinamico (o que conserta o "salvar nao fecha" e o "segundo clique") ---
+
+caso("o gatilho de editar preenche acao, _method, campos e titulo", () => {
+    const { gatilhoEditar, form, campoMetodo, campoNome, campoStatus, titulo, painel } = montarCenario();
+    gatilhoEditar.clicar();
+
+    assert.equal(form.getAttribute("action"), "/admin/areas/abc", "acao deveria ser a da area");
+    assert.equal(campoMetodo.value, "patch", "_method deveria virar patch");
+    assert.equal(campoNome.value, "Piscina", "o campo nome deveria ser preenchido");
+    assert.equal(campoStatus.value, "Inativo", "o campo status deveria ser preenchido");
+    assert.equal(titulo.textContent, "Editar area", "o titulo deveria mudar");
+    assert.equal(painel.hasAttribute("data-drawer-aberto"), true, "deveria abrir");
+});
+
+caso("depois de editar, o gatilho de novo devolve o formulario ao modo de criacao", () => {
+    const { gatilhoEditar, gatilho, form, campoMetodo, campoNome, campoStatus, titulo } = montarCenario();
+
+    gatilhoEditar.clicar();
+    contextoFechar();
+    gatilho.clicar();
+
+    assert.equal(form.getAttribute("action"), "/admin/areas", "a acao deveria voltar para a de criacao");
+    assert.equal(campoMetodo.value, "", "_method deveria voltar a vazio (POST)");
+    assert.equal(campoNome.value, "", "o nome deveria ser limpo");
+    assert.equal(campoStatus.value, "", "o status deveria ser limpo");
+    assert.equal(titulo.textContent, "Nova area", "o titulo deveria voltar ao de criacao");
+});
+
+caso("o gatilho de novo abre em um clique, sem reload", () => {
+    const { gatilho, painel } = montarCenario();
+    const ev = gatilho.clicar();
+    assert.equal(ev.defaultPrevented, true, "nao pode navegar");
+    assert.equal(painel.hasAttribute("data-drawer-aberto"), true, "deveria abrir de primeira");
+});
+
 caso("id desconhecido nao quebra", () => {
     const { contexto } = montarCenario();
     assert.equal(contexto.AppDrawer.abrir("nao-existe"), null);
     assert.equal(contexto.AppDrawer.fechar("nao-existe"), null);
 });
+
+// fecha o drawer aberto pelo cenario anterior, para o caso seguinte comecar limpo
+function contextoFechar() {
+    const aberto = ambienteAtual.document.querySelectorAll("[data-drawer][data-drawer-aberto]")[0];
+    if (aberto) ambienteAtual.AppDrawer.fechar(aberto.id);
+}
 
 // ---------------------------------------------------------------- execucao
 

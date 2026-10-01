@@ -32,6 +32,7 @@ FROZEN_HOOKS=(
     data-auto-submit
     data-filter-input data-filter-target data-filter-table
     data-drawer data-drawer-abrir data-drawer-fechar data-drawer-aberto data-drawer-backdrop
+    data-drawer-editar data-drawer-form data-drawer-titulo
     data-alert data-dismiss-alert
     data-page
     data-view data-referencia data-base-url data-modo

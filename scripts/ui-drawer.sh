@@ -10,9 +10,9 @@
 # Exit code: 0 = contrato e fluxo OK, 1 = divergencia.
 #
 # Cobre quatro camadas:
-#   A. contrato do markup renderizado (cadastro e edicao) + posicao fora de .page-content
+#   A. contrato do markup renderizado (e a posicao fora de .page-content)
 #   B. escopo — o componente e usado em UMA tela, como pedido
-#   C. fluxo real criar -> editar -> remover pelo formulario do drawer
+#   C. fluxo real criar -> editar -> remover, incluindo o DEPOIS de salvar
 #   D. contrato do JS, incluindo a execucao dos casos de comportamento
 set -euo pipefail
 
@@ -43,82 +43,92 @@ print(m.group(1) if m else '')"
 # ------------------------------------------------------------------ A. contrato
 
 echo "== A. contrato do markup =="
-curl -s -b "$JAR" -c "$JAR" "$BASE/admin/areas" -o "$WORK/novo.html"
-AREA_ID="$(q "SELECT id FROM areas WHERE deleted_at IS NULL ORDER BY nome LIMIT 1;")"
-curl -s -b "$JAR" -c "$JAR" "$BASE/admin/areas?areaId=$AREA_ID" -o "$WORK/edicao.html"
+curl -s -b "$JAR" -c "$JAR" "$BASE/admin/areas" -o "$WORK/lista.html"
+# `LISTA_HTML` permite apontar a checagem para um HTML ja gravado (usado no self-test
+# negativo do proprio verificador, que roda fora do container).
+LISTA="${LISTA_HTML:-$WORK/lista.html}"
 
-if python3 - "$WORK" <<'PY'
+if python3 - "$LISTA" <<'PY'
 import re, sys, pathlib
-work = pathlib.Path(sys.argv[1])
+h = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8")
 falhas = []
 def check(cond, msg):
     if not cond:
         falhas.append(msg)
 
-for estado, arq in (("cadastro", "novo.html"), ("edicao", "edicao.html")):
-    h = (work / arq).read_text(encoding="utf-8")
-    painel = re.search(r'<aside id="drawer-area".*?</aside>', h, re.S)
-    if not painel:
-        falhas.append(f"{estado}: <aside> do drawer ausente")
-        continue
-    d = painel.group(0)
+check("<dialog" not in h, "a pagina tem <dialog> (o componente nao deve ser um dialog)")
 
-    # topo: titulo + descricao
-    check(re.search(r'<h2 id="drawer-area-titulo" class="font-display text-lg font-semibold">[^<]+</h2>', d),
-          f"{estado}: titulo ausente ou fora da tipografia")
-    check(re.search(r'<p class="text-sm opacity-70">[^<]+</p>', d), f"{estado}: descricao ausente")
-    # X no topo direito
-    check(re.search(r'<button[^>]*class="btn btn-sm btn-circle btn-ghost[^"]*"[^>]*aria-label="Fechar"[^>]*data-drawer-fechar', d),
-          f"{estado}: botao X ausente")
-    # painel: containers e semantica
-    check(re.search(r'<aside id="drawer-area"\s+class="app-drawer app-drawer--sm app-drawer--end"\s+role="dialog" aria-modal="true" aria-labelledby="drawer-area-titulo"', d),
-          f"{estado}: <aside> sem classes/semantica do componente")
-    check('class="app-drawer-topo"' in d, f"{estado}: falta .app-drawer-topo")
-    check('class="app-drawer-corpo"' in d, f"{estado}: falta .app-drawer-corpo")
-    check('class="app-drawer-rodape"' in d, f"{estado}: falta .app-drawer-rodape")
-    # slot livre
-    check('<label class="field">' in d and 'name="nome"' in d and 'name="status"' in d,
-          f"{estado}: slot livre nao renderizou os campos")
-    # rodape
-    check(re.search(r'<button type="submit" form="drawer-area-form" class="btn btn-primary">', d),
-          f"{estado}: botao Salvar ausente ou nao referencia o form")
-    check(d.count("data-drawer-fechar") >= 2, f"{estado}: faltam botoes de fechar (X + rodape)")
-    # csrf dentro do form do drawer
-    check(re.search(r'<form id="drawer-area-form"[^>]*>\s*<input type="hidden" name="_csrf"', d),
-          f"{estado}: form do drawer sem _csrf")
-    # NAO pode ser <dialog>
-    check("<dialog" not in h, f"{estado}: a pagina ainda tem <dialog>")
+painel = re.search(r'<aside id="drawer-area".*?</aside>', h, re.S)
+if not painel:
+    print("  FAIL <aside> do drawer ausente")
+    sys.exit(1)
+d = painel.group(0)
 
-    # backdrop irmao, fora do painel
-    bd = re.search(r'<div id="drawer-area-backdrop" class="app-drawer-backdrop" data-drawer-backdrop="drawer-area"', h)
-    check(bd is not None, f"{estado}: backdrop ausente")
-    if bd and painel:
-        check(bd.start() < painel.start(), f"{estado}: o backdrop deveria vir antes do painel")
+# topo: titulo + descricao + X
+check(re.search(r'<h2 id="drawer-area-titulo" data-drawer-titulo class="font-display text-lg font-semibold">Nova area</h2>', d),
+      "titulo ausente ou fora da tipografia")
+check(re.search(r'<p class="text-sm opacity-70">[^<]+</p>', d), "descricao ausente")
+check(re.search(r'<button[^>]*class="btn btn-sm btn-circle btn-ghost[^"]*"[^>]*aria-label="Fechar"[^>]*data-drawer-fechar', d),
+      "botao X ausente")
+check(re.search(r'<aside id="drawer-area"\s+class="app-drawer app-drawer--sm app-drawer--end"\s+role="dialog" aria-modal="true" aria-labelledby="drawer-area-titulo"', d),
+      "<aside> sem classes/semantica do componente")
+check('class="app-drawer-topo"' in d, "falta .app-drawer-topo")
+check('class="app-drawer-corpo"' in d, "falta .app-drawer-corpo")
+check('class="app-drawer-rodape"' in d, "falta .app-drawer-rodape")
 
-    # POSICAO: fora de .page-content, senao o legado espreme o backdrop
-    fim_main = h.find("</main>")
-    check(fim_main != -1, f"{estado}: </main> nao encontrado")
-    if fim_main != -1 and painel:
-        check(painel.start() > fim_main,
-              f"{estado}: o drawer precisa ser renderizado FORA de .page-content (depois de </main>)")
-    if fim_main != -1 and bd:
-        check(bd.start() > fim_main,
-              f"{estado}: o backdrop precisa ficar FORA de .page-content (depois de </main>)")
+# slot livre
+check('<label class="field">' in d and 'name="nome"' in d and 'name="status"' in d, "slot livre nao renderizou os campos")
 
-    if estado == "cadastro":
-        check('data-drawer-aberto' not in d, "cadastro: o drawer nao deveria abrir sozinho")
-        check('action="/admin/areas"' in d, "cadastro: action errada")
-        check('_method' not in d, "cadastro: _method indevido")
-    else:
-        check('data-drawer-aberto' in d, "edicao: o drawer deveria abrir sozinho")
-        check('action="/admin/areas/' in d, "edicao: action nao aponta para a area")
-        check('name="_method" value="patch"' in d, "edicao: falta _method=patch")
+# rodape: SO o botao Salvar, com icone
+rodape = re.search(r'<footer class="app-drawer-rodape">(.*?)</footer>', d, re.S)
+if not rodape:
+    falhas.append("rodape ausente")
+else:
+    r = rodape.group(1)
+    botoes = re.findall(r'<button[^>]*>', r)
+    check(len(botoes) == 1, f"o rodape deveria ter 1 botao (Salvar), achou {len(botoes)}")
+    check('class="btn btn-primary"' in r, "o botao do rodape nao e o primario")
+    check(re.search(r'Salvar', r) is not None, "o botao do rodape nao se chama Salvar")
+    check('<svg' in r, "o botao Salvar esta sem icone")
+    check('data-drawer-fechar' not in r, "o rodape ainda tem botao de Fechar")
+    check('Fechar' not in r, "o rodape ainda mostra o rotulo Fechar")
+
+# _method dentro do form, pronto para o gatilho de edicao preencher
+check(re.search(r'<form id="drawer-area-form" data-drawer-form method="post" action="/admin/areas" class="app-drawer-corpo">', d),
+      "form do drawer sem id/data-hook/action de criacao")
+check(re.search(r'<form id="drawer-area-form"[^>]*>\s*<input type="hidden" name="_csrf"', d), "form do drawer sem _csrf")
+check(re.search(r'<input type="hidden" name="_method" value="">', d), "falta o _method vazio para o modo edicao")
+
+# NAO pode vir aberto: era isso que deixava o drawer aberto depois de salvar
+check('data-drawer-aberto' not in d, "o drawer nao deveria vir aberto do servidor")
+
+# gatilhos
+check('<button type="button" class="btn btn-primary btn-sm" data-drawer-abrir="drawer-area">' in h,
+      "faltou o gatilho 'Nova area' (data-drawer-abrir)")
+editar = re.search(r'<button type="button" class="btn btn-link"\s+data-drawer-editar="drawer-area".*?</button>', h, re.S)
+if not editar:
+    falhas.append("faltou o gatilho 'Editar' (data-drawer-editar)")
+else:
+    e = editar.group(0)
+    for atributo in ('data-drawer-titulo="Editar area"', 'data-drawer-acao="/admin/areas/',
+                     'data-campo-_method="patch"', 'data-campo-nome="', 'data-campo-status="'):
+        check(atributo in e, f"gatilho Editar sem {atributo}")
+
+# backdrop irmao, e os dois FORA de .page-content
+bd = re.search(r'<div id="drawer-area-backdrop" class="app-drawer-backdrop" data-drawer-backdrop="drawer-area"', h)
+check(bd is not None, "backdrop ausente")
+fim_main = h.find("</main>")
+check(fim_main != -1, "</main> nao encontrado")
+if fim_main != -1:
+    if bd:
+        check(bd.start() > fim_main, "o backdrop precisa ficar FORA de .page-content (depois de </main>)")
+    check(painel.start() > fim_main, "o drawer precisa ser renderizado FORA de .page-content (depois de </main>)")
 
 if falhas:
     for f in falhas:
         print("  FAIL " + f)
     sys.exit(1)
-print("  OK   markup correto nos dois estados, fora de .page-content (topo, slot, rodape, X, backdrop, csrf)")
+print("  OK   markup correto: rodape so com Salvar (com icone), sem Fechar, nunca aberto no HTML")
 PY
 then :; else fail=1; fi
 
@@ -136,6 +146,11 @@ grep -q 'data-drawer' src/main/webapp/WEB-INF/tags/drawer.tag \
     && ok "a definicao vive em WEB-INF/tags/drawer.tag" \
     || bad "drawer.tag nao define os hooks data-drawer"
 [ -e src/main/webapp/WEB-INF/tags/modal.tag ] && bad "modal.tag ainda existe" || ok "modal.tag removido"
+# A tela nao pode mais depender do estado de edicao vindo do servidor (era o `?areaId=`).
+# O grep olha o USO (`areaEdicao`/`areaForm`), nao a palavra no comentario explicativo.
+grep -qE 'areaEdicao|areaForm' src/main/webapp/WEB-INF/jsp/admin/areas/lista.jsp \
+    && bad "a tela de areas ainda usa o estado de edicao do servidor" \
+    || ok "a tela nao depende mais do estado de edicao via ?areaId (sem reload para abrir)"
 
 # ------------------------------------------------------------------ C. fluxo
 
@@ -156,21 +171,30 @@ else
         bad "criar: status=$ST id='${NOVO_ID:-}'"
     fi
 
-    T="$(csrf_do_drawer "$BASE/admin/areas?areaId=$NOVO_ID")"
-    curl -s -b "$JAR" -c "$JAR" "$BASE/admin/areas?areaId=$NOVO_ID" -o "$WORK/editar.html"
-    grep -q "value=\"$NOME\"" "$WORK/editar.html" \
-        && ok "editar: o drawer ja vem com os valores da area" \
-        || bad "editar: valores nao chegaram ao drawer"
-
+    T="$(csrf_do_drawer "$BASE/admin/areas")"
     ST="$(curl -s -b "$JAR" -c "$JAR" -X POST "$BASE/admin/areas/$NOVO_ID" \
         --data-urlencode "_csrf=$T" --data-urlencode "_method=patch" \
         --data-urlencode "nome=$NOME_EDITADO" --data-urlencode "status=Inativo" \
-        -o /dev/null -w '%{http_code}')"
+        -D "$WORK/patch-head.txt" -o /dev/null -w '%{http_code}')"
     ATUAL="$(qv "SELECT nome||'|'||status FROM areas WHERE id='$NOVO_ID';")"
     if [ "$ST" = "302" ] && [ "$ATUAL" = "$NOME_EDITADO|Inativo" ]; then
         ok "editar: PATCH 302 e o banco reflete a mudanca"
     else
         bad "editar: status=$ST banco='$ATUAL'"
+    fi
+
+    # DEPOIS de salvar: a pagina para onde o servidor manda nao pode vir com o drawer
+    # aberto. Era exatamente esse o bug relatado ("salvo e o drawer nao fecha").
+    DESTINO="$(grep -i '^location:' "$WORK/patch-head.txt" | tr -d '\r' | sed 's/^[Ll]ocation: *//')"
+    if [ -n "$DESTINO" ]; then
+        curl -s -b "$JAR" -c "$JAR" "$DESTINO" -o "$WORK/pos-save.html"
+        if grep -q 'data-drawer-aberto' "$WORK/pos-save.html"; then
+            bad "depois de salvar o drawer volta aberto ($DESTINO)"
+        else
+            ok "depois de salvar a pagina vem com o drawer fechado ($DESTINO)"
+        fi
+    else
+        bad "o PATCH nao devolveu Location"
     fi
 
     T="$(csrf_do_drawer "$BASE/admin/areas")"
@@ -206,11 +230,13 @@ grep -q 'data-drawer-aberto'      "$JS" && ok "estado por atributo (sem <dialog>
 grep -q '"Escape"'                "$JS" && ok "fecha com Esc" || bad "sem tratamento de Esc"
 grep -q 'evento.key !== "Tab"'    "$JS" && ok "prende o foco (Tab)" || bad "sem focus trap"
 grep -q 'app-drawer-trava-scroll' "$JS" && ok "trava o scroll da pagina" || bad "sem trava de scroll"
+grep -q 'data-drawer-editar'      "$JS" && ok "suporta conteudo dinamico (editar)" || bad "sem gatilho de editar"
+grep -q 'form.reset()'            "$JS" && ok "devolve o form ao modo de criacao" || bad "sem reset do formulario"
 grep -q 'js/drawer.js' src/main/webapp/WEB-INF/jsp/fragments/scripts.jspf \
     && ok "carregado por scripts.jspf" || bad "nao e carregado nas paginas"
 
-# Executa de verdade a logica de abrir/fechar/evento/foco num DOM minimo em Node — e a
-# unica forma de testar o JS sem navegador. Ver o cabecalho de ui-drawer-js.mjs.
+# Executa de verdade a logica de abrir/fechar/evento/foco/conteudo num DOM minimo em
+# Node — e a unica forma de testar o JS sem navegador. Ver ui-drawer-js.mjs.
 if node scripts/ui-drawer-js.mjs > "$WORK/drawer-js.txt" 2>&1; then
     ok "comportamento do JS: $(grep -c '^  OK' "$WORK/drawer-js.txt") casos executados"
 else

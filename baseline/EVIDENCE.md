@@ -752,6 +752,56 @@ O caso 6 cobre o que a S22 não cobria: o JS agora é **executado** num DOM mín
 aqui), incluindo clique no backdrop, Esc, focus trap, trava de scroll e abertura server-side. Continua sem
 cobrir o que depende do motor do navegador — a animação do `translate` e o layout real das faixas.
 
+## Revisão S23.1 — rodapé enxuto e os dois bugs relatados
+
+### Rodapé só com Salvar
+
+Saiu o botão "Fechar": fechar é o X do topo, o Esc e o clique fora. O botão que sobra passou a se
+chamar **"Salvar"** (sem "Cadastrar area"/"Salvar area") e ganhou o ícone Tabler `device-floppy`.
+Sem `acao` (drawer informativo) o rodapé nem é renderizado.
+
+### Bug 1 — salvar não fechava o drawer
+
+**Causa:** `AreaApiController.atualizarArea` termina em `redirect:/admin/areas?areaId=" + areaId`, e a
+view tratava `?areaId=` como "abra o drawer em modo edição". Salvar reabria o próprio drawer.
+
+**Correção:** a view deixou de usar o estado de edição do servidor. O drawer é **sempre renderizado
+fechado e no modo de criação**; quem preenche e abre é o gatilho de edição, no cliente. Depois de
+salvar, a página recarrega com o drawer fechado, independentemente de para onde o servidor redirecione.
+**Nenhuma linha de Java foi alterada** — a correção foi possível justamente por tirar o `?areaId=` do
+caminho de renderização.
+
+### Bug 2 — dois cliques para criar
+
+**Causa:** em modo edição o botão "Nova area" era um link para a URL limpa. O reload removia o
+`areaId`, mas o drawer só abria quando havia estado de edição — então ele voltava fechado e só um
+segundo clique (já no modo de criação) o abria.
+
+**Correção:** "Nova area" virou gatilho de cliente (`data-drawer-abrir`), igual ao "Editar". Os dois
+operam sobre o mesmo drawer: `data-drawer-abrir` devolve o formulário ao estado renderizado
+(`action` original + `reset()`), `data-drawer-editar` aplica os `data-campo-*` do gatilho. Não há mais
+reload para abrir.
+
+### Conteúdo dinâmico
+
+O `_method` virou um campo comum: o componente renderiza `<input type="hidden" name="_method" value="">`
+e o gatilho de edição o preenche via `data-campo-_method="patch"`. Vazio = POST (o
+`HiddenHttpMethodFilter` ignora parâmetro sem valor).
+
+### Verificação desta revisão
+
+| # | Check | Result |
+|---|---|---|
+| 1 | rodapé com **1** botão, chamado Salvar, com `<svg`, sem `data-drawer-fechar` | OK |
+| 2 | drawer **nunca** vem com `data-drawer-aberto` no HTML | OK |
+| 3 | **depois de salvar**: o destino do `Location` do PATCH é buscado e conferido — vem sem `data-drawer-aberto` | OK (bug 1 travado por teste) |
+| 4 | self-test negativo do markup: 4/4 sabotagens (Fechar de volta, ícone removido, rótulo trocado, `data-drawer-aberto` no HTML) | OK |
+| 5 | comportamento do JS: **16/16 casos**, incluindo editar preenche, novo reseta e novo abre em um clique | OK |
+| 6 | matriz de rotas · `ui-shell.sh` · `ui-invariants.sh` · suíte | 26/26 · OK · `INVARIANTS OK` · **153 testes, 0 falhas** |
+
+O caso 3 é o mais importante: ele **executa** o fluxo salvar→redirect→render e falha se o drawer voltar
+aberto, em vez de confiar na leitura do código.
+
 **Snapshot de invariantes renovado** de novo: os hooks `data-modal*` saíram de `FROZEN_HOOKS` e entraram
 `data-drawer`, `data-drawer-abrir`, `data-drawer-fechar`, `data-drawer-aberto` e `data-drawer-backdrop`.
 
