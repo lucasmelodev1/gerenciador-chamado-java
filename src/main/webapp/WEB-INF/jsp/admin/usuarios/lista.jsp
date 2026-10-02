@@ -68,7 +68,7 @@
 
 <%-- `travar="tipo"`: na edicao o perfil fica desabilitado e um espelho escondido envia
      o valor atual — o servidor recusa a troca de tipo de qualquer forma.
-     Fora de `.page-content`: o legado espremeria o backdrop. Ver custom.css > Drawer. --%>
+     Fora de `.app-page`: o legado espremeria o backdrop. Ver custom.css > Drawer. --%>
 <ui:drawer id="drawer-usuario"
            titulo="Novo usuario"
            descricao="Cadastre administradores, colaboradores e moradores."

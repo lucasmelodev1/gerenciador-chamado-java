@@ -2,24 +2,27 @@
     Componente: abertura da pagina (S31).
 
     As 25 telas autenticadas repetiam o mesmo bloco: doctype, `<head>`, wrapper do drawer,
-    lateral, topbar, `<main class="page-content">` e as mensagens de redirect. Aqui isso vira
-    uma chamada; a pagina declara so o `dataPagina` e o conteudo.
+    lateral, topbar, `<main>` e as mensagens de redirect. Aqui isso vira uma chamada; a
+    pagina declara so o `dataPagina` e o conteudo.
 
     Uso:
         <ui:shell dataPagina="admin-areas">
             ...conteudo de <main>...
         </ui:shell>
 
-        ...paineis (ui:drawer/ui:dialog, que precisam ficar FORA de .page-content)...
+        ...paineis (ui:drawer/ui:dialog, que precisam ficar FORA de .app-page)...
 
         <ui:shell-fim />
 
     Atributos:
         dataPagina  obrigatorio — valor de `data-page` do <body> (marcador do shell)
-        classeMain  opcional — classe extra do <main> (ex.: `narrow-content`)
+        classeMain  opcional — classe extra do <main> (ex.: `app-page--estreito`)
+
+    O `<main>` sai com `app-page` (geometria + animacao de entrada) desde o F1 da migracao
+    do CSS legado; o `<body>` sai com `bg-base-200 text-base-content` pelo mesmo motivo.
 
     Sao DOIS tags porque o corpo do `<jsp:doBody/>` e um so: os paineis precisam ser
-    renderizados entre `</main>` e o fim do `<body>` — dentro de `.page-content` o legado
+    renderizados entre `</main>` e o fim do `<body>` — dentro de `.app-page` o legado
     espremeria o backdrop (ver custom.css > Drawer lateral). O `ui:shell` abre e fecha o
     `<main>`/drawer; o `ui:shell-fim` carrega os scripts e fecha o documento.
 
@@ -35,11 +38,14 @@
 <%@ attribute name="classeMain" required="false" description="classe extra do <main>" %>
 
 <c:set var="ctx" value="${request.contextPath}" />
-<c:set var="mainClasse" value="page-content${empty classeMain ? '' : ' '}${classeMain}" />
+<c:set var="mainClasse" value="app-page${empty classeMain ? '' : ' '}${classeMain}" />
 <!DOCTYPE html>
 <html lang="pt-BR">
 <%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
-<body data-page="${dataPagina}">
+<%-- `bg-base-200 text-base-content` substitui o que o base.css legado fazia no body
+     (fundo cinza da pagina + cor do texto). O cinza e o que faz o `.drawer-content`
+     branco parecer uma superficie "inset". --%>
+<body class="bg-base-200 text-base-content" data-page="${dataPagina}">
 <div class="drawer lg:drawer-open">
     <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
     <div class="drawer-content">

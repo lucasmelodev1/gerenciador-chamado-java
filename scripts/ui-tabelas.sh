@@ -151,7 +151,7 @@ for tela, cfg in TELAS.items():
         if 'data-filter-input' in h:
             bad(tela, "nao deveria ter busca local (os filtros desta tela vao ao servidor)")
 
-    # --- drawer: gatilho no cabecalho e painel FORA de .page-content ---
+    # --- drawer: gatilho no cabecalho e painel FORA de .app-page ---
     if cfg["drawer"]:
         if f'data-drawer-abrir="{cfg["drawer"]}"' not in h:
             bad(tela, f"faltou o gatilho data-drawer-abrir={cfg['drawer']!r}")
@@ -160,7 +160,7 @@ for tela, cfg in TELAS.items():
             bad(tela, f"painel {cfg['drawer']!r} ausente")
         fim_main = h.find("</main>")
         if painel and fim_main != -1 and painel.start() < fim_main:
-            bad(tela, "o drawer precisa ser renderizado fora de .page-content (depois de </main>)")
+            bad(tela, "o drawer precisa ser renderizado fora de .app-page (depois de </main>)")
         if 'data-drawer-aberto' in h:
             bad(tela, "o drawer nao pode vir aberto do servidor")
 
@@ -175,7 +175,7 @@ for dlg in ("dialog-negacao", "dialog-cancelamento"):
         bad("reservas", f"dialogo {dlg!r} ausente, ou sem a classe .app-dialog (virou drawer?)")
     else:
         if fim_main != -1 and painel.start() < fim_main:
-            bad("reservas", f"{dlg!r} precisa ser renderizado fora de .page-content")
+            bad("reservas", f"{dlg!r} precisa ser renderizado fora de .app-page")
         if 'role="dialog" aria-modal="true"' not in painel.group(0):
             bad("reservas", f"{dlg!r} sem role=dialog/aria-modal")
 if 'name="motivo"' not in h:

@@ -2,7 +2,7 @@
     Componente: fechamento da pagina (S31) — o par do `ui:shell`.
 
     Carrega os scripts (`fragments/scripts.jspf`) e fecha o documento. Vem DEPOIS dos
-    paineis: eles nascem fora de `.page-content` e antes do fim do <body>.
+    paineis: eles nascem fora de `.app-page` e antes do fim do <body>.
 
     Uso:
         <ui:shell-fim />

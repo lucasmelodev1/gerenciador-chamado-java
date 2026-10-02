@@ -72,8 +72,8 @@
             </section>
 </ui:shell>
 
-<%-- Fora de `.page-content` de proposito: la o legado aplica
-     `.page-content > * { width: min(100%, 1360px); margin-inline: auto }`, que espremeria
+<%-- Fora de `.app-page` de proposito: la o legado aplica
+     `.app-page > * { width: min(100%, 1360px); margin-inline: auto }`, que espremeria
      o backdrop do drawer e deixaria as bordas da tela claras. Ver custom.css > Drawer. --%>
 <ui:drawer id="drawer-area"
            titulo="Nova area"

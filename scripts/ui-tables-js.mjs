@@ -236,7 +236,7 @@ function montarCenario() {
     };
 }
 
-const escondida = (tr) => tr.classes.has("is-hidden");
+const escondida = (tr) => tr.classes.has("hidden");
 
 // ---------------------------------------------------------------- casos
 

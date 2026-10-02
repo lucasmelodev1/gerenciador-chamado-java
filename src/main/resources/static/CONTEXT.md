@@ -8,7 +8,7 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
   apenas em documentação. Também define a escala de raios do tema (`--radius-box: 1rem`,
   `--radius-field: .625rem`, `--radius-selector: .5rem`), reduzida em S20, e as superfícies
   (`--color-base-200: #f3f4f6`, `--color-base-300: #e5e7eb`) — cinza-neutro desde S21, no lugar do creme
-  `#f3efe7/#e4ded2`. O `--bg` do `base.css` (fundo real do `body`) acompanha o `base-200`.
+  `#f3efe7/#e4ded2`. O fundo real do `body` é `bg-base-200` no `ui:shell` (S33 deixou de vir do `base.css`).
 - `css/app.build.css`: **gerado** (`npm run build:css` ou estágio `frontend` do Dockerfile); não versionado.
 - `css/custom.css`: shell — painel *inset* do `drawer-content` e topbar (linha única com `border-b`) —,
   o **diálogo central** `.app-dialog` (mesmo componente do drawer, centralizado com `inset: 0` +
@@ -16,6 +16,12 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
   dois ajustes de geometria escopados em `.app-sidebar` (a daisyUI vem depois de `utilities` no cascade, então
   `.menu{width:fit-content;padding:.5rem}` precisa ser sobrescrito fora de layer), o token `--card-p` (respiro
   interno dos cards) e acessibilidade.
+  Desde o F1 da migração do CSS legado (S33) também a **fundação do shell**: `html { scroll-behavior }`,
+  `body { min-height, overflow-x }`, `.app-page` (padding/grid/gap do antigo `.page-content` + o `> *`
+  com `width: min(100%, 1360px)` e `margin-inline: auto`), `.app-page--estreito` (os dois formulários
+  estreitos) e a animação `fadeLift` com os delays por `nth-child`. É a mesma receita que o legado tinha,
+  só que com dono — e é o motivo de os paineis (`ui:drawer`/`ui:dialog`) serem renderizados fora do
+  `<main>`: a regra `> *` espremeria o backdrop.
   Também o **cabeçalho de card de listagem** (S24): `.app-card-head` é uma linha (`flex-direction: row` +
   `space-between`) com a descrição e o título num bloco de `gap: 2px` à esquerda e a ação primária à direita,
   fechada por um filete (`border-bottom: 1px solid var(--color-base-300)`) que a separa da faixa de filtros
@@ -59,7 +65,8 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
 
 ## JS
 - `core` (`window.AppDom`), `alerts`, `forms` (`data-confirm`, `data-password-*`, `data-character-*`,
-  `data-auto-submit`) e `tables` (`data-filter-*`).
+  `data-auto-submit`) e `tables` (`data-filter-*`; esconde a linha com o utilitário `hidden` do Tailwind,
+  que substituiu o `.is-hidden` do legado no F1 da S33).
 - `calendar.js` (agendas mês/semana do admin e do morador): monta os eventos a partir dos
   `.reserva-data`, filtra por área **no cliente** e, no clique do evento, abre o painel de detalhe
   declarado em `data-painel-detalhe` no `#calendar` (o JS não conhece o id `drawer-reserva`)

@@ -26,7 +26,7 @@
 
     O esqueleto (backdrop, topo, corpo, form com CSRF e rodape) vive em `ui:painel`; este
     tag so encaminha os atributos para manter o nome e o contrato das telas. As regras de
-    posicionamento (FORA de `.page-content`), CSRF, campos travados e o protocolo com o
+    posicionamento (FORA de `.app-page`), CSRF, campos travados e o protocolo com o
     `drawer.js` estao documentadas em `painel.tag`.
 --%>
 <%@ tag pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>

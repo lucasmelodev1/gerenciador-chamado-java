@@ -77,7 +77,7 @@
             </section>
 </ui:shell>
 
-<%-- Fora de `.page-content`: o legado espremeria o backdrop. Ver custom.css > Drawer. --%>
+<%-- Fora de `.app-page`: o legado espremeria o backdrop. Ver custom.css > Drawer. --%>
 <ui:drawer id="drawer-status"
            titulo="Novo status"
            descricao="Um status por etapa do atendimento. O inicial e o que o chamado recebe ao abrir."

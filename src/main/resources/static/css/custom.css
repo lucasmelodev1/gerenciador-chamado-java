@@ -24,6 +24,81 @@
  */
 
 /* ---------------------------------------------------------------------------
+ * Fundacao do shell (S33) — assume o que os quatro arquivos legados faziam em
+ * `html`, `body` e no antigo `.page-content`.
+ *
+ * Vem da migracao do CSS legado (F1): as regras sao as MESMAS de antes, so mudaram de
+ * dono. Enquanto `base.css`/`layout.css`/`responsive.css` ainda estiverem linkados no
+ * `head.jspf` as duas definicoes coexistem (mesmos valores); no F6 o legado sai e estas
+ * passam a ser as unicas.
+ *
+ * `.app-page` e o `<main>` emitido pelo `ui:shell`; `.app-page--estreito` e o `classeMain`
+ * dos dois formularios estreitos (morador/chamados/novo e morador/reservas/nova).
+ * ------------------------------------------------------------------------ */
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.app-page {
+    padding: 18px 24px 28px;
+    display: grid;
+    gap: 16px;
+    align-content: start;
+}
+
+/* O `> *` e o que mantem o painel da esquerda e o conteudo alinhados: os paineis
+   (`ui:drawer`/`ui:dialog`) sao renderizados FORA daqui justamente porque esta regra
+   espremeria o backdrop. Ver custom.css > Drawer lateral. */
+.app-page > * {
+    width: min(100%, 1360px);
+    margin-inline: auto;
+}
+
+.app-page--estreito {
+    max-width: 900px;
+}
+
+@media (max-width: 980px) {
+    .app-page {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}
+
+body[data-page]:not([data-page="login"]) .app-page > * {
+    animation: fadeLift 0.36s ease both;
+}
+
+body[data-page]:not([data-page="login"]) .app-page > *:nth-child(2) {
+    animation-delay: 0.04s;
+}
+
+body[data-page]:not([data-page="login"]) .app-page > *:nth-child(3) {
+    animation-delay: 0.08s;
+}
+
+body[data-page]:not([data-page="login"]) .app-page > *:nth-child(4) {
+    animation-delay: 0.12s;
+}
+
+@keyframes fadeLift {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ---------------------------------------------------------------------------
  * Shell: conteudo "inset" (S19)
  *
  * No bloco dashboard-01 do shadcn a area de conteudo e uma superficie propria,
@@ -329,18 +404,19 @@
 }
 
 /* ---------------------------------------------------------------------------
- * Drawer lateral (S23) — componente `WEB-INF/tags/drawer.tag`.
+ * Drawer lateral (S23) — componente `WEB-INF/tags/drawer.tag` (implementacao em
+ * `painel.tag` desde a S31).
  *
  * Nao usa o `modal` da daisyUI de proposito. O `modal` nao tem `::backdrop` (a daisyUI
  * aplica `display:none` nele e pinta o proprio elemento) e, como o componente era
- * renderizado dentro de `.page-content`, o legado
- * `.page-content > * { width: min(100%, 1360px); margin-inline: auto }` — que nao esta
- * em cascade layer, logo vence qualquer utilitario — espremia o escurecimento e deixava
- * as bordas da tela claras.
+ * renderizado dentro do `<main>`, a regra
+ * `.app-page > * { width: min(100%, 1360px); margin-inline: auto }` — que desde o F1 da
+ * migracao do CSS legado vive NESTE arquivo, fora de cascade layer — espremia o
+ * escurecimento e deixava as bordas da tela claras.
  *
  * Aqui o backdrop e um elemento proprio, irmao do painel e `position: fixed; inset: 0`,
  * e o painel desliza por `translate`. O componente PRECISA ser renderizado fora de
- * `.page-content` (filho direto do <body>), senao herda o mesmo `width` do legado.
+ * `.app-page` (filho direto do <body>), senao herda o mesmo `width`.
  *
  * Escala inspirada nas folhas laterais do shadcn (sm/md/lg). O padrao e `sm`, estreito
  * de proposito: sao formularios curtos, nao tabelas.
@@ -479,23 +555,22 @@ body.app-drawer-trava-scroll {
  * Acessibilidade (S8)
  * ------------------------------------------------------------------------ */
 
-/* O legado desliga o indicador de foco (.btn:focus-visible e .field *:focus usam
-   `outline: none`). Como o legado carrega DEPOIS deste arquivo, ele venceria pela
-   ordem do cascade; por isso o !important. Este bloco sai em S17, quando o legado
-   for removido e o foco voltar a ser responsabilidade dos componentes daisyUI. */
+/* Anel de foco do projeto. Sem `!important`: o legado nao define mais `outline: none`
+   (a justificativa antiga deixou de valer na S33) e, fora de cascade layer, esta regra
+   vence as declaracoes em layer da daisyUI. */
 body :is(.btn, .field input, .field select, .field textarea, a, summary):focus-visible {
-    outline: 2px solid var(--color-primary) !important;
+    outline: 2px solid var(--color-primary);
     outline-offset: 2px;
 }
 
-/* Respeita "prefers-reduced-motion": a animacao de entrada de .page-content vem do
-   base.css e o drawer usa transicao de transform. */
+/* Respeita "prefers-reduced-motion": a animacao de entrada e a do `.app-page` (custom.css)
+   e o drawer usa transicao de transform. */
 @media (prefers-reduced-motion: reduce) {
     html {
         scroll-behavior: auto;
     }
 
-    body[data-page] .page-content > * {
+    body[data-page] .app-page > * {
         animation: none !important;
     }
 

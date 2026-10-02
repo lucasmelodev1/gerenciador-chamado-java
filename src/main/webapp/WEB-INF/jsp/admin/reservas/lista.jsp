@@ -71,7 +71,7 @@
             </section>
 </ui:shell>
 
-<%-- Fora de `.page-content`: o legado espremeria o backdrop. Ver custom.css > Dialogo. --%>
+<%-- Fora de `.app-page`: o legado espremeria o backdrop. Ver custom.css > Dialogo. --%>
 <ui:dialog id="dialog-negacao"
            titulo="Negar reserva"
            descricao="O motivo fica visível para o morador na lista de reservas dele."

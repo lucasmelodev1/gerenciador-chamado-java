@@ -6,7 +6,7 @@
     Variavel esperada (page scope, definida pela pagina antes do include do calendario):
       agendaBase — a mesma que o `#calendar` le em `data-base-url`.
 
-    INCLUA DEPOIS DE `</main>`: o legado aplica `.page-content > * { width: min(100%, 1360px) }`
+    INCLUA DEPOIS DE `</main>`: o legado aplica `.app-page > * { width: min(100%, 1360px) }`
     e espremeria o backdrop (ver custom.css > Drawer lateral).
 
     O calendario preenche a lista de detalhes e aponta a acao de cancelar para a reserva

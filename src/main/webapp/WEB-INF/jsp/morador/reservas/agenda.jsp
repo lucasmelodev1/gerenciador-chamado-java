@@ -9,6 +9,6 @@
             <%@ include file="/WEB-INF/jsp/fragments/reservas-agenda.jspf" %>
 </ui:shell>
 
-<%-- Fora de `.page-content`: o detalhe e o dialogo sao `position: fixed`. --%>
+<%-- Fora de `.app-page`: o detalhe e o dialogo sao `position: fixed`. --%>
 <%@ include file="/WEB-INF/jsp/fragments/reservas-agenda-paineis.jspf" %>
 <ui:shell-fim />

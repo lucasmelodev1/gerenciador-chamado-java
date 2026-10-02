@@ -10,8 +10,8 @@
     Nao e um <dialog> do HTML: sao dois elementos irmaos (backdrop + painel) animados por
     `translate`/fade. Motivo em baseline/EVIDENCE.md > S23.
 
-    POR ISSO PRECISA SER RENDERIZADO FORA DE `.page-content` — como filho direto do <body>.
-    Dentro de `.page-content` o legado aplica `width: min(100%, 1360px)` e `margin-inline:
+    POR ISSO PRECISA SER RENDERIZADO FORA DE `.app-page` — como filho direto do <body>.
+    Dentro de `.app-page` o legado aplica `width: min(100%, 1360px)` e `margin-inline:
     auto`, que nao estao em cascade layer e venceriam qualquer utilitario.
 
     O comportamento e o do `static/js/drawer.js`: `data-drawer-abrir`, `data-drawer-editar`,

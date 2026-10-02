@@ -10,7 +10,7 @@
 # Exit code: 0 = contrato e fluxo OK, 1 = divergencia.
 #
 # Cobre quatro camadas:
-#   A. contrato do markup renderizado (e a posicao fora de .page-content)
+#   A. contrato do markup renderizado (e a posicao fora de .app-page)
 #   B. escopo — o componente e usado em UMA tela, como pedido
 #   C. fluxo real criar -> editar -> remover, incluindo o DEPOIS de salvar
 #   D. contrato do JS, incluindo a execucao dos casos de comportamento
@@ -124,15 +124,15 @@ else:
     check('<svg' in e, "gatilho Editar sem icone")
     check('>Editar</button>' not in e, "o gatilho Editar ainda mostra o texto")
 
-# backdrop irmao, e os dois FORA de .page-content
+# backdrop irmao, e os dois FORA de .app-page
 bd = re.search(r'<div id="drawer-area-backdrop" class="app-drawer-backdrop" data-drawer-backdrop="drawer-area"', h)
 check(bd is not None, "backdrop ausente")
 fim_main = h.find("</main>")
 check(fim_main != -1, "</main> nao encontrado")
 if fim_main != -1:
     if bd:
-        check(bd.start() > fim_main, "o backdrop precisa ficar FORA de .page-content (depois de </main>)")
-    check(painel.start() > fim_main, "o drawer precisa ser renderizado FORA de .page-content (depois de </main>)")
+        check(bd.start() > fim_main, "o backdrop precisa ficar FORA de .app-page (depois de </main>)")
+    check(painel.start() > fim_main, "o drawer precisa ser renderizado FORA de .app-page (depois de </main>)")
 
 if falhas:
     for f in falhas:

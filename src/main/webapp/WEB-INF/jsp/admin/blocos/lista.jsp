@@ -55,8 +55,8 @@
             </section>
 </ui:shell>
 
-<%-- Fora de `.page-content`: la o legado aplica
-     `.page-content > * { width: min(100%, 1360px); margin-inline: auto }` e espremeria o
+<%-- Fora de `.app-page`: la o legado aplica
+     `.app-page > * { width: min(100%, 1360px); margin-inline: auto }` e espremeria o
      backdrop do drawer. Ver custom.css > Drawer. --%>
 <ui:drawer id="drawer-bloco"
            titulo="Novo bloco"

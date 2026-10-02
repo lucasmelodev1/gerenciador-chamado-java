@@ -55,7 +55,7 @@
             </section>
 </ui:shell>
 
-<%-- Fora de `.page-content`: o legado espremeria o backdrop. Ver custom.css > Drawer.
+<%-- Fora de `.app-page`: o legado espremeria o backdrop. Ver custom.css > Drawer.
      O PATCH devolve `?tipoId=<id>` para a listagem — o parametro nao e mais lido por
      ninguem, e o drawer volta fechado. --%>
 <ui:drawer id="drawer-tipo"

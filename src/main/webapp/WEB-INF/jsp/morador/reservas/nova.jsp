@@ -1,6 +1,6 @@
 <%@ page pageEncoding="UTF-8" %>
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
-<ui:shell dataPagina="morador-reserva-nova" classeMain="narrow-content">
+<ui:shell dataPagina="morador-reserva-nova" classeMain="app-page--estreito">
 
             <section class="card">
                 <div class="card-body">

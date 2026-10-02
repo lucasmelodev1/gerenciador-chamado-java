@@ -243,8 +243,8 @@ persistido e o serviço recusa a troca (`Nao e permitido alterar o tipo do usuar
 - **Não é `<dialog>`.** São dois elementos irmãos: o backdrop e o `<aside>`. O porquê
   está em `baseline/EVIDENCE.md` > S23 (o `modal` da daisyUI não tem `::backdrop` e o
   legado espremia o escurecimento).
-- **Renderize FORA de `.page-content`** — como filho direto do `<body>`. Lá o legado
-  aplica `.page-content > * { width: min(100%, 1360px); margin-inline: auto }` (sem
+- **Renderize FORA de `.app-page`** — como filho direto do `<body>`. Lá o legado
+  aplica `.app-page > * { width: min(100%, 1360px); margin-inline: auto }` (sem
   cascade layer, logo vence qualquer utilitário) e o backdrop deixaria as bordas da tela
   claras, além de o `animation: fadeLift` criar containing block.
 - O corpo é renderizado **dentro** do `<form>`; o botão Salvar fica fora e o referencia
@@ -311,7 +311,7 @@ pedindo o motivo, cancelar uma reserva sem motivo.
 centralizado, e duplicar o comportamento seria duplicar os bugs. O que muda e o CSS
 (`.app-dialog`) e o rodape, que confirma em vez de salvar.
 
-Como no drawer, precisa ser renderizado **fora de `.page-content`**. Um dialogo so e
+Como no drawer, precisa ser renderizado **fora de `.app-page`**. Um dialogo so e
 reaproveitado por varias linhas: o gatilho de cada linha leva a acao daquele registro e o
 `reporInicial` limpa o que foi digitado entre uma e outra.
 
@@ -349,7 +349,7 @@ vocabulário dela (negar a reserva × cancelar/bloquear a reserva).
   filtros, coluna de ações, badges, paineis, as regras do `custom.css`, as classes do bundle,
   e o `tables.js` executado. Traz self-test negativo (15 sabotagens de markup + 18 de CSS).
 - `bash scripts/ui-drawer.sh` — contrato do `ui:drawer` nos dois estados, posição fora de
-  `.page-content`, escopo de uso (nas telas e nos fragmentos), fluxo criar→editar→remover e o
+  `.app-page`, escopo de uso (nas telas e nos fragmentos), fluxo criar→editar→remover e o
   `drawer.js` executado por `node scripts/ui-drawer-js.mjs` (**24 casos**, incluindo os painéis
   empilhados).
 - `bash scripts/ui-agenda.sh` — a agenda de reservas (admin e morador): o detalhe no drawer

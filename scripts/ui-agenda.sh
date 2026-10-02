@@ -110,7 +110,7 @@ for arq, base in AGENDAS.items():
         continue
     d = painel.group(0)
     if painel.start() < fim_main:
-        bad(arq, "o drawer precisa ser renderizado fora de .page-content (depois de </main>)")
+        bad(arq, "o drawer precisa ser renderizado fora de .app-page (depois de </main>)")
     if not re.search(r'<aside id="drawer-reserva"\s+class="app-drawer app-drawer--sm app-drawer--end"\s+'
                      r'role="dialog" aria-modal="true" aria-labelledby="drawer-reserva-titulo"', d):
         bad(arq, "o drawer perdeu as classes/semantica do componente")
@@ -160,7 +160,7 @@ for arq, base in AGENDAS.items():
     else:
         g = dialogo.group(0)
         if dialogo.start() < fim_main:
-            bad(arq, "o dialogo precisa ser renderizado fora de .page-content")
+            bad(arq, "o dialogo precisa ser renderizado fora de .app-page")
         if painel.start() > dialogo.start():
             bad(arq, "o dialogo precisa vir DEPOIS do drawer no DOM (e o que o poe por cima)")
         if not re.search(r'<aside id="dialog-cancelamento"\s+class="app-dialog app-dialog--md"\s+'
@@ -517,7 +517,7 @@ grep -q 'data-drawer-editar="${painelAcao}"' src/main/webapp/WEB-INF/tags/painel
 grep -q 'app-detalhe-valor' src/main/webapp/WEB-INF/tags/detalhe-linha.tag \
     && ok "a linha de detalhe vive em tags/detalhe-linha.tag" \
     || bad "tags/detalhe-linha.tag nao renderiza a linha de detalhe"
-# O CSV/encoding: as duas agendas incluem os paineis FORA de .page-content.
+# O CSV/encoding: as duas agendas incluem os paineis FORA de .app-page.
 for pagina in src/main/webapp/WEB-INF/jsp/admin/reservas/agenda.jsp src/main/webapp/WEB-INF/jsp/morador/reservas/agenda.jsp; do
     grep -q 'fragments/reservas-agenda-paineis.jspf' "$pagina" \
         && ok "$(basename "$(dirname "$pagina")")/$(basename "$pagina") inclui os paineis" \

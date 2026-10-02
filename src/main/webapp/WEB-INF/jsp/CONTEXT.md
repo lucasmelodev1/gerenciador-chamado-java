@@ -63,7 +63,7 @@ escrever uma tela.
   `ui:detalhe-chamado` (as 3 telas de detalhe, por `base`/`modo`/flags).
 - **Paineis**: `ui:painel` é a implementação única; `ui:drawer` (lateral) e `ui:dialog`
   (central) são cascas finas que encaminham atributos. **Precisam ficar fora de
-  `.page-content`**, como filho direto do `<body>`; as telas não guardam estado de edição do
+  `.app-page`**, como filho direto do `<body>`; as telas não guardam estado de edição do
   servidor (os gatilhos `data-drawer-abrir`/`data-drawer-editar` preenchem e abrem).
   Comportamento em `static/js/drawer.js` (`AppDrawer`, evento `drawer:fechado`).
 - **Utilitários**: `ui:icone` (alias + `classe`), `ui:vazio`, `ui:reserva-status` e
@@ -119,7 +119,7 @@ valores de cada linha.
   Traz o `#calendar` + os `.reserva-data`; **nada de painel de detalhe** (ver o próximo).
 - `reservas-agenda-paineis.jspf`: os painéis da agenda (S30) — o `ui:drawer` informativo com a
   lista `ui:detalhe-linha` e o `ui:dialog` de cancelamento. Cada agenda inclui este fragmento
-  **depois de `</main>`**, senão o `.page-content` espremeria o backdrop.
+  **depois de `</main>`**, senão o `.app-page` espremeria o backdrop.
 - Desde a S31 não há mais `vazio.jspf`, `icone.jspf`, `reserva-status.jspf` nem
   `alerts.jspf`: viraram `ui:vazio`, `ui:icone`, `ui:reserva-status` e `ui:flash`. As telas
   não escrevem mais `<div class="section-header">` — todas passam pelo `ui:card-head`.

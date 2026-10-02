@@ -6,7 +6,7 @@
 
     O detalhe da reserva clicada NAO fica aqui: e o `reservas-agenda-paineis.jspf`, que cada
     agenda inclui depois de `</main>` (o drawer e o dialogo precisam nascer fora de
-    `.page-content`).
+    `.app-page`).
 --%>
 <section class="card">
     <div class="card-body">
