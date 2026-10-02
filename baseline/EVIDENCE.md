@@ -1263,8 +1263,18 @@ primeiro campo. Virou `padding: 0 1.25rem 1rem`: o respiro de cima ja vem do `pa
 topo (que fecha o titulo e a descricao) e o de baixo, do rodape. O `--vazio` continua zerando
 tudo.
 
-O `ui-tabelas.sh` passou a conferir que o primeiro valor do `padding` do corpo e zero, com
-sabotagem propria. Self-test de CSS: **17/17**.
+### Ajuste: o respiro de topo passou de zero para 4px
+
+Zero resolvia o vao sob a descricao mas criava outro defeito: o corpo e o `overflow-y: auto`,
+e com `padding-top: 0` o container **cortava o anel de foco** do primeiro campo — outline de
+2px + offset de 2px = 4px acima da borda do input. O campo parecia colado (e atras) do titulo.
+
+`padding: 0.25rem 1.25rem 1rem` — 4px em cima, exatamente o tamanho do anel, e os 1rem de
+baixo seguem separando o ultimo campo do rodape.
+
+O `ui-tabelas.sh` deixou de aceitar zero: agora exige um respiro de topo **pequeno e
+nao-zero** (0 < x <= 8px, convertendo rem/px), com duas sabotagens (voltar ao `padding` cheio
+e voltar a zero). Self-test de CSS: **18/18**.
 
 ### Verificacao
 
