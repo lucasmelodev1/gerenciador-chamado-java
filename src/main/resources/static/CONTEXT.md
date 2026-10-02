@@ -25,9 +25,8 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
   Também o **cabeçalho de card de listagem** (S24): `.app-card-head` é uma linha (`flex-direction: row` +
   `space-between`) com a descrição e o título num bloco de `gap: 2px` à esquerda e a ação primária à direita,
   fechada por um filete (`border-bottom: 1px solid var(--color-base-300)`) que a separa da faixa de filtros
-  `.app-card-filtros`. São classes **novas** de propósito: `.section-header`/`.toolbar-inline` são legado sem
-  layer (carregam depois deste arquivo) e a `responsive.css` as empilha abaixo de 900px — contra o alinhamento
-  em linha. Como o `<h2>` deixa de casar com `.section-header h2`, `.app-card-head h2` repõe a tipografia
+  `.app-card-filtros`. É classe **nova** de propósito: `.section-header`/`.toolbar-inline` eram legado sem
+  layer, e o `<h2>` não casa mais com `.section-header h2` — daí `.app-card-head h2` repor a tipografia
   (o preflight do Tailwind zera o tamanho do título). `scripts/ui-tabelas.sh` confere tudo isso.
   A **variante `--campos`** é para a faixa que é um `<form method="get">` com rótulo acima do
   controle: alinha as ações pela base. Ela existe porque `.app-card-filtros` não está em layer e
@@ -46,22 +45,20 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
   declarações **normais** o layer **pai vence o filho** ("non-nested styles in a layer have precedence over
   normal nested styles"). É o que faz o `.btn:hover` de `l1` sobrepor o `color` do `.btn-ghost` de `l1.l2.l3` —
   e é o motivo dos dois ajustes de cor acima. O `btn-square` funciona: ele mora no layer pai do `.btn`.
-  **Raio:** o legado tem valores fixos (`base.css` e `components.css`/`responsive.css`) que vencem a daisyUI por
-  não estar em layer — ao mexer no raio, ajuste os dois lados, senão cards e `stat-card` divergem do shell.
-- `css/calendar.css`: tema do FullCalendar; tokens `--fc-classic-*` apontam para as variáveis da daisyUI,
-  com os tokens legados como fallback.
+  **Raio:** desde a S33 não há mais valor de raio fora do tema — `app.css` (`--radius-*`) e `custom.css`
+  mandam sozinhos; não existe mais o "ajuste os dois lados" do legado.
+- `css/calendar.css`: tema do FullCalendar; tokens `--fc-classic-*` apontam direto para as variáveis da
+  daisyUI (os fallbacks legados saíram no F1 da S33) e a paleta dos eventos (`--reserva-*`) mora aqui.
 - `css/fonts/`: Inter (variável, títulos) e Noto Sans 400/500/600/700 (texto). Ficam sob `/css/` porque o
   `SecurityConfig` só libera `/css/**` sem autenticação — `/fonts/**` exigiria sessão e quebraria o login.
-- `css/base.css`, `css/layout.css`, `css/components.css`, `css/responsive.css`: **legado transitório**
-  (não está em cascade layer, por isso vence a daisyUI). Remoção em S17/S18.
-  A S31 removeu o que ficou sem referência no markup: `.sidebar`, `.topbar`, `.toolbar-inline`,
-  `.topbar-actions`, `.brand-block`, `.sidebar-footer`, `.profile-chip`, `.section-header`,
-  `.filter-grid` e `.align-end`. Continuam em uso — e por isso continuam no arquivo — o grid
-  do legado (`.page-content`, `.two-column-grid`, `.detail-grid`, `.form-grid`, `.stats-grid`,
-  `.form-grid`), os conjuntos de controle (`.button-row`, `.cell-actions`, `.inline-panel`,
-  `.inline-form`, `.field`, `.password-field`), as listas (`.stack-list`, `.list-row`,
-  `.timeline`, `.detail-list`, `.description-box`) e os paineis das telas antigas
-  (`.card`/`.stat-card`/`.hero-card`/`.auth-*`). `.is-hidden` é hook do `tables.js`.
+- **Os quatro arquivos legados foram removidos na S33** (`base.css`, `layout.css`, `components.css`,
+  `responsive.css`): eram as últimas folhas fora de cascade layer, carregadas depois de `custom.css` e
+  por isso vencedoras da daisyUI. Onde cada coisa vive agora:
+  fundação do shell (`html`/`body`/`.app-page`) e grades de duas colunas no `custom.css`; tipografia,
+  cores e raios no tema do `app.css`; campos (`ui:campo`), listas, cartões de métrica, paginação, estados
+  vazios e tudo o mais em **utilitários no markup**; a coluna de ações, o cabeçalho de card, a linha do
+  tempo e o painel modal como classes `.app-*` do `custom.css`.
+  `scripts/ui-legado.sh check` reprova quem reintroduzir arquivo, `<link>` ou classe delas.
 
 ## JS
 - `core` (`window.AppDom`), `alerts`, `forms` (`data-confirm`, `data-password-*`, `data-character-*`,

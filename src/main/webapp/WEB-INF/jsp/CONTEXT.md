@@ -17,8 +17,9 @@ Views JSP/JSTL dos controllers web; prefixo/sufixo em `application.properties`.
   `ui-shell.sh` reprova **qualquer** arquivo de markup (`.jsp`, `.jspf`, `.tag`) cujo primeiro
   byte não-ASCII venha antes da declaração de encoding. Texto não-ASCII dentro de comentário JSP
   não conta: sai na tradução.
-- `fragments/head.jspf`: carrega `app.build.css` + `custom.css` e, **depois**, o CSS legado (transitório).
-  A ordem importa: o legado não está em cascade layer, então vence a daisyUI onde ambos definem a mesma classe.
+- `fragments/head.jspf`: carrega `app.build.css` + `custom.css` — e só. Os quatro arquivos legados
+  (`base`/`layout`/`components`/`responsive.css`) foram removidos na S33; quem reintroduzir classe ou
+  arquivo deles é reprovado por `scripts/ui-legado.sh check`.
   **Também materializa `${_csrf.token}` aqui, no `<head>`.** Não remova: o `CookieCsrfTokenRepository` só
   escreve o cookie `XSRF-TOKEN` quando o token é resolvido, e se isso acontecer depois de a resposta passar do
   buffer de 8 KB do Tomcat o `Set-Cookie` se perde e **todo POST autenticado vira 403** (ver EVIDENCE.md > S19).
@@ -108,7 +109,7 @@ valores de cada linha.
   `eyebrow`, `avisoFinal`, `modo` (`gestao`/`morador`) e flags.
 - **Não existe mais `<div class="section-header">`**: todas as telas passam pelo
   `ui:card-head` (que ganhou `subtitulo`). `ui:card-head`/`ui:card-head__texto` vivem em
-  `custom.css`; o `responsive.css` não empilha mais esse bloco.
+  `custom.css` (e o `responsive.css` do legado, que empilhava esse bloco, não existe mais).
 - Forms mutantes escritos à mão (csrf + `_method` + `data-confirm`) viraram `ui:acao-form`
   com `texto`/`variante`/`classe` — inclusive os "Desvincular" de usuarios e vinculos.
 - Textos que divergiam por cópia foram unificados no componente: estados vazios do detalhe do

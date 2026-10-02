@@ -4,7 +4,12 @@
  * Ordem de carregamento em head.jspf:
  *   app.build.css  -> Tailwind + daisyUI (tema "chamados")
  *   custom.css     -> este arquivo
- *   base/layout/components/responsive.css -> legado, removido ate S17
+ *
+ * Ate a S33 havia mais quatro folhas depois desta (`base.css`, `layout.css`,
+ * `components.css`, `responsive.css`), fora de cascade layer e por isso vencedoras da
+ * daisyUI. Elas foram removidas quando a ultima classe delas saiu do markup; o que sobrou
+ * virou utilitario no markup ou regra daqui. `scripts/ui-legado.sh check` reprova quem
+ * reintroduzir arquivo, `<link>` ou classe daquela lista.
  *
  * ATENCAO a ordem das camadas (medida em app.build.css):
  *   @layer properties < @layer base < @layer utilities < @layer daisyui

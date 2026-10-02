@@ -227,8 +227,8 @@ PY
 
 # Toda pagina JSP declara o marcador do <body> — `data-page="..."` na fonte (login, que tem
 # shell proprio) ou o atributo `dataPagina` do `ui:shell` (as 25 telas autenticadas). O valor
-# nao tem consumidor; o que a checagem protege e a presenca (a animacao de `base.css` depende
-# dela).
+# nao tem consumidor; o que a checagem protege e a presenca (a animacao de entrada do
+# `.app-page` no custom.css depende dela).
 check_page_markers() {
     local total=0 faltando=""
     while IFS= read -r jsp; do
