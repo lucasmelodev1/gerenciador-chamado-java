@@ -70,7 +70,6 @@ button {
 }
 
 .auth-brand h1,
-.section-header h2,
 .hero-card h2 {
     font-family: var(--font-serif);
 }
@@ -129,17 +128,6 @@ body[data-page]:not([data-page="login"]) .page-content > *:nth-child(3) {
 
 body[data-page]:not([data-page="login"]) .page-content > *:nth-child(4) {
     animation-delay: 0.12s;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-6px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 @keyframes fadeLift {
