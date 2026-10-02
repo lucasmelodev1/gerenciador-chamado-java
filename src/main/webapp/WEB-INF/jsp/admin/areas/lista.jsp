@@ -9,8 +9,7 @@
                  o drawer fechado depois de salvar e exigia um segundo clique. --%>
             <section class="card">
                 <div class="card-body">
-                    <%-- S26: cabecalho, filtros e acoes saem dos tags `ui:*` documentados em
-                         WEB-INF/tags/CONTEXT.md. A tela so declara o que e dela: titulos,
+                    <%-- Cabecalho, filtros e acoes saem dos tags `ui:*`. A tela so declara o que e dela: titulos,
                          colunas e os valores de cada linha. --%>
                     <ui:card-head titulo="Areas cadastradas" descricao="Espacos do condominio">
                         <button type="button" class="btn btn-primary btn-sm" data-drawer-abrir="drawer-area">

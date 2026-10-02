@@ -1,30 +1,39 @@
-# Summary
-This is an apartment complex management system. These are the rules you need to follow:
+# AGENTS.md
 
-- You will intelligently cruise between .md files called CONTEXT.md to navigate the codebase, like indexes in a database. They will tell what the current directory is responsible for and the main files responsibilities.
-- Limit yourself to modify only relevant files and directories.
-- All new functionalities needs to be tested with E2E testing.
-- Sensible, heavy traffic and external dependency flows will also contain intergration tests (no UI, only API).
-- Sensible flows that are related to security or complex calculations also contain unit testing.
-- The code will be written in Brazilian Portuguese, with technical words written in english.
-- After finishing a prompt, modify all CONTEXT.md files read recursively (from the current directory to the root, without siblings) when applicable.
-- If there is not CONTEXT.md file in any directory you worked on, create one if the directory is significant in terms of 
-files quantity or file responsibility.
-- Be brief but effective in CONTEXT.md files and in the prompt outputs.
-- Follow good and modern code practices in the technologies you are working.
-- No refactoring when not asked to.
-- Check CONTEXT.md files when in doubt whether a class, function, functionality, or exception already exists.
-- Check STANDARDS.md for code standards you need to follow in order to write to files.
-- Do not touch ESPECIFICACAO.md.
+Apartment complex management system (Condominium Tickets & Common Area Reservations).
 
-Below is an index table on where to go next in your search.
+## Core Rules & Workflow
+- Limit edits strictly to relevant files. Never refactor unless asked. Do not touch `ESPECIFICACAO.md`.
+- Language: Brazilian Portuguese for code, identifiers, and UI messages; technical terms in English (`PageRequest`, `repository`, etc.).
+- Testing: All new features need E2E tests. Sensitive/API flows need integration tests (`@SpringBootTest`). Security and calculations need unit tests (JUnit 5 + Mockito). Run via `docker compose run --rm test`.
 
-- `src/main/java/br/com/dunnastecnologia/`: the application code. continue this way if you need to change or view how a 
-functionality works.
-- `src/main/resources/`: application resources with `application.properties` for configurations, `static` for CSS and 
-javascript files for JSP, `db` for database migrations and PL/pgSQL files with views.
-- `src/main/webapp/`: JSP files for the application frontend pages.
-- `pom.xml`: always check dependencies in this file to make any writes in the codebase. Be careful with breaking changes 
-between major versions
-- `Dockerfile`: production and development environment setup
-- `docker-compose.yml`: development local mimic of the production environment
+## Architecture & Layers
+- `application/UserCase/`: Use-case facades (`AreaUseCase`, `SolicitacaoAreaUseCase`, `ChamadoUseCase`, `UsuarioUseCase`, etc.). Methods named by intent in Portuguese (`solicitarReserva`, `aprovarReserva`).
+- `application/Security/` & `pagination/`: Models (`AuthenticatedUser`, `PageRequest`, `PageResult`).
+- `domain/model/`: JPA entities (`Usuario`, `Administrador`, `Colaborador`, `Morador`, `Bloco`, `Unidade`, `Chamado`, `Comentario`, `Anexos`, `Area`, `SolicitacaoArea`). Lombok `@Getter/@Setter`, `@ManyToOne(fetch = LAZY)`, UUID IDs.
+- `domain/validation/`: Field limits in `ValidationLimits`. Required text normalized with `InputValidationSupport`.
+- `infrastructure/controller/`:
+  - `web/`: GET endpoints rendering JSP views (`/admin/**`, `/colaborador/**`, `/morador/**`, `/auth/**`).
+  - `api/`: Mutations (POST/PATCH/DELETE) receiving `Form` POJOs, returning `redirect:` with flash messages.
+- `infrastructure/service/`: Business rules implementing `UserCase` (`@Service`, `@Transactional(readOnly = true)`).
+  - Always constructor injection; never `@Autowired` on fields.
+  - Defense-in-depth: `@PreAuthorize` on controllers + `AuthenticatedUserValidator` checks in services.
+  - Throw domain exceptions only (`BusinessRuleException`, `ResourceNotFoundException`, `UnauthorizedOperationException`).
+- `infrastructure/repository/`: Spring Data JPA repositories (`JpaRepository<T, UUID>`). Complex filters in PL/pgSQL via `nativeQuery`. Soft delete via `ativo` column or `deletado_em`.
+- `infrastructure/security/`: Spring Security + JWT cookie (`/api/**`) and session + CSRF cookie (`/`). Passwords hashed with BCrypt.
+- `src/main/resources/db/migration/`: Flyway migrations (`V1` to `V21`). Schema is strictly owned by Flyway (`ddl-auto=validate`).
+- `src/main/resources/static/`: Compiled Tailwind/DaisyUI CSS (`app.css`, `custom.css`), vanilla JS, FullCalendar.
+- `src/main/webapp/WEB-INF/`: JSP templates under `jsp/` and reusable custom tags under `tags/` (`ui:shell`, `ui:painel`, `ui:dialog`, `ui:drawer`).
+
+## Key Business & Technical Concepts
+- **Roles:** `ROLE_ADMINISTRADOR`, `ROLE_COLABORADOR`, `ROLE_MORADOR`. Colaborador has no access to reservations.
+- **Chamados:** Standard initial status, SLA overdue tracked by background scheduler, comment & attachment history.
+- **Reservations:** Lifecycle `SOLICITADA` -> `APROVADA` / `NEGADA` / `CANCELADA`.
+  - Exclusion constraint via PostgreSQL `btree_gist` prevents overlapping `[inicio, fim)` intervals for approved reservations.
+  - Negation requires non-empty justification (`motivo_negacao`). Cancellation only allowed before start time.
+  - Consistent timezone across app and DB (`APP_TIMEZONE`).
+
+## Code Standards, Build & Environment
+- 4 spaces indentation, K&R braces, no wildcard imports, ~120 chars line width. No inline comments in method bodies.
+- Java 21, Spring Boot 4 (WAR), PostgreSQL 16. App config uses `app.*` prefix and `${ENV_VAR:default}` in `application.properties`.
+- Local run: `docker compose up --build`. Secrets and config loaded exclusively via `.env`.
