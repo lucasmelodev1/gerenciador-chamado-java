@@ -10,92 +10,109 @@
         <main id="conteudo-principal" class="page-content">
             <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
 
+            <%-- Decisao da reserva. Aprovar e direto; negar e cancelar passam por um
+                 dialogo CENTRAL, e negar pede o motivo.
+
+                 Os dois dialogos sao unicos e reaproveitados: o gatilho de cada linha
+                 (`ui:acao-editar`) leva a acao daquela reserva, e o drawer.js limpa o
+                 motivo digitado entre uma linha e outra. Antes o motivo era um `<input>`
+                 solto dentro da celula de acoes, que estourava a coluna. --%>
             <section class="card">
                 <div class="card-body">
-                <div class="section-header">
-                    <div>
-                        <p class="eyebrow">Agenda unica</p>
-                        <h2>Reservas das areas comuns</h2>
-                    </div>
-                    <a href="${ctx}/admin/reservas/agenda" class="btn">Ver agenda</a>
-                </div>
+                    <ui:card-head titulo="Reservas das areas comuns" descricao="Agenda unica">
+                        <a href="${ctx}/admin/reservas/agenda" class="btn btn-sm">Ver agenda</a>
+                    </ui:card-head>
 
-                <c:choose>
-                    <c:when test="${empty reservas}">
-                        <c:set var="vazioTitulo" value="Nenhuma reserva registrada" />
-                        <c:set var="vazioMensagem" value="As solicitacoes dos moradores aparecerao aqui para decisao." />
-                        <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
-                    </c:when>
-                    <c:otherwise>
-                        <div class="overflow-x-auto">
-                            <table class="table table-zebra">
-                                <thead>
-                                <tr>
-                                    <th>Area</th>
-                                    <th>Morador</th>
-                                    <th>Unidade</th>
-                                    <th>Inicio</th>
-                                    <th>Fim</th>
-                                    <th>Status</th>
-                                    <th>Motivo</th>
-                                    <th></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <c:forEach items="${reservas}" var="reserva">
+                    <c:choose>
+                        <c:when test="${empty reservas}">
+                            <c:set var="vazioTitulo" value="Nenhuma reserva registrada" />
+                            <c:set var="vazioMensagem" value="As solicitacoes dos moradores aparecerao aqui para decisao." />
+                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="overflow-x-auto">
+                                <table class="table table-zebra">
+                                    <thead>
                                     <tr>
-                                        <td>${reserva.areaNome}</td>
-                                        <td>${reserva.moradorNome}</td>
-                                        <td>${reserva.unidadeIdentificacao}</td>
-                                        <td>${reserva.inicioFormatado}</td>
-                                        <td>${reserva.fimFormatado}</td>
-                                        <td><c:set var="reservaStatus" value="${reserva.status}" />
-<%@ include file="/WEB-INF/jsp/fragments/reserva-status.jspf" %></td>
-                                        <td><c:out value="${empty reserva.motivoNegacao ? '-' : reserva.motivoNegacao}" /></td>
-                                        <td class="cell-actions">
-                                            <c:if test="${reserva.status eq 'Solicitado'}">
-                                                <form method="post" action="${ctx}/admin/reservas/${reserva.id}/aprovacao">
-                                                    <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                                                    <input type="hidden" name="_method" value="patch">
-                                                    <button type="submit" class="btn btn-link">Aprovar</button>
-                                                </form>
-                                                <form method="post" action="${ctx}/admin/reservas/${reserva.id}/negacao" class="inline-panel">
-                                                    <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                                                    <input type="hidden" name="_method" value="patch">
-                                                    <input class="input w-full" type="text" name="motivo" maxlength="255" placeholder="Motivo da negacao" required>
-                                                    <button type="submit" class="btn btn-link">Negar</button>
-                                                </form>
-                                            </c:if>
-                                            <c:if test="${reserva.status eq 'Solicitado' or reserva.status eq 'Aprovado'}">
-                                                <form method="post" action="${ctx}/admin/reservas/${reserva.id}" data-confirm="Cancelar esta reserva?">
-                                                    <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                                                    <input type="hidden" name="_method" value="delete">
-                                                    <button type="submit" class="btn btn-link">Cancelar</button>
-                                                </form>
-                                            </c:if>
-                                        </td>
+                                        <th>Area</th>
+                                        <th>Morador</th>
+                                        <th>Unidade</th>
+                                        <th>Inicio</th>
+                                        <th>Fim</th>
+                                        <th>Status</th>
+                                        <th>Motivo</th>
+                                        <th><span class="sr-only">Acoes</span></th>
                                     </tr>
-                                </c:forEach>
-                                </tbody>
-                            </table>
-                        </div>
-                    </c:otherwise>
-                </c:choose>
-
-                <div class="pagination">
-                    <c:if test="${reservasPage.hasPrevious}">
-                        <a class="btn" href="${ctx}/admin/reservas?page=${reservasPage.page - 1}&size=${reservasPage.size}">Anterior</a>
-                    </c:if>
-                    <span>Pagina ${reservasPage.page + 1} de ${reservasPage.totalPages == 0 ? 1 : reservasPage.totalPages}</span>
-                    <c:if test="${reservasPage.hasNext}">
-                        <a class="btn" href="${ctx}/admin/reservas?page=${reservasPage.page + 1}&size=${reservasPage.size}">Proxima</a>
-                    </c:if>
-                </div>
+                                    </thead>
+                                    <tbody>
+                                    <c:forEach items="${reservas}" var="reserva">
+                                        <tr>
+                                            <td>${reserva.areaNome}</td>
+                                            <td>${reserva.moradorNome}</td>
+                                            <td>${reserva.unidadeIdentificacao}</td>
+                                            <td>${reserva.inicioFormatado}</td>
+                                            <td>${reserva.fimFormatado}</td>
+                                            <td><c:set var="reservaStatus" value="${reserva.status}" />
+<%@ include file="/WEB-INF/jsp/fragments/reserva-status.jspf" %></td>
+                                            <td><c:out value="${empty reserva.motivoNegacao ? '-' : reserva.motivoNegacao}" /></td>
+                                            <td class="cell-actions app-tabela-acoes">
+                                                <c:if test="${reserva.status eq 'Solicitado'}">
+                                                    <ui:acao-form acao="${ctx}/admin/reservas/${reserva.id}/aprovacao"
+                                                                  metodo="patch" icone="aprovar" rotulo="Aprovar" />
+                                                    <ui:acao-editar drawer="dialog-negacao" titulo="Negar reserva"
+                                                                    acao="${ctx}/admin/reservas/${reserva.id}/negacao"
+                                                                    icone="negar" rotulo="Negar" />
+                                                </c:if>
+                                                <c:if test="${reserva.status eq 'Solicitado' or reserva.status eq 'Aprovado'}">
+                                                    <ui:acao-editar drawer="dialog-cancelamento" titulo="Cancelar reserva"
+                                                                    acao="${ctx}/admin/reservas/${reserva.id}"
+                                                                    metodo="delete" icone="fechar" rotulo="Cancelar" />
+                                                </c:if>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                    </tbody>
+                                </table>
                             </div>
+                        </c:otherwise>
+                    </c:choose>
+
+                    <div class="pagination">
+                        <c:if test="${reservasPage.hasPrevious}">
+                            <a class="btn" href="${ctx}/admin/reservas?page=${reservasPage.page - 1}&size=${reservasPage.size}">Anterior</a>
+                        </c:if>
+                        <span>Pagina ${reservasPage.page + 1} de ${reservasPage.totalPages == 0 ? 1 : reservasPage.totalPages}</span>
+                        <c:if test="${reservasPage.hasNext}">
+                            <a class="btn" href="${ctx}/admin/reservas?page=${reservasPage.page + 1}&size=${reservasPage.size}">Proxima</a>
+                        </c:if>
+                    </div>
+                </div>
             </section>
         </main>
     </div>
 </div>
+
+<%-- Fora de `.page-content`: o legado espremeria o backdrop. Ver custom.css > Dialogo. --%>
+<ui:dialog id="dialog-negacao"
+           titulo="Negar reserva"
+           descricao="O motivo fica visivel para o morador na lista de reservas dele."
+           acao="${ctx}/admin/reservas"
+           rotuloConfirmar="Negar" varianteConfirmar="error" iconeConfirmar="negar"
+           rotuloCancelar="Voltar">
+    <label class="field">
+        <span>Motivo da negacao</span>
+        <input class="input w-full" type="text" name="motivo" maxlength="255"
+               placeholder="Ex.: manutencao da piscina" required>
+    </label>
+</ui:dialog>
+
+<ui:dialog id="dialog-cancelamento"
+           titulo="Cancelar reserva"
+           descricao="O horario volta a ficar livre na agenda. Nao ha motivo a informar."
+           acao="${ctx}/admin/reservas"
+           rotuloConfirmar="Cancelar reserva" varianteConfirmar="error" iconeConfirmar="fechar"
+           rotuloCancelar="Voltar" />
+
 <%@ include file="/WEB-INF/jsp/fragments/scripts.jspf" %>
 </body>
 </html>

@@ -37,7 +37,7 @@ echo "== A. contrato do markup (telas de tabela) =="
 # do proprio verificador, que roda fora do container). Sem ela, busca as telas no ar.
 DIR="${HTML_DIR:-$WORK}"
 if [ -z "${HTML_DIR:-}" ]; then
-    for rota in areas blocos usuarios status-chamado tipos-chamado chamados; do
+    for rota in reservas areas blocos usuarios status-chamado tipos-chamado chamados; do
         curl -s -b "$JAR" -c "$JAR" "$BASE/admin/$rota" -o "$WORK/$rota.html"
     done
 fi
@@ -53,6 +53,7 @@ FALLBACK = '<circle cx="12" cy="12" r="9" />'
 
 # tela -> (alvo do filtro local | None, id do drawer | None, conjunto de acoes esperado)
 TELAS = {
+    "reservas":       {"alvo": None,             "drawer": None,             "busca": False, "filtros": False},
     "areas":          {"alvo": "areas-table",    "drawer": "drawer-area",    "busca": True},
     "blocos":         {"alvo": "blocos-table",   "drawer": "drawer-bloco",   "busca": True},
     "usuarios":       {"alvo": "usuarios-table", "drawer": "drawer-usuario", "busca": True},
@@ -79,12 +80,14 @@ for tela, cfg in TELAS.items():
     i_filt = h.find('class="app-card-filtros')
     if i_head == -1:
         bad(tela, "sem .app-card-head (ui:card-head)")
-    if i_filt == -1:
-        bad(tela, "sem faixa de filtros (.app-card-filtros)")
-    if i_head != -1 and i_filt != -1 and i_filt < i_head:
-        bad(tela, "a faixa de filtros tem de vir depois do cabecalho")
+    if cfg.get("filtros", True):
+        if i_filt == -1:
+            bad(tela, "sem faixa de filtros (.app-card-filtros)")
+        if i_head != -1 and i_filt != -1 and i_filt < i_head:
+            bad(tela, "a faixa de filtros tem de vir depois do cabecalho")
     if i_head != -1:
-        head = h[i_head:h.find('class="app-card-filtros')]
+        fim_head = i_filt if i_filt != -1 else h.find('<div class="overflow-x-auto"')
+        head = h[i_head:fim_head]
         if not re.search(r'<div class="app-card-head__texto">\s*(<p class="eyebrow">[^<]*</p>\s*)?<h2>[^<]+</h2>', head):
             bad(tela, "cabecalho sem descricao/.eyebrow e <h2> no agrupamento")
         if head.count('<div class="app-card-head__texto">') != 1:
@@ -162,6 +165,33 @@ for tela, cfg in TELAS.items():
             bad(tela, "o drawer nao pode vir aberto do servidor")
 
 # ---------------------------------------------------------------- o que e de cada tela
+
+# reservas: tres acoes de decisao (aprovar / negar / cancelar) e dois dialogos centrais
+h = html["reservas"]
+fim_main = h.find("</main>")
+for dlg in ("dialog-negacao", "dialog-cancelamento"):
+    painel = re.search(r'<aside id="' + dlg + r'"[^>]*class="app-dialog[^"]*"[^>]*data-drawer', h)
+    if not painel:
+        bad("reservas", f"dialogo {dlg!r} ausente, ou sem a classe .app-dialog (virou drawer?)")
+    else:
+        if fim_main != -1 and painel.start() < fim_main:
+            bad("reservas", f"{dlg!r} precisa ser renderizado fora de .page-content")
+        if 'role="dialog" aria-modal="true"' not in painel.group(0):
+            bad("reservas", f"{dlg!r} sem role=dialog/aria-modal")
+if 'name="motivo"' not in h:
+    bad("reservas", "o dialogo de negacao perdeu o campo motivo")
+if 'btn-error' not in h:
+    bad("reservas", "o botao de confirmar dos dialogos deveria ser vermelho (btn-error)")
+if 'data-confirm' in h:
+    bad("reservas", "a confirmacao nativa ainda esta na tela (o cancelamento tem de usar o dialogo)")
+for rotulo in ("Aprovar", "Negar", "Cancelar"):
+    if f'data-tip="{rotulo}"' not in h:
+        bad("reservas", f"falta a acao {rotulo!r}")
+# A celula de acoes TEM inputs escondidos por natureza (csrf e _method, do
+# ui:acao-form); o que nao pode e campo VISIVEL — era o caso do motivo da negacao.
+for celula in re.findall(r'<td class="cell-actions app-tabela-acoes">(.*?)</td>', h, re.S):
+    if re.search(r'<(input(?![^>]*type="hidden")|select|textarea)[^>]*>', celula):
+        bad("reservas", "a celula de acoes nao pode conter campo visivel (o motivo vive no dialogo)")
 
 # areas: status em badge com o mapeamento fechado, editar + remover
 h = html["areas"]
@@ -291,6 +321,10 @@ CASOS = [
      "faixa de filtros sem a variante de campos"),
     ("tipos-chamado", 'data-drawer-editar="drawer-tipo"', 'data-drawer-editar="outro"',
      "gatilho de editar de tipos apontando para outro drawer"),
+    ("reservas", 'class="app-dialog app-dialog--md"', 'class="app-drawer app-drawer--md"',
+     "dialogo de negacao renderizado como drawer lateral"),
+    ("reservas", 'name="motivo"', 'name="semMotivo"',
+     "dialogo de negacao sem o campo de motivo"),
 ]
 
 if SAB.exists():
@@ -388,6 +422,22 @@ def verificar(custom, build):
     check(campos is not None and re.search(r'align-items\s*:\s*flex-end', campos or "") is not None,
           ".app-card-filtros--campos deveria alinhar as acoes pela base (formulario GET)")
 
+    dialogo = bloco(custom, ".app-dialog")
+    if dialogo is None:
+        problemas.append("custom.css sem a regra .app-dialog")
+    else:
+        for prop, valor in (("position", "fixed"), ("inset", "0"), ("margin", "auto")):
+            check(re.search(rf'{prop}\s*:\s*{valor}\s*;', dialogo) is not None,
+                  f".app-dialog deveria ter `{prop}: {valor}` (e assim que centraliza)")
+        check(re.search(r'max-height\s*:', dialogo) is not None,
+              ".app-dialog deveria limitar a altura (senao estoura a viewport)")
+        check(re.search(r'visibility\s*:\s*hidden', dialogo) is not None,
+              ".app-dialog deveria nascer escondido")
+    check(bloco(custom, ".app-dialog[data-drawer-aberto]") is not None,
+          "falta o estado aberto do dialogo")
+    check(bloco(custom, ".app-dialog-rodape") is not None, "falta o rodape do dialogo")
+    check(bloco(custom, ".app-dialog-corpo") is not None, "falta o corpo do dialogo")
+
     acoes = bloco(custom, ".app-tabela-acoes")
     if acoes is None:
         problemas.append("custom.css sem a regra .app-tabela-acoes")
@@ -412,7 +462,8 @@ def verificar(custom, build):
           "o bundle perdeu `.input{display:inline-flex}`")
     for classe in (".input-sm", ".size-4", ".shrink-0", ".opacity-60", ".tooltip",
                    ".btn-ghost", ".btn-sm", ".btn-square", ".sr-only", ".flex", ".items-center",
-                   ".badge-success", ".badge-warning", ".badge-error", ".badge-neutral", ".badge-ghost"):
+                   ".badge-success", ".badge-warning", ".badge-error", ".badge-neutral", ".badge-ghost",
+                   ".btn-error", ".btn-primary", ".btn-circle"):
         check(regra(build, classe) is not None,
               f"a classe {classe} sumiu de app.build.css (rode `npm run build:css`)")
     return problemas
@@ -450,6 +501,10 @@ SABOTAGENS = [
                          "    transform: translateY(var(--tt-pos, 0.25rem));", 1)),
     ("variante de faixa de filtros removida",
      lambda c: re.sub(r'\.app-card-filtros--campos \{[^}]*\}', '', c, count=1)),
+    ("dialogo deixa de ser centralizado",
+     lambda c: c.replace("    margin: auto;\n    border-radius: var(--radius-box);", "    border-radius: var(--radius-box);", 1)),
+    ("dialogo nasce visivel",
+     lambda c: c.replace("    visibility: hidden;\n    opacity: 0;\n    scale: 0.96;", "    opacity: 0;\n    scale: 0.96;", 1)),
 ]
 passou = 0
 for nome, sabotar in SABOTAGENS:

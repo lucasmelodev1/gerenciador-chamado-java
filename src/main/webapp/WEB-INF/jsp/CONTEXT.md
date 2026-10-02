@@ -42,9 +42,9 @@ Views JSP/JSTL dos controllers web; prefixo/sufixo em `application.properties`.
 
 ## Telas de tabela (S24/S25, extraídas para tags em S26)
 
-As seis telas de listagem do admin seguem o mesmo desenho, montado com os tags de
-`WEB-INF/tags`: **areas**, **blocos**, **chamados** (só leitura), **status-chamado**,
-**tipos-chamado** e **usuarios**. O contrato do desenho — cabeçalho com filete, faixa de filtros, coluna de ações
+As sete telas de listagem do admin seguem o mesmo desenho, montado com os tags de
+`WEB-INF/tags`: **reservas**, **areas**, **blocos**, **chamados** (só leitura),
+**status-chamado**, **tipos-chamado** e **usuarios**. O contrato do desenho — cabeçalho com filete, faixa de filtros, coluna de ações
 encostada na direita, badges e ações só com ícone + tooltip — está documentado em
 `WEB-INF/tags/CONTEXT.md`, junto do esqueleto de uma tela nova.
 
@@ -55,12 +55,15 @@ valores de cada linha.
   é o único campo travado (`travar="tipo"`): o servidor recusa a troca.
 - **Filtros**: a busca local (`ui:busca`) em areas, blocos, status-chamado, tipos-chamado e usuarios;
   chamados usa um `<form method="get">` na própria faixa (classe `app-card-filtros--campos`),
-  porque seus três filtros vão ao servidor.
+  porque seus três filtros vão ao servidor. Reservas é a única sem faixa de filtros.
 - **Ações**: `ui:acao-form` (remover/desativar/definir padrão), `ui:acao-editar` (abre o
   drawer) e `ui:acao-link` (Detalhar / Gerenciar / Ver unidades). Tipos de chamado só tem
   `ui:acao-editar` e blocos só tem `ui:acao-link` — são as telas sem endpoint de remoção.
 - **status-chamado** era um `stack-list` de `.list-row` e virou tabela, para compartilhar a
   mesma coluna de ações.
+- **reservas** decide no `ui:dialog` (centrado), não no `ui:drawer`: aprovar é direto
+  (`ui:acao-form`), negar abre o diálogo pedindo o motivo, cancelar abre um diálogo de
+  confirmação. Os dois diálogos são únicos e reaproveitados por todas as linhas.
 - Os `GET` com `?areaId=`/`?statusId=`/`?tipoId=` continuam nos controllers, mas nenhuma tela
   aponta para eles: o drawer substitui aquele estado de edição. **Não remova sem remover o
   parâmetro no controller**, que é código congelado pelo `ui-invariants.sh`.

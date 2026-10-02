@@ -8,8 +8,9 @@ páginas, e por isso ficam fora do diretório que os resolvers de view varrem.
 
 # Padrão de tela de tabela (S26)
 
-Toda tela de listagem do admin — **areas, blocos, chamados, status-chamado, tipos-chamado e
-usuarios** — é montada com os mesmos seis tags. Uma tela nova é ~15 linhas de estrutura:
+Toda tela de listagem do admin — **reservas, areas, blocos, chamados, status-chamado,
+tipos-chamado e usuarios** — é montada com os mesmos componentes (seis tags de listagem e
+os dois paineis: `ui:drawer` e `ui:dialog`). Uma tela nova é ~15 linhas de estrutura:
 
 ```jsp
 <section class="card">
@@ -210,6 +211,40 @@ devolução do foco e trava de scroll são implementados no JS, já que não há
 
 ---
 
+## `ui:dialog` (`dialog.tag`)
+
+Mesmo componente do `ui:drawer`, outra forma: em vez de deslizar da borda, aparece
+**centrado** na tela (fade + escala). Serve para confirmar uma decisao — negar uma reserva
+pedindo o motivo, cancelar uma reserva sem motivo.
+
+| Atributo | |
+|---|---|
+| `id`, `titulo` | obrigatorios |
+| `descricao` | opcional — a explicacao abaixo do titulo |
+| `acao` | action do form; sem ela o dialogo e so informativo |
+| `metodo` | method do form (padrao `post`; o `_method` vem do gatilho) |
+| `tamanho` | `sm`, `md` (padrao), `lg` |
+| `rotuloConfirmar` | padrao "Confirmar" |
+| `varianteConfirmar` | `primary` (padrao) ou `error` — vermelho |
+| `iconeConfirmar` | alias opcional do icone do botao de confirmar |
+| `rotuloCancelar` | botao esmaecido que fecha; sem ela o rodape so confirma |
+| `aberto` | `true` abre no carregamento |
+
+**Por baixo e o mesmo protocolo do `ui:drawer`**: os atributos `data-drawer*` e o
+`drawer.js`. Backdrop, Esc, foco preso, trava de scroll e o conteudo dinamico
+(`data-drawer-editar` + `data-drawer-acao`) sao o mesmo codigo — um dialogo e um drawer
+centralizado, e duplicar o comportamento seria duplicar os bugs. O que muda e o CSS
+(`.app-dialog`) e o rodape, que confirma em vez de salvar.
+
+Como no drawer, precisa ser renderizado **fora de `.page-content`**. Um dialogo so e
+reaproveitado por varias linhas: o gatilho de cada linha leva a acao daquele registro e o
+`reporInicial` limpa o que foi digitado entre uma e outra.
+
+Em reservas isso resolve o motivo da negacao, que antes era um `<input>` solto dentro da
+celula de acoes e estourava a coluna.
+
+---
+
 ## Ícones
 
 `../jsp/fragments/icone.jspf` é um `include`, não um tag: quem inclui define `icone` (alias)
@@ -218,9 +253,9 @@ e `iconeClasse`. Alias desconhecido cai num círculo de fallback — que `ui-she
 
 ## Verificação
 
-- `bash scripts/ui-tabelas.sh` — contrato das **6 telas** de tabela: cabeçalho, faixa de
-  filtros, coluna de ações, badges, drawers, as regras do `custom.css`, as classes do bundle,
-  e o `tables.js` executado. Traz self-test negativo (11 sabotagens de markup + 10 de CSS).
+- `bash scripts/ui-tabelas.sh` — contrato das **7 telas** de tabela: cabeçalho, faixa de
+  filtros, coluna de ações, badges, paineis, as regras do `custom.css`, as classes do bundle,
+  e o `tables.js` executado. Traz self-test negativo (13 sabotagens de markup + 12 de CSS).
 - `bash scripts/ui-drawer.sh` — contrato do `ui:drawer` nos dois estados, posição fora de
   `.page-content`, escopo de uso, fluxo criar→editar→remover e o `drawer.js` executado
   por `node scripts/ui-drawer-js.mjs` (21 casos).

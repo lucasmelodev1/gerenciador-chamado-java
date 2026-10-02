@@ -1162,6 +1162,86 @@ A revisao de `action-urls` foi de uma linha so (`-1 ${tipoChamadoAction}`), o qu
 a migracao nao tocou nenhum formulario de outra tela. Como na S26, a queda e consolidacao —
 o `_method` e o `csrf` da tela reapareceram dentro do `ui:drawer`.
 
+## S28 — Decisao de reserva: tres acoes com icone e dialogo central
+
+### O problema
+
+Na lista de reservas as tres acoes de decisao eram links de texto ("Aprovar", "Negar",
+"Cancelar") e o **motivo da negacao era um `<input class="input w-full">` dentro da propria
+celula de acoes**. Como `w-full` dentro de uma celula de tabela nao tem largura para
+resolver, o campo estourava a coluna e empurrava os botoes uns sobre os outros — foi o que
+a captura de tela mostrou.
+
+### O que ficou
+
+Tres acoes so com icone, na mesma coluna `cell-actions app-tabela-acoes` das outras telas:
+
+| Acao | Icone | Como decide |
+|---|---|---|
+| Aprovar | `aprovar` (check) | direto: `ui:acao-form` com `metodo="patch"` |
+| Negar | `negar` (ban) | `ui:dialog` pedindo o **motivo**, com confirmar vermelho e "Voltar" esmaecido |
+| Cancelar | `fechar` (X) | `ui:dialog` de confirmacao, **sem** motivo, tambem com confirmar vermelho |
+
+O `data-confirm` nativo do cancelamento saiu: a confirmacao passou a ser o dialogo central,
+que e o que o pedido descrevia. O `ui-tabelas.sh` reprova se `data-confirm` voltar a
+aparecer nessa tela.
+
+### O componente novo: `ui:dialog`
+
+Um dialogo e um drawer centralizado — mesmo backdrop, mesmo Esc, mesmo foco preso, mesma
+trava de scroll, mesmo conteudo dinamico. Entao **nao ha JS novo**: o `dialog.tag` emite o
+mesmo protocolo `data-drawer*` e o `drawer.js` que ja existia cuida do resto. O que muda e
+apenas a apresentacao (`.app-dialog`: `inset: 0` + `margin: auto`, com fade e escala no lugar
+do `translate`) e o rodape, que confirma em vez de salvar.
+
+Duplicar o comportamento num `dialog.js` separado seria duplicar os bugs: os 21 casos do
+`ui-drawer-js.mjs` (foco preso, Esc, devolucao de foco, trava de scroll, campos do gatilho,
+campo travado) cobrem o dialogo sem uma linha a mais de teste.
+
+Centralizar com `margin: auto` e nao com `translate` e proposital: com `translate` um
+conteudo mais alto que a viewport sairia da tela; com `inset: 0` + `margin: auto` quem manda
+e o `max-height: calc(100dvh - 2rem)`, e o corpo rola.
+
+**Um dialogo para cada decisao, nao um por linha.** O gatilho de cada linha
+(`ui:acao-editar`, com `icone`/`rotulo`/`metodo` trocados) leva a acao daquela reserva por
+`data-drawer-acao`; o `reporInicial` limpa o motivo digitado entre uma linha e outra — o que
+so funciona porque a S26 fez o gatilho de edicao passar pelo estado inicial antes de aplicar.
+
+### Mais uma vez o verificador pegou o verificador
+
+A checagem nova "a celula de acoes nao pode conter campo de formulario" reprovou o markup
+**correto**: o `ui:acao-form` emite `_csrf` e `_method` como inputs escondidos, e eles vivem
+dentro da celula por natureza. O que nao pode ali e campo **visivel** — era o caso do motivo.
+A checagem passou a olhar so `input` sem `type="hidden"`, `select` e `textarea`.
+
+### Verificacao
+
+| # | Check | Result |
+|---|---|---|
+| 1 | `ui-tabelas.sh` cobre as **7** telas; reservas entra com `filtros: False` (e a unica sem faixa de busca) | OK |
+| 2 | reservas: os dois dialogos existem, com `.app-dialog` + `role="dialog" aria-modal="true"`, fora de `.page-content` | OK |
+| 3 | reservas: as tres acoes com `data-tip`, o campo `motivo` no dialogo de negacao, `btn-error` no confirmar e nenhum `data-confirm` | OK |
+| 4 | reservas: nenhuma celula de acoes com campo **visivel** (o defeito original) | OK |
+| 5 | CSS: `.app-dialog` com `position: fixed` + `inset: 0` + `margin: auto` + `max-height` e o estado aberto | OK |
+| 6 | self-test negativo: **13/13** markup (duas sabotagens novas: dialogo virando drawer lateral e o motivo desaparecendo) e **12/12** CSS (duas novas: dialogo deixando de centralizar e nascendo visivel) | OK |
+| 7 | `ui-drawer-js.mjs` continua 21/21 — o dialogo e coberto pelo mesmo harness | OK |
+| 8 | `ui-routes.sh shell` · `ui-shell.sh` · `ui-drawer.sh` · `ui-invariants.sh` | 26/26 · OK · OK · `INVARIANTS OK` |
+| 9 | `docker compose run --rm test` | **153 testes, 0 falhas** |
+
+### Deriva do snapshot, revisada
+
+| Item | Antes | Depois | Por que |
+|---|---|---|---|
+| `action-urls` | `${acao}` x2 | `${acao}` x3 | o `dialog.tag` soma um `action="${acao}"` |
+| `action-urls` | 29 entradas | 27 | as tres acoes de reserva viraram o atributo `acao=` de um tag |
+| `method_inputs` | 22 | 20 | tres forms com `_method` saem de reservas; `dialog.tag` soma um |
+| `csrf_includes` | 30 | 28 | idem para o `csrf.jspf` |
+| `confirmations` | 13 | 12 | saiu o `data-confirm` do cancelamento (virou dialogo) |
+| `utf8_decls` | 9 | **10** | subiu: o `dialog.tag` declara `pageEncoding` |
+
+Fecham arquivo por arquivo: os tres `action`/`_method`/`csrf.jspf` de reservas reapareceram
+dentro de `ui:acao-form`, `ui:acao-editar` e `ui:dialog`.
+
 ## Known limitations (carried to the end)
 
 1. **No browser in this environment.** Every verification is DOM/CSS-level. Button/alert colours, spacing,

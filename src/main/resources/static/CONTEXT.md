@@ -11,6 +11,8 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
   `#f3efe7/#e4ded2`. O `--bg` do `base.css` (fundo real do `body`) acompanha o `base-200`.
 - `css/app.build.css`: **gerado** (`npm run build:css` ou estágio `frontend` do Dockerfile); não versionado.
 - `css/custom.css`: shell — painel *inset* do `drawer-content` e topbar (linha única com `border-b`) —,
+  o **diálogo central** `.app-dialog` (mesmo componente do drawer, centralizado com `inset: 0` +
+  `margin: auto` e `max-height`, aberto por `[data-drawer-aberto]`),
   dois ajustes de geometria escopados em `.app-sidebar` (a daisyUI vem depois de `utilities` no cascade, então
   `.menu{width:fit-content;padding:.5rem}` precisa ser sobrescrito fora de layer), o token `--card-p` (respiro
   interno dos cards) e acessibilidade.
