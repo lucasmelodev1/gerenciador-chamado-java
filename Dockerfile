@@ -36,7 +36,11 @@ COPY --from=frontend /ui/src/main/resources/static/css/app.build.css src/main/re
 RUN mvn clean package -DskipTests
 
 
-# ---------- STAGE 2 : RUNTIME ----------
+# ---------- STAGE 2 : TEST ----------
+FROM build AS test
+
+
+# ---------- STAGE 3 : RUNTIME ----------
 FROM eclipse-temurin:21-jdk-jammy AS runtime
 
 WORKDIR /app
@@ -46,6 +50,4 @@ COPY --from=build /app/target/*.war app.war
 
 EXPOSE 8080
 
-
-# ---------- STAGE 3 : TEST ----------
-FROM build AS test
+ENTRYPOINT ["java", "-jar", "app.war"]

@@ -58,3 +58,6 @@ baseline/*
 
 # CSS compilado (gerado por npm run build:css / estagio frontend do Dockerfile)
 src/main/resources/static/css/app.build.css
+
+# GCP environment secrets
+.env.gcp
