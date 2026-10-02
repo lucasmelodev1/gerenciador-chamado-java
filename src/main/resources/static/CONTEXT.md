@@ -32,6 +32,10 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
   o `base-200` do `btn-ghost` some sobre a linha zebrada. `.app-btn-perigo` pinta o ícone de excluir com
   `--color-error` — `btn-ghost btn-error` não serve: `.btn:hover{color:var(--btn-fg)}` e o `--btn-fg` do
   `btn-error` é quase branco. Os botões usam `btn-square` normalmente.
+  Também a **lista de detalhes** (S30): `.app-detalhe-*` é o "rótulo à esquerda, valor em negrito à
+  direita" do `ui:detalhe-linha` — linha em `flex` com `space-between`, valor com `font-weight: 700` e
+  `text-align: end`, os dois `margin` do navegador zerados e `min-width: 0` no valor (item flex nasce com
+  `min-width: auto` e um motivo longo empurraria a linha para fora do painel).
   **Camadas aninhadas:** dentro da daisyUI (`daisyui.l1` > `l1.l2` > `l1.l2.l3` > `l1.l2.l3.l4`), para
   declarações **normais** o layer **pai vence o filho** ("non-nested styles in a layer have precedence over
   normal nested styles"). É o que faz o `.btn:hover` de `l1` sobrepor o `color` do `.btn-ghost` de `l1.l2.l3` —
@@ -47,7 +51,14 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
 
 ## JS
 - `core` (`window.AppDom`), `alerts`, `forms` (`data-confirm`, `data-password-*`, `data-character-*`,
-  `data-auto-submit`), `tables` (`data-filter-*`) e `calendar.js` (agendas mês/semana do admin e do morador).
+  `data-auto-submit`) e `tables` (`data-filter-*`).
+- `calendar.js` (agendas mês/semana do admin e do morador): monta os eventos a partir dos
+  `.reserva-data`, filtra por área **no cliente** e, no clique do evento, abre o `ui:drawer` de detalhe
+  (`#drawer-reserva`) preenchendo cada `dd[data-detalhe]`. A ação de cancelar é um `ui:dialog`: o botão do
+  rodapé do drawer nasce com `data-drawer-editar="dialog-cancelamento"` e o `calendar.js` só reescreve o
+  `data-drawer-acao` da reserva clicada (o `drawer.js` lê no clique) — o mesmo diálogo serve todas as
+  reservas. O botão é escondido quando o servidor recusaria a ação (status que não seja Solicitado/Aprovado,
+  ou início já alcançado).
 - `drawer.js` (`window.AppDrawer`): abre/fecha o `ui:drawer` e reemite o fechamento como evento
   `drawer:fechado` (`detail = { id, valor }`, borbulha). Hooks: `data-drawer`, `data-drawer-form`,
   `data-drawer-titulo`, `data-drawer-abrir`, `data-drawer-editar`, `data-drawer-fechar`,
@@ -60,7 +71,9 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
   `<input data-campo="<name>">` dentro do botão (S26, a que `ui:acao-editar` usa — `value` de input
   aceita qualquer dado de usuário sem codificação em string). Com `data-drawer-travar` no formulário,
   os campos listados ficam desabilitados na edição e um espelho escondido com o mesmo `name` assume o
-  envio (`disabled` não é submetido); a criação desfaz. Carregado em todas as páginas (é inerte sem
+  envio (`disabled` não é submetido); a criação desfaz. Uma pilha (`abertos`) guarda a ordem de abertura:
+  com dois painéis empilhados (o detalhe e o diálogo que ele abre), Esc, o Tab e o foco preso valem para o
+  de **cima**, e o scroll só destrava quando não sobra painel aberto. Carregado em todas as páginas (é inerte sem
   `data-drawer`); o visual fica em `custom.css` sob `.app-drawer*`, junto do `prefers-reduced-motion`.
 - `layout.js` foi removido: o drawer da daisyUI dispensa toggle por JS e a navegação ativa é server-side.
 - `js/vendor/fullcalendar/`, `css/vendor/fullcalendar/`: FullCalendar 7.1.0 vendorizado para uso offline,

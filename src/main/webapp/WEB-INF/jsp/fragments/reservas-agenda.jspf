@@ -1,7 +1,12 @@
+<%@ page pageEncoding="UTF-8" %>
 <%--
     Bloco compartilhado do calendario de reservas (admin e morador).
     Variaveis esperadas: agendaModo (admin|morador), agendaBase, agendaEyebrow, agendaTitulo,
     viewAtual, periodoReferencia, periodoLabel, periodoAnterior, periodoSeguinte, areasFiltro, reservas.
+
+    O detalhe da reserva clicada NAO fica aqui: e o `reservas-agenda-paineis.jspf`, que cada
+    agenda inclui depois de `</main>` (o drawer e o dialogo precisam nascer fora de
+    `.page-content`).
 --%>
 <section class="card">
     <div class="card-body">
@@ -16,9 +21,9 @@
 
     <div class="mb-4 flex flex-wrap items-end justify-between gap-4">
         <label class="field">
-            <span>Filtrar por area</span>
+            <span>Filtrar por área</span>
             <select class="select w-full" id="filtro-area">
-                <option value="">Todas as areas</option>
+                <option value="">Todas as áreas</option>
                 <c:forEach items="${areasFiltro}" var="area">
                     <option value="${area.id}">${fn:escapeXml(area.nome)}</option>
                 </c:forEach>
@@ -26,8 +31,8 @@
         </label>
 
         <div class="flex flex-wrap items-center gap-3">
-            <c:set var="rotuloAnterior" value="${viewAtual eq 'semana' ? 'Semana anterior' : 'Mes anterior'}" />
-            <c:set var="rotuloSeguinte" value="${viewAtual eq 'semana' ? 'Proxima semana' : 'Proximo mes'}" />
+            <c:set var="rotuloAnterior" value="${viewAtual eq 'semana' ? 'Semana anterior' : 'Mês anterior'}" />
+            <c:set var="rotuloSeguinte" value="${viewAtual eq 'semana' ? 'Próxima semana' : 'Próximo mês'}" />
 
             <%-- Navegacao de periodo: join (a daisyUI nao tem componente de paginacao) --%>
             <div class="join">
@@ -69,42 +74,6 @@
                   data-fim-formatado="${fn:escapeXml(r.fimFormatado)}"
                   data-motivo="${fn:escapeXml(r.motivoNegacao)}"></span>
         </c:forEach>
-    </div>
-    </div>
-    </div>
-</section>
-
-<section id="reserva-detalhe" class="card reserva-detalhe" hidden>
-    <div class="card-body">
-    <div class="card-body">
-    <div class="section-header">
-        <div>
-            <p class="eyebrow">Reserva</p>
-            <h3 class="reserva-titulo"></h3>
-        </div>
-        <button type="button" class="btn" id="reserva-fechar">Fechar</button>
-    </div>
-    <p class="reserva-meta"></p>
-    <p class="reserva-motivo"></p>
-    <div class="button-row">
-        <c:if test="${agendaModo eq 'admin'}">
-            <form id="form-aprovar" method="post" hidden>
-                <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                <input type="hidden" name="_method" value="patch">
-                <button type="submit" class="btn btn-primary">Aprovar</button>
-            </form>
-            <form id="form-negar" method="post" class="inline-panel" hidden>
-                <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                <input type="hidden" name="_method" value="patch">
-                <input class="input w-full" type="text" name="motivo" maxlength="255" placeholder="Motivo da negacao" required>
-                <button type="submit" class="btn btn-link">Negar</button>
-            </form>
-        </c:if>
-        <form id="form-cancelar" method="post" hidden data-confirm="Cancelar esta reserva?">
-            <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-            <input type="hidden" name="_method" value="delete">
-            <button type="submit" class="btn btn-link">Cancelar</button>
-        </form>
     </div>
     </div>
     </div>

@@ -168,5 +168,49 @@ for jsp in $(grep -rl 'fragments/taglibs.jspf' src/main/webapp/WEB-INF/jsp --inc
       || { echo "  FAIL $jsp nao declara pageEncoding=\"UTF-8\" na primeira linha"; fail=1; }
 done
 echo "  OK   $n paginas declaram pageEncoding na primeira linha"
+
+# S30: a mesma armadilha vale para os FRAGMENTOS (`<%@ include %>`). O `pageEncoding` da
+# pagina que inclui NAO vale para o arquivo incluido: o Jasper le o .jspf com o encoding
+# padrao (ISO-8859-1), e todo byte nao-ASCII vira mojibake. Estava acontecendo em dois
+# lugares reais: o `×` do `alerts.jspf` (saia "Ã") e os acentos que a S30 escreveu em
+# `reservas-agenda.jspf`. A declaracao tem de vir ANTES do primeiro byte nao-ASCII: depois
+# dele a troca de encoding nao vale mais, porque o arquivo ja foi lido.
+#
+# O que esta dentro de comentario JSP nao conta (o texto sai na traducao), e por isso a
+# checagem tira os `<%-- ... --%>` antes de procurar.
+if python3 - <<'PY'
+import pathlib, re, sys
+
+falhas = []
+checados = 0
+for arq in sorted(pathlib.Path("src/main/webapp").rglob("*")):
+    if arq.suffix not in (".jsp", ".jspf", ".tag"):
+        continue
+    try:
+        bruto = arq.read_text(encoding="utf-8")
+    except UnicodeDecodeError as erro:
+        falhas.append(f"{arq} nao esta em UTF-8 ({erro})")
+        continue
+
+    def sem_comentarios(texto):
+        return re.sub(r"<%--.*?--%>", "", texto, flags=re.S)
+
+    if sem_comentarios(bruto).isascii():
+        continue                      # ASCII puro: o encoding nao muda nada
+    checados += 1
+
+    pos = bruto.find('pageEncoding="UTF-8"')
+    if pos == -1:
+        falhas.append(f"{arq} tem texto nao-ASCII visivel e nao declara pageEncoding=\"UTF-8\"")
+    elif not sem_comentarios(bruto[:pos]).isascii():
+        falhas.append(f"{arq} declara o encoding DEPOIS de texto nao-ASCII (a troca so vale se vier antes)")
+
+if falhas:
+    for f in falhas:
+        print(f"  FAIL {f}")
+    sys.exit(1)
+print(f"  OK   {checados} arquivos com texto nao-ASCII declaram o encoding antes dele")
+PY
+then :; else fail=1; fi
 [ "$fail" = 0 ] && echo "SHELL OK"
 exit "$fail"

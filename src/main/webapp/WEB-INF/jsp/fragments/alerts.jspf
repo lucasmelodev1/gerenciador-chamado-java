@@ -1,3 +1,4 @@
+<%@ page pageEncoding="UTF-8" %>
 <%-- Flash messages de redirect (RedirectAttributes). Hooks de JS preservados:
      [data-alert] e [data-dismiss-alert] (alerts.js). --%>
 <c:if test="${not empty successMessage}">

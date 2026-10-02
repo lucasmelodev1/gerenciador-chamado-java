@@ -155,6 +155,17 @@ if [ "$USOS" = "$ESPERADO" ]; then
 else
     bad "uso inesperado: '$USOS' (esperado '$ESPERADO')"
 fi
+# S30: o detalhe da agenda tambem usa o componente, mas de dentro de um FRAGMENTO (o mesmo
+# markup serve admin e morador). O grep acima so olha `*.jsp`, entao a lista fechada aqui
+# cobre os fragmentos — senao um `ui:drawer` novo entraria por um `.jspf` sem passar pela
+# checagem de escopo.
+USOS_JSPF="$(grep -rl '<ui:drawer' src/main/webapp --include='*.jspf' | sort | tr '\n' ' ')"
+ESPERADO_JSPF="src/main/webapp/WEB-INF/jsp/fragments/reservas-agenda-paineis.jspf "
+if [ "$USOS_JSPF" = "$ESPERADO_JSPF" ]; then
+    ok "nos fragmentos, o unico uso e o detalhe compartilhado da agenda"
+else
+    bad "uso inesperado em fragmentos: '$USOS_JSPF' (esperado '$ESPERADO_JSPF')"
+fi
 grep -q 'data-drawer' src/main/webapp/WEB-INF/tags/drawer.tag \
     && ok "a definicao vive em WEB-INF/tags/drawer.tag" \
     || bad "drawer.tag nao define os hooks data-drawer"

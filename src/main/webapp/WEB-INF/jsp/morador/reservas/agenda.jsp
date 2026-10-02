@@ -13,12 +13,15 @@
 
             <c:set var="agendaModo" value="morador" />
             <c:set var="agendaBase" value="${ctx}/morador/reservas" />
-            <c:set var="agendaEyebrow" value="Areas comuns" />
+            <c:set var="agendaEyebrow" value="Áreas comuns" />
             <c:set var="agendaTitulo" value="Minha agenda" />
             <%@ include file="/WEB-INF/jsp/fragments/reservas-agenda.jspf" %>
         </main>
     </div>
 </div>
+
+<%-- Fora de `.page-content`: o detalhe e o dialogo sao `position: fixed`. --%>
+<%@ include file="/WEB-INF/jsp/fragments/reservas-agenda-paineis.jspf" %>
 <%@ include file="/WEB-INF/jsp/fragments/scripts.jspf" %>
 </body>
 </html>

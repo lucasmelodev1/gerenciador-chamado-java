@@ -278,6 +278,46 @@ function montarCenarioTravado() {
     };
 }
 
+// ---------------------------------------------------------------- cenario (S30)
+// Dois paineis empilhados: o drawer de detalhe da reserva e o dialogo de cancelamento que
+// ele abre por cima (botao declarado pelo `painelAcao` do `ui:drawer`).
+
+function montarCenarioEmpilhado() {
+    const deBaixo = new El("aside", { id: "drawer-reserva", "data-drawer": "" });
+    const xBaixo = new El("button", { "data-drawer-fechar": "" });
+    deBaixo.appendChild(xBaixo);
+    const backdropBaixo = new El("div", {
+        id: "drawer-reserva-backdrop", "data-drawer-backdrop": "drawer-reserva",
+    });
+
+    const deCima = new El("aside", { id: "dialog-cancelamento", "data-drawer": "" });
+    const xCima = new El("button", { "data-drawer-fechar": "" });
+    const confirmar = new El("button", { type: "submit" });
+    deCima.appendChild(xCima);
+    deCima.appendChild(confirmar);
+    const backdropCima = new El("div", {
+        id: "dialog-cancelamento-backdrop", "data-drawer-backdrop": "dialog-cancelamento",
+    });
+
+    // O gatilho e o botao Cancelar do rodape do drawer informativo.
+    const gatilho = new El("button", {
+        "data-drawer-editar": "dialog-cancelamento",
+        "data-drawer-acao": "/admin/reservas/r1",
+        "data-campo-_method": "delete",
+    });
+
+    const elementos = [deBaixo, backdropBaixo, deCima, backdropCima, gatilho, xBaixo, xCima, confirmar];
+    const ambiente = criarAmbiente(elementos);
+    ambiente.document.body.appendChild(backdropBaixo);
+    ambiente.document.body.appendChild(deBaixo);
+    ambiente.document.body.appendChild(backdropCima);
+    ambiente.document.body.appendChild(deCima);
+    ambiente.document.body.appendChild(gatilho);
+
+    ambiente.document._disparar("DOMContentLoaded", new CustomEvent("DOMContentLoaded"));
+    return { ...ambiente, deBaixo, deCima, backdropBaixo, backdropCima, gatilho, xBaixo, xCima, confirmar };
+}
+
 // ---------------------------------------------------------------- casos
 
 const casos = [];
@@ -485,6 +525,45 @@ caso("uma edicao nao herda o que foi digitado na edicao anterior", () => {
 
     assert.equal(campoSenha.value, "", "campo nao declarado pelo gatilho deveria voltar ao padrao");
     assert.equal(campoSenha.disabled, undefined, "campo comum nao deve ser tocado pelo travamento");
+});
+
+// --- paineis empilhados: o de cima e quem responde (S30) ---
+
+caso("empilhado: Esc fecha o painel de cima, nao o de baixo", () => {
+    const { contexto, document, deBaixo, deCima, gatilho } = montarCenarioEmpilhado();
+    contexto.AppDrawer.abrir("drawer-reserva");
+    gatilho.clicar();                       // o `drawer.js` le a acao do gatilho e abre o dialogo
+    assert.equal(deCima.hasAttribute("data-drawer-aberto"), true, "o dialogo deveria abrir");
+
+    document._disparar("keydown", deCima.teclar("Escape"));
+    assert.equal(deCima.hasAttribute("data-drawer-aberto"), false, "Esc deveria fechar o de cima");
+    assert.equal(deBaixo.hasAttribute("data-drawer-aberto"), true, "o de baixo continua aberto");
+});
+
+caso("empilhado: o foco preso vale para o painel de cima", () => {
+    const { contexto, document, deCima, gatilho, xCima, confirmar } = montarCenarioEmpilhado();
+    contexto.AppDrawer.abrir("drawer-reserva");
+    gatilho.clicar();
+
+    document.activeElement = confirmar;     // ultimo focavel do painel de cima
+    const ev = deCima.teclar("Tab");
+    document._disparar("keydown", ev);
+    assert.equal(ev.defaultPrevented, true, "deveria interceptar o Tab");
+    assert.equal(document.activeElement, xCima, "o foco deveria voltar ao primeiro do de cima");
+});
+
+caso("empilhado: o scroll so destrava quando nao sobra painel aberto", () => {
+    const { contexto, body, deBaixo, gatilho } = montarCenarioEmpilhado();
+    contexto.AppDrawer.abrir("drawer-reserva");
+    gatilho.clicar();
+
+    contexto.AppDrawer.fechar("dialog-cancelamento");
+    assert.equal(body.classes.has("app-drawer-trava-scroll"), true,
+        "com o drawer de baixo aberto a pagina continua travada");
+
+    contexto.AppDrawer.fechar("drawer-reserva");
+    assert.equal(deBaixo.hasAttribute("data-drawer-aberto"), false);
+    assert.equal(body.classes.has("app-drawer-trava-scroll"), false, "sem painel aberto, destrava");
 });
 
 // ---------------------------------------------------------------- execucao

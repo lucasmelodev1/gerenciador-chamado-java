@@ -4,7 +4,15 @@
     Painel que desliza da borda, em tres faixas:
         topo   -> titulo + descricao (+ botao X)
         meio   -> <jsp:doBody/>, o slot livre
-        rodape -> Salvar (so quando `acao` e informado) + Fechar
+        rodape -> Salvar (drawer de formulario) ou Fechar + a acao declarada (informativo)
+
+    Duas formas, decididas por `acao`:
+
+      - COM `acao`: e um formulario. O corpo fica dentro do <form> e o rodape so tem o
+        Salvar. Fechar e o X do topo, o Esc e o clique fora (nao ha botao "Fechar").
+      - SEM `acao`: e um painel INFORMATIVO (um detalhe, por exemplo). Nao ha formulario e
+        o rodape passa a ter o botao **Fechar**; `rotuloAcao` acrescenta um segundo botao a
+        esquerda, que pode abrir outro painel (ver `painelAcao`/`metodoAcao` abaixo).
 
     Uso:
         <ui:drawer id="drawer-area" titulo="Nova area"
@@ -56,12 +64,18 @@
 <%@ attribute name="rotuloFechar" required="false" %>
 <%@ attribute name="aberto" required="false" description="true abre o drawer no carregamento" %>
 <%@ attribute name="travar" required="false" description="campos separados por virgula que a EDICAO nao pode mudar; a criacao pode" %>
+<%@ attribute name="rotuloAcao" required="false" description="segundo botao do rodape do drawer informativo (a esquerda do Fechar)" %>
+<%@ attribute name="iconeAcao" required="false" description="alias de fragments/icone.jspf para o botao da acao" %>
+<%@ attribute name="varianteAcao" required="false" description="primary (padrao) ou error (vermelho)" %>
+<%@ attribute name="painelAcao" required="false" description="id do painel que a acao abre (protocolo data-drawer-editar)" %>
+<%@ attribute name="metodoAcao" required="false" description="valor de _method que o painel aberto recebe (ex.: delete)" %>
 
 <c:set var="drawerMetodo" value="${empty metodo ? 'post' : metodo}" />
 <c:set var="drawerTamanho" value="${empty tamanho ? 'sm' : tamanho}" />
 <c:set var="drawerLado" value="${empty lado ? 'end' : lado}" />
 <c:set var="drawerSalvar" value="${empty rotuloSalvar ? 'Salvar' : rotuloSalvar}" />
 <c:set var="drawerFechar" value="${empty rotuloFechar ? 'Fechar' : rotuloFechar}" />
+<c:set var="drawerVarianteAcao" value="${varianteAcao eq 'error' ? 'btn-error' : 'btn-primary'}" />
 <c:set var="drawerFormId" value="${id}-form" />
 <c:set var="drawerAberto" value="${aberto eq 'true' ? 'data-drawer-aberto' : ''}" />
 
@@ -118,16 +132,35 @@
         </c:otherwise>
     </c:choose>
 
-    <%-- Rodape so com Salvar: o fechamento fica por conta do X no topo, do Esc e do
-         clique fora. Sem `acao` (drawer informativo) o rodape nem e renderizado. --%>
-    <c:if test="${not empty acao}">
-        <footer class="app-drawer-rodape">
-            <button type="submit" form="${drawerFormId}" class="btn btn-primary">
-                <c:set var="icone" value="salvar" />
-                <c:set var="iconeClasse" value="size-4" />
-                <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
-                ${drawerSalvar}
-            </button>
-        </footer>
-    </c:if>
+    <%-- Rodape. No drawer de FORMULARIO e so o Salvar: fechar fica por conta do X no topo,
+         do Esc e do clique fora. No drawer INFORMATIVO (sem `acao`) o rodape traz o Fechar
+         — e, quando `rotuloAcao` e informado, um segundo botao a esquerda, que pode abrir
+         outro painel pelo mesmo protocolo do gatilho de editar (`data-drawer-editar`). --%>
+    <c:choose>
+        <c:when test="${not empty acao}">
+            <footer class="app-drawer-rodape">
+                <button type="submit" form="${drawerFormId}" class="btn btn-primary">
+                    <c:set var="icone" value="salvar" />
+                    <c:set var="iconeClasse" value="size-4" />
+                    <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+                    ${drawerSalvar}
+                </button>
+            </footer>
+        </c:when>
+        <c:otherwise>
+            <footer class="app-drawer-rodape">
+                <c:if test="${not empty rotuloAcao}">
+                    <button type="button" class="btn ${drawerVarianteAcao}"<c:if test="${not empty painelAcao}"> data-drawer-editar="${painelAcao}"</c:if><c:if test="${not empty metodoAcao}"> data-campo-_method="${metodoAcao}"</c:if>>
+                        <c:if test="${not empty iconeAcao}">
+                            <c:set var="icone" value="${iconeAcao}" />
+                            <c:set var="iconeClasse" value="size-4" />
+                            <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+                        </c:if>
+                        ${rotuloAcao}
+                    </button>
+                </c:if>
+                <button type="button" class="btn" data-drawer-fechar>${drawerFechar}</button>
+            </footer>
+        </c:otherwise>
+    </c:choose>
 </aside>

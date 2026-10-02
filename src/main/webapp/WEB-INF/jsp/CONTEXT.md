@@ -9,6 +9,14 @@ Views JSP/JSTL dos controllers web; prefixo/sufixo em `application.properties`.
   acento sai duplicado** (`Ãº` no lugar de `ú`). Foi por isso que o projeto passou anos sem
   acento em texto de JSP. `scripts/ui-shell.sh` reprova página que inclua `taglibs.jspf` e não
   declare isso na primeira linha. `taglibs.jspf` mantém a sua (vale para os `.jspf`).
+- **O mesmo vale para o fragmento incluído, e a diretiva tem de ser a primeira linha dele.** O
+  `pageEncoding` da página que inclui não vale para o `<%@ include %>`: o Jasper lê o `.jspf` como
+  ISO-8859-1 e o texto não-ASCII vira mojibake. A S30 encontrou dois casos reais disso — o `×` do
+  `alerts.jspf` (saía `Ã`) e os acentos novos de `reservas-agenda.jspf`. Por isso `alerts.jspf`,
+  `reservas-agenda.jspf` e `reservas-agenda-paineis.jspf` começam com a diretiva, e o
+  `ui-shell.sh` reprova **qualquer** arquivo de markup (`.jsp`, `.jspf`, `.tag`) cujo primeiro
+  byte não-ASCII venha antes da declaração de encoding. Texto não-ASCII dentro de comentário JSP
+  não conta: sai na tradução.
 - `fragments/head.jspf`: carrega `app.build.css` + `custom.css` e, **depois**, o CSS legado (transitório).
   A ordem importa: o legado não está em cascade layer, então vence a daisyUI onde ambos definem a mesma classe.
   **Também materializa `${_csrf.token}` aqui, no `<head>`.** Não remova: o `CookieCsrfTokenRepository` só
@@ -80,12 +88,22 @@ valores de cada linha.
 - `vazio.jspf`: estado vazio — `vazioTitulo` (opcional), `vazioMensagem`, `vazioCompacto`.
 - `reserva-status.jspf`: badge de status de reserva com cor semântica — `reservaStatus`.
 - `reservas-agenda.jspf`: calendário compartilhado (admin/morador); toolbar em `join` + `tabs`.
+  Traz o `#calendar` + os `.reserva-data`; **nada de painel de detalhe** (ver o próximo).
+- `reservas-agenda-paineis.jspf`: os painéis da agenda (S30) — o `ui:drawer` informativo com a
+  lista `ui:detalhe-linha` e o `ui:dialog` de cancelamento. Cada agenda inclui este fragmento
+  **depois de `</main>`**, senão o `.page-content` espremeria o backdrop.
 
 ## Contrato com o JS (não renomear)
-Ids/classes consumidos por `calendar.js`: `#calendar`, `#reservas-data`, `.reserva-data`,
-`#reserva-detalhe`, `.reserva-titulo|meta|motivo`, `#form-aprovar|negar|cancelar`, `#filtro-area`,
-`#reserva-fechar`; e os hooks `data-*` de `forms.js`/`tables.js`/`alerts.js`.
+`calendar.js`: `#calendar`, `#reservas-data`, `.reserva-data` (com os `data-*` do evento),
+`#filtro-area`, `#drawer-reserva` (o detalhe) e o `dd[data-detalhe]` de cada linha; o
+cancelamento é o botão que o `ui:drawer` gera a partir de `painelAcao="dialog-cancelamento"`
+(`data-drawer-editar`), com `_method=delete`. Mais os hooks `data-*` de
+`forms.js`/`tables.js`/`alerts.js`/`drawer.js`.
 `scripts/ui-invariants.sh` verifica todos eles.
+
+Antes da S30 o detalhe era um `<section id="reserva-detalhe">` no fim da página, com os três
+`<form>` escondidos (`#form-aprovar`, `#form-negar`, `#form-cancelar`): aprovar/negar saíram da
+agenda (a decisão é na lista de reservas) e o cancelamento virou diálogo central.
 
 - `auth/`: `login.jsp`.
 - `morador/`, `admin/`, `colaborador/`: páginas por perfil (`chamados/`, `reservas/`, cadastros do admin).

@@ -39,6 +39,7 @@ FROZEN_HOOKS=(
     data-filter-input data-filter-target data-filter-table
     data-drawer data-drawer-abrir data-drawer-fechar data-drawer-aberto data-drawer-backdrop
     data-drawer-editar data-drawer-form data-drawer-titulo
+    data-detalhe
     data-alert data-dismiss-alert
     data-page
     data-view data-referencia data-base-url data-modo
@@ -46,12 +47,17 @@ FROZEN_HOOKS=(
     data-inicio-formatado data-fim-formatado data-motivo
 )
 
-# Calendar contract consumed by calendar.js (ids and classes inside reservas-agenda.jspf / agenda JSPs).
+# Calendar contract consumed by calendar.js (ids and hooks inside reservas-agenda.jspf,
+# reservas-agenda-paineis.jspf and the two agenda JSPs).
+#
+# S30 trocou o painel de detalhe no fim da pagina por um `ui:drawer` e o formulario escondido
+# de cancelamento por um `ui:dialog` central: sairam `id="reserva-detalhe"`,
+# `.reserva-titulo|meta|motivo`, `id="form-aprovar|negar|cancelar"` e `id="reserva-fechar"`,
+# e entraram o drawer (com a lista `data-detalhe`, que esta em FROZEN_HOOKS) e o gatilho que
+# aponta o dialogo para a reserva clicada.
 FROZEN_CALENDAR=(
-    'id="calendar"' 'id="reservas-data"' 'reserva-data' 'id="reserva-detalhe"'
-    'reserva-titulo' 'reserva-meta' 'reserva-motivo'
-    'id="form-aprovar"' 'id="form-negar"' 'id="form-cancelar"'
-    'id="filtro-area"' 'id="reserva-fechar"'
+    'id="calendar"' 'id="reservas-data"' 'reserva-data' 'id="filtro-area"'
+    'id="drawer-reserva"' 'painelAcao="dialog-cancelamento"' 'data-drawer-editar="${painelAcao}"'
 )
 
 fail=0

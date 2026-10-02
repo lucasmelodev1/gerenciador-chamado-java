@@ -146,14 +146,32 @@ Painel lateral que desliza da borda, em três faixas:
 |---|---|
 | topo | `titulo`, `descricao` (opcional) e o botão X |
 | meio | `<jsp:doBody/>` — slot livre, com scroll próprio |
-| rodapé | **só** o botão Salvar com ícone (e só quando `acao` é informado) |
+| rodapé | **só** o Salvar com ícone (com `acao`); **Fechar** + a ação declarada (sem `acao`) |
 
-Fechar é responsabilidade do X no topo, do Esc e do clique fora — não há botão "Fechar"
-no rodapé.
+São duas formas, decididas por `acao`:
+
+- **com `acao`** — é um formulário. Fechar é responsabilidade do X no topo, do Esc e do clique
+  fora: não há botão "Fechar" no rodapé.
+- **sem `acao`** — é um painel **informativo** (um detalhe, por exemplo). O rodapé passa a ter o
+  botão **Fechar**, e `rotuloAcao` acrescenta um segundo botão à esquerda.
 
 Atributos: `id` e `titulo` (obrigatórios); `descricao`, `acao`, `metodo`, `tamanho`
 (`sm` padrão/estreito, `md`, `lg`), `lado` (`end` padrão/direita, `start`), `rotuloSalvar`
-(padrão "Salvar"), `rotuloFechar` (só o `aria-label` do X), `aberto`, `travar`.
+(padrão "Salvar"), `rotuloFechar` (o `aria-label` do X e o rótulo do Fechar informativo),
+`aberto`, `travar`.
+
+### Drawer informativo e painéis empilhados (S30)
+
+`rotuloAcao` (com `iconeAcao` e `varianteAcao` — `primary` padrão, `error` para vermelho) cria o
+botão da esquerda, e `painelAcao` + `metodoAcao` fazem esse botão **abrir outro painel** pelo
+mesmo protocolo do gatilho de editar (`data-drawer-editar` + `data-campo-_method`). É assim que o
+detalhe da reserva, na agenda, abre o diálogo central de cancelamento sem JS próprio: o
+`calendar.js` só reescreve o `data-drawer-acao` do botão a cada evento.
+
+Um painel pode, então, abrir outro por cima. Esc, o Tab e o foco preso valem sempre para o painel
+de **cima** (o último aberto — a pilha `abertos` do `drawer.js`), e o de baixo continua aberto por
+trás: é o que faz o "Voltar" do diálogo devolver a reserva detalhada. Por isso o diálogo precisa
+ser renderizado **depois** do drawer no DOM (mesmo `z-index`; quem vem depois pinta por cima).
 
 ### Conteúdo dinâmico (criar e editar no mesmo drawer)
 
@@ -206,8 +224,31 @@ persistido e o serviço recusa a troca (`Nao e permitido alterar o tipo do usuar
 
 Comportamento em `static/js/drawer.js`: `AppDrawer.abrir(id)` / `AppDrawer.fechar(id)`,
 gatilho declarativo `data-drawer-abrir="id"`, abertura no carregamento via `aberto="true"`
-e evento `drawer:fechado` (borbulha, `detail = { id, valor }`). Esc, foco preso no painel,
-devolução do foco e trava de scroll são implementados no JS, já que não há `<dialog>`.
+e evento `drawer:fechado` (borbulha, `detail = { id, valor }`). Esc, foco preso no painel de
+cima, devolução do foco e trava de scroll são implementados no JS, já que não há `<dialog>`.
+
+---
+
+## `ui:detalhe-linha` (`detalhe-linha.tag`)
+
+Uma linha de lista de detalhes: **rótulo à esquerda, valor em negrito à direita**. O
+`<dl class="app-detalhe-lista">` em volta é declarado por quem usa — a lista é a composição de
+várias linhas irmãs, e um tag não abre a lista.
+
+```jsp
+<dl class="app-detalhe-lista">
+    <ui:detalhe-linha rotulo="Aberta em">${area.criadoEm}</ui:detalhe-linha>
+    <ui:detalhe-linha rotulo="Área" campo="area" />
+</dl>
+```
+
+Atributos: `rotulo` (obrigatório) e `campo` (opcional). Com `campo`, o `<dd>` sai com
+`data-detalhe="<campo>"` para o JS preencher (`calendar.js` faz isso nas 7 linhas do detalhe da
+reserva); sem ele a linha é estática e o valor vem do corpo.
+
+A geometria está em `custom.css` sob `.app-detalhe-*`: `space-between` na linha (valor à direita),
+`font-weight: 700` e `text-align: end` no valor, os dois `margin` do navegador zerados (`<dl>` e o
+recuo de 40px do `<dd>`) e `min-width: 0` para um valor longo não estourar o painel.
 
 ---
 
@@ -265,13 +306,20 @@ com o formulario, para num teto e so entao o corpo rola. Sem o `fit-content` o `
 e `iconeClasse`. Alias desconhecido cai num círculo de fallback — que `ui-shell.sh` e
 `ui-tabelas.sh` reprovam, para o erro não passar despercebido.
 
+`negar` e `bloquear` são o mesmo glifo (círculo cortado) com dois nomes: cada tela usa o
+vocabulário dela (negar a reserva × cancelar/bloquear a reserva).
+
 ## Verificação
 
 - `bash scripts/ui-tabelas.sh` — contrato das **7 telas** de tabela: cabeçalho, faixa de
   filtros, coluna de ações, badges, paineis, as regras do `custom.css`, as classes do bundle,
-  e o `tables.js` executado. Traz self-test negativo (13 sabotagens de markup + 12 de CSS).
+  e o `tables.js` executado. Traz self-test negativo (15 sabotagens de markup + 18 de CSS).
 - `bash scripts/ui-drawer.sh` — contrato do `ui:drawer` nos dois estados, posição fora de
-  `.page-content`, escopo de uso, fluxo criar→editar→remover e o `drawer.js` executado
-  por `node scripts/ui-drawer-js.mjs` (21 casos).
+  `.page-content`, escopo de uso (nas telas e nos fragmentos), fluxo criar→editar→remover e o
+  `drawer.js` executado por `node scripts/ui-drawer-js.mjs` (**24 casos**, incluindo os painéis
+  empilhados).
+- `bash scripts/ui-agenda.sh` — a agenda de reservas (admin e morador): o detalhe no drawer
+  informativo com a lista `ui:detalhe-linha`, o diálogo de cancelamento, as regras do
+  `custom.css` da lista e o fluxo real de cancelamento.
 - `bash scripts/ui-invariants.sh check` — congela o contrato que os JSPs compartilham com
   controllers, JS, testes e build.
