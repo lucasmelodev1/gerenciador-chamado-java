@@ -1,36 +1,179 @@
-<aside class="sidebar" data-sidebar>
-    <div class="brand-block">
-        <span class="brand-chip">Central de Operacoes</span>
-        <a href="${ctx}${currentUserHome}" class="brand-mark">${appName}</a>
-        <p>Operacao do condominio em um unico fluxo.</p>
-    </div>
+<%--
+    Shell: navegacao lateral como daisyUI `drawer`.
 
-    <nav class="nav-list">
-        <a href="${ctx}${currentUserHome}" class="nav-link">Inicio</a>
+    Estrutura esperada pela pagina que inclui este fragmento (as 26 telas usam o mesmo
+    wrapper, ajustado em S7):
+        <div class="drawer lg:drawer-open">
+            <%@ include sidebar.jspf %>      <-- emite .drawer-toggle + .drawer-side
+            <div class="drawer-content"> ...topbar + main... </div>
+        </div>
 
-        <c:if test="${isAdministrador}">
-            <a href="${ctx}/admin/blocos" class="nav-link">Blocos</a>
-            <a href="${ctx}/admin/usuarios" class="nav-link">Usuarios</a>
-            <a href="${ctx}/admin/vinculos-morador" class="nav-link">Vincular Morador</a>
-            <a href="${ctx}/admin/escopo-colaborador" class="nav-link">Escopo Colaborador</a>
-            <a href="${ctx}/admin/tipos-chamado" class="nav-link">Tipos de Chamado</a>
-            <a href="${ctx}/admin/status-chamado" class="nav-link">Status</a>
-            <a href="${ctx}/admin/chamados" class="nav-link">Chamados</a>
-        </c:if>
+    O estado ativo da navegacao e resolvido NO SERVIDOR (aria-current + menu-active),
+    substituindo o antigo `initActiveNav` do layout.js, que casava por path no cliente
+    e piscava a cada carregamento. O primeiro item que casar vence, por isso cada grupo
+    lista os caminhos do mais especifico para o mais generico.
 
-        <c:if test="${isMorador}">
-            <a href="${ctx}/morador/chamados" class="nav-link">Meus Chamados</a>
-            <a href="${ctx}/morador/chamados/novo" class="nav-link">Abrir Chamado</a>
-        </c:if>
+    ---------------------------------------------------------------------------
+    S19 — layout do bloco `dashboard-01` do shadcn
+    ---------------------------------------------------------------------------
+    O bloco dashboard-01 organiza a lateral em quatro slots:
+        SidebarHeader  -> marca (icone + nome)
+        SidebarContent -> SidebarGroup/SidebarGroupLabel + SidebarMenu (item = icone + rotulo)
+        SidebarFooter  -> NavUser (avatar + duas linhas + menu)
+    e usa a variante `inset`: o painel e a area de conteudo sao superficies separadas,
+    com cantos arredondados, sobre o fundo da pagina.
 
-        <c:if test="${isColaborador}">
-            <a href="${ctx}/colaborador/chamados" class="nav-link">Fila de Atendimento</a>
-        </c:if>
-    </nav>
+    Daqui veio apenas o LAYOUT. Nenhum CSS da daisyUI foi alterado: os slots acima sao
+    `menu`, `avatar`, `dropdown`, `badge` e utilitarios do Tailwind. As duas unicas
+    correcoes de geometria (`.menu` e `width: fit-content` por padrao) estao escopadas
+    em custom.css, sob `.app-sidebar`. Ver baseline/EVIDENCE.md > S19.
+--%>
+<%--
+    Caminho da requisicao sem o context path.
 
-    <div class="sidebar-footer">
-        <span>Perfil ativo</span>
-        <strong>${currentUserRoleLabel}</strong>
-    </div>
-</aside>
-<button type="button" class="sidebar-backdrop" data-sidebar-backdrop aria-label="Fechar menu"></button>
+    NAO usar `pageContext.request.requestURI`: como o controller faz forward para o JSP,
+    o container reescreve a URI para o alvo do forward, ou seja o caminho do PROPRIO JSP
+    (ex.: /WEB-INF/jsp/admin/blocos/lista.jsp) — nenhum link casaria. O caminho original
+    esta no atributo de forward da spec Servlet. Ver baseline/EVIDENCE.md > S7.
+--%>
+<c:set var="navPath" value="${requestScope['jakarta.servlet.forward.request_uri']}" scope="request" />
+<c:if test="${empty navPath}">
+    <c:set var="navPath" value="${pageContext.request.requestURI}" scope="request" />
+</c:if>
+<c:set var="navContext" value="${requestScope['jakarta.servlet.forward.context_path']}" />
+<c:if test="${empty navContext}">
+    <c:set var="navContext" value="${ctx}" />
+</c:if>
+<c:if test="${not empty navContext and fn:startsWith(navPath, navContext)}">
+    <c:set var="navPath" value="${fn:substringAfter(navPath, navContext)}" scope="request" />
+</c:if>
+
+<%-- `navPath` e `ctx` ficam no REQUEST scope: quem consome sao os tags `ui:nav-item`, e um
+     tag file le o chamador pelo escopo de request (mesmo padrao do `chamado` no
+     `ui:detalhe-chamado`). O marcador `navItemAtivoResolvido` tambem vive la: e ele que faz
+     o primeiro item que casa vencer, como no loop que a S31 substituiu. --%>
+<c:set var="navItemAtivoResolvido" value="" scope="request" />
+<c:set var="ctx" value="${ctx}" scope="request" />
+
+<%-- Cartao do usuario (NavUser): o modelo autenticado carrega apenas username e perfil,
+     entao o "nome" exibido e a parte local do e-mail e a segunda linha e o perfil. --%>
+<c:set var="navUserHandle" value="${fn:substringBefore(currentUserEmail, '@')}" />
+<c:if test="${empty navUserHandle}">
+    <c:set var="navUserHandle" value="${currentUserEmail}" />
+</c:if>
+<c:set var="navUserInitials" value="${fn:toUpperCase(fn:substring(navUserHandle, 0, 2))}" />
+
+<%-- Acessibilidade (S8): primeiro elemento focavel da pagina. Fica visivel apenas
+     quando recebe foco por teclado. Alvo: <main id="conteudo-principal"> das 25 telas. --%>
+<a href="#conteudo-principal"
+   class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-box focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-content">
+    Pular para o conteudo
+</a>
+
+<input id="app-drawer" type="checkbox" class="drawer-toggle" aria-label="Alternar menu lateral">
+
+<%-- `p-1.5 lg:p-2` = o "inset" da shadcn: o painel nao encosta na borda da janela. --%>
+<div class="drawer-side z-30 p-1.5 lg:p-2">
+    <label for="app-drawer" class="drawer-overlay" aria-label="Fechar menu"></label>
+
+    <%-- Sem `bg-base-100`/borda/sombra: a lateral fica SOBRE o fundo da pagina, nao
+         e uma ilha. Abaixo de `lg` ela precisa ser opaca porque o `.drawer-overlay`
+         escurece a pagina atras; a partir de `lg` fica transparente. --%>
+    <aside class="app-sidebar flex h-full w-72 flex-col bg-base-200 lg:bg-transparent">
+
+        <%-- SidebarHeader: icone da marca + nome do app, apontando para a home do perfil. --%>
+        <div class="flex shrink-0 items-center p-1.5">
+            <a href="${ctx}${currentUserHome}"
+               class="flex w-full items-center gap-2 rounded-field px-2 py-2 transition-colors hover:bg-base-content/10">
+                <span class="grid size-8 shrink-0 place-items-center rounded-field bg-primary text-primary-content">
+                    <ui:icone nome="marca" classe="size-5" />
+                </span>
+                <span class="font-display truncate text-base font-semibold">${appName}</span>
+            </a>
+        </div>
+
+        <%-- SidebarContent: SidebarGroup (rotulo) + SidebarMenu (item = icone + rotulo).
+             Grupos e itens sao MARKUP (`ui:nav-grupo`/`ui:nav-item`): antes era uma string
+             com separadores proprios (`Grupo@href|Rotulo|icone#...`), que corrompia o menu
+             se um rotulo tivesse um dos separadores. Cada grupo lista os caminhos do mais
+             especifico para o mais generico — o primeiro item que casa a URI vence. --%>
+        <nav class="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto px-1.5 pb-1.5"
+             aria-label="Navegacao principal">
+            <c:choose>
+                <c:when test="${isAdministrador}">
+                    <ui:nav-grupo rotulo="Operacao">
+                        <ui:nav-item href="/admin" rotulo="Inicio" icone="inicio" exato="true" />
+                        <ui:nav-item href="/admin/chamados" rotulo="Chamados" icone="chamados" />
+                        <ui:nav-item href="/admin/reservas/agenda" rotulo="Agenda" icone="agenda" />
+                        <ui:nav-item href="/admin/reservas" rotulo="Reservas" icone="reservas" />
+                    </ui:nav-grupo>
+                    <ui:nav-grupo rotulo="Cadastros">
+                        <ui:nav-item href="/admin/blocos" rotulo="Blocos" icone="blocos" />
+                        <ui:nav-item href="/admin/areas" rotulo="Areas" icone="areas" />
+                        <ui:nav-item href="/admin/tipos-chamado" rotulo="Tipos de Chamado" icone="tipos" />
+                        <ui:nav-item href="/admin/status-chamado" rotulo="Status" icone="status" />
+                    </ui:nav-grupo>
+                    <ui:nav-grupo rotulo="Acessos">
+                        <ui:nav-item href="/admin/usuarios" rotulo="Usuarios" icone="usuarios" />
+                        <ui:nav-item href="/admin/vinculos-morador" rotulo="Vincular Morador" icone="vinculos" />
+                        <ui:nav-item href="/admin/escopo-colaborador" rotulo="Escopo Colaborador" icone="escopo" />
+                    </ui:nav-grupo>
+                </c:when>
+                <c:when test="${isMorador}">
+                    <ui:nav-grupo rotulo="Chamados">
+                        <ui:nav-item href="/morador" rotulo="Inicio" icone="inicio" exato="true" />
+                        <ui:nav-item href="/morador/chamados/novo" rotulo="Abrir Chamado" icone="abrir" />
+                        <ui:nav-item href="/morador/chamados" rotulo="Meus Chamados" icone="chamados" />
+                    </ui:nav-grupo>
+                    <ui:nav-grupo rotulo="Reservas">
+                        <ui:nav-item href="/morador/reservas/agenda" rotulo="Agenda" icone="agenda" />
+                        <ui:nav-item href="/morador/reservas/nova" rotulo="Reservar Area" icone="reservar" />
+                        <ui:nav-item href="/morador/reservas" rotulo="Minhas Reservas" icone="minhasReservas" />
+                    </ui:nav-grupo>
+                </c:when>
+                <c:when test="${isColaborador}">
+                    <ui:nav-grupo rotulo="Atendimento">
+                        <ui:nav-item href="/colaborador" rotulo="Inicio" icone="inicio" exato="true" />
+                        <ui:nav-item href="/colaborador/chamados" rotulo="Fila de Atendimento" icone="fila" />
+                    </ui:nav-grupo>
+                </c:when>
+            </c:choose>
+        </nav>
+
+        <%-- SidebarFooter: cartao do usuario. O `form` fica FORA do menu e o botao o
+             referencia por `form="..."` — assim o item do menu e o proprio <button> e a
+             daisyUI o estiliza, em vez de estilizar um <form> intermediario. --%>
+        <div class="shrink-0 border-t border-base-300 p-1.5">
+            <form id="app-logout" method="post" action="${ctx}/logout" class="hidden">
+                <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
+            </form>
+
+            <div class="dropdown dropdown-top w-full">
+                <div tabindex="0" role="button"
+                     class="flex w-full cursor-pointer items-center gap-2 rounded-field p-2 text-left transition-colors hover:bg-base-content/10 focus-visible:bg-base-content/10">
+                    <%-- `avatar-placeholder` exige um <div> como filho (o seletor da
+                         daisyUI e `.avatar-placeholder > div`), que centraliza o texto. --%>
+                    <div class="avatar avatar-placeholder shrink-0">
+                        <div class="h-8 w-8 bg-neutral text-xs font-semibold text-neutral-content">${navUserInitials}</div>
+                    </div>
+                    <span class="grid min-w-0 flex-1 leading-tight">
+                        <span class="truncate text-sm font-medium">${navUserHandle}</span>
+                        <span class="truncate text-xs opacity-60">${currentUserRoleLabel}</span>
+                    </span>
+                    <ui:icone nome="opcoes" classe="size-4 shrink-0 opacity-60" />
+                </div>
+
+                <ul tabindex="0"
+                    class="dropdown-content menu z-50 w-full rounded-box border border-base-300 bg-base-100 p-2 shadow-lg">
+                    <li class="menu-title"><span class="truncate">${currentUserEmail}</span></li>
+                    <li>
+                        <button type="submit" form="app-logout" class="text-error">
+                            <ui:icone nome="sair" classe="size-4 shrink-0" />
+                            <span>Sair</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </aside>
+</div>

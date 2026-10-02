@@ -2,8 +2,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${pageTitle} | ${appName}</title>
-    <link rel="stylesheet" href="${ctx}/css/base.css">
-    <link rel="stylesheet" href="${ctx}/css/layout.css">
-    <link rel="stylesheet" href="${ctx}/css/components.css">
-    <link rel="stylesheet" href="${ctx}/css/responsive.css">
+
+    <%-- ---------------------------------------------------------------------
+         Materializa o token CSRF aqui, no comeco do <head>.
+
+         O `CookieCsrfTokenRepository` so escreve o cookie `XSRF-TOKEN` quando o
+         token e resolvido. Se o primeiro acesso a `${_csrf.token}` acontecer
+         depois de a resposta passar do buffer de 8 KB do Tomcat, a resposta ja
+         esta comprometida e o `Set-Cookie` se perde: a sessao fica sem token, o
+         `CsrfFilter` gera um novo a cada requisicao e TODO POST autenticado
+         responde 403.
+
+         Medicao em GET /admin (offset do form que continha o `_csrf`):
+             S18 (topbar) ........... 8.179 B -> cookie ok, por 13 B de margem
+             S19 (icones inline) .... 18.635 B -> sem cookie, POST /logout 403
+
+         Resolver o token no inicio da resposta torna a posicao do formulario
+         irrelevante. O valor nao e usado aqui: o efeito desejado e o proprio
+         acesso ao token. Ver baseline/EVIDENCE.md > S19.
+         ------------------------------------------------------------------ --%>
+    <c:set var="csrfTokenMaterializado" value="${_csrf.token}" />
+
+    <%-- Tailwind CSS 4 + daisyUI 5 (tema "chamados"), gerado por `npm run build:css`
+         e pelo estagio `frontend` do Dockerfile. Ver UI-REWRITE-MAP.md §7. --%>
+    <link rel="stylesheet" href="${ctx}/css/app.build.css">
+    <link rel="stylesheet" href="${ctx}/css/custom.css">
+
+    <%-- Os quatro arquivos legados (base/layout/components/responsive.css) foram removidos
+         na S33: o que eles faziam vive nos utilitarios do markup ou no `custom.css`
+         (fundacao do shell, grades, timeline, cartao de metrica). O guard
+         `scripts/ui-legado.sh check` reprova quem reintroduzir classe ou arquivo deles. --%>
+
+    <c:if test="${calendarAssets}">
+        <link rel="stylesheet" href="${ctx}/css/vendor/fullcalendar/skeleton.min.css">
+        <link rel="stylesheet" href="${ctx}/css/vendor/fullcalendar/theme.min.css">
+        <link rel="stylesheet" href="${ctx}/css/vendor/fullcalendar/palette.min.css">
+        <link rel="stylesheet" href="${ctx}/css/calendar.css">
+    </c:if>
 </head>

@@ -179,6 +179,69 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.15</version>
+				<executions>
+					<execution>
+						<id>jacoco-prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>jacoco-report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<includes>
+								<include>br/com/dunnastecnologia/chamados/domain/model/Area.class</include>
+								<include>br/com/dunnastecnologia/chamados/domain/model/SolicitacaoArea.class</include>
+								<include>br/com/dunnastecnologia/chamados/domain/model/StatusArea.class</include>
+								<include>br/com/dunnastecnologia/chamados/domain/model/StatusAreaConverter.class</include>
+								<include>br/com/dunnastecnologia/chamados/domain/model/StatusSolicitacaoArea.class</include>
+								<include>br/com/dunnastecnologia/chamados/domain/model/StatusSolicitacaoAreaConverter.class</include>
+								<include>br/com/dunnastecnologia/chamados/infrastructure/service/AreaService.class</include>
+								<include>br/com/dunnastecnologia/chamados/infrastructure/service/SolicitacaoAreaService.class</include>
+							</includes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>jacoco-check</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<includes>
+								<include>br/com/dunnastecnologia/chamados/domain/model/Area.class</include>
+								<include>br/com/dunnastecnologia/chamados/domain/model/SolicitacaoArea.class</include>
+								<include>br/com/dunnastecnologia/chamados/domain/model/StatusArea.class</include>
+								<include>br/com/dunnastecnologia/chamados/domain/model/StatusAreaConverter.class</include>
+								<include>br/com/dunnastecnologia/chamados/domain/model/StatusSolicitacaoArea.class</include>
+								<include>br/com/dunnastecnologia/chamados/domain/model/StatusSolicitacaoAreaConverter.class</include>
+								<include>br/com/dunnastecnologia/chamados/infrastructure/service/AreaService.class</include>
+								<include>br/com/dunnastecnologia/chamados/infrastructure/service/SolicitacaoAreaService.class</include>
+							</includes>
+							<rules>
+								<rule>
+									<element>BUNDLE</element>
+									<limits>
+										<limit>
+											<counter>LINE</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>0.40</minimum>
+										</limit>
+									</limits>
+								</rule>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 

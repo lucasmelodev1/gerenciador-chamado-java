@@ -1,0 +1,59 @@
+<%@ page pageEncoding="UTF-8" %>
+<%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
+<ui:shell dataPagina="morador-reservas-lista">
+
+            <section class="card">
+                <div class="card-body">
+                    <ui:card-head titulo="Minhas reservas" descricao="Areas comuns">
+                        <div class="flex flex-wrap items-center gap-3">
+                            <a href="${ctx}/morador/reservas/nova" class="btn btn-primary">Nova reserva</a>
+                            <a href="${ctx}/morador/reservas/agenda" class="btn">Ver agenda</a>
+                            <a href="${ctx}/morador/reservas/disponibilidade" class="btn">Consultar disponibilidade</a>
+                        </div>
+                    </ui:card-head>
+
+                    <c:choose>
+                        <c:when test="${empty reservas}">
+                            <ui:vazio titulo="Nenhuma reserva encontrada" mensagem="Solicite a reserva de uma area comum para planejar o uso." />
+                        </c:when>
+                        <c:otherwise>
+                            <div class="overflow-x-auto">
+                                <table class="table table-zebra">
+                                    <thead>
+                                    <tr>
+                                        <th>Area</th>
+                                        <th>Inicio</th>
+                                        <th>Fim</th>
+                                        <th>Status</th>
+                                        <th>Motivo</th>
+                                        <th><span class="sr-only">Ações</span></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <c:forEach items="${reservas}" var="reserva">
+                                        <tr>
+                                            <td>${reserva.areaNome}</td>
+                                            <td>${reserva.inicioFormatado}</td>
+                                            <td>${reserva.fimFormatado}</td>
+                                            <td><ui:reserva-status status="${reserva.status}" /></td>
+                                            <td><c:out value="${empty reserva.motivoNegacao ? '-' : reserva.motivoNegacao}" /></td>
+                                            <td class="app-tabela-acoes">
+                                                <c:if test="${reserva.status eq 'Solicitado' or reserva.status eq 'Aprovado'}">
+                                                    <ui:acao-form acao="${ctx}/morador/reservas/${reserva.id}"
+                                                                  texto="Cancelar" variante="link"
+                                                                  confirmacao="Cancelar esta reserva?" />
+                                                </c:if>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+
+                    <ui:paginacao pagina="${reservasPage}" url="${ctx}/morador/reservas" />
+                </div>
+            </section>
+</ui:shell>
+<ui:shell-fim />

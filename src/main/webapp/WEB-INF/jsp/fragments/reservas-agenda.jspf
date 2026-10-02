@@ -1,0 +1,76 @@
+<%@ page pageEncoding="UTF-8" %>
+<%--
+    Bloco compartilhado do calendario de reservas (admin e morador).
+    Variaveis esperadas: agendaModo (admin|morador), agendaBase, agendaEyebrow, agendaTitulo,
+    viewAtual, periodoReferencia, periodoLabel, periodoAnterior, periodoSeguinte, areasFiltro, reservas.
+
+    O detalhe da reserva clicada NAO fica aqui: e o `reservas-agenda-paineis.jspf`, que cada
+    agenda inclui depois de `</main>` (o drawer e o dialogo precisam nascer fora de
+    `.app-page`).
+--%>
+<section class="card">
+    <div class="card-body">
+    <ui:card-head titulo="${agendaTitulo}" descricao="${agendaEyebrow}">
+        <a href="${agendaBase}" class="btn">Ver lista</a>
+    </ui:card-head>
+
+    <div class="mb-4 flex flex-wrap items-end justify-between gap-4">
+        <ui:campo rotulo="Filtrar por área">
+            <select class="select w-full" id="filtro-area">
+                <option value="">Todas as áreas</option>
+                <c:forEach items="${areasFiltro}" var="area">
+                    <option value="${area.id}">${fn:escapeXml(area.nome)}</option>
+                </c:forEach>
+            </select>
+        </ui:campo>
+
+        <div class="flex flex-wrap items-center gap-3">
+            <c:set var="rotuloAnterior" value="${viewAtual eq 'semana' ? 'Semana anterior' : 'Mês anterior'}" />
+            <c:set var="rotuloSeguinte" value="${viewAtual eq 'semana' ? 'Próxima semana' : 'Próximo mês'}" />
+
+            <%-- Navegacao de periodo: join (a daisyUI nao tem componente de paginacao) --%>
+            <div class="join">
+                <a class="btn join-item" href="${agendaBase}/agenda?inicio=${periodoAnterior}&view=${viewAtual}">${rotuloAnterior}</a>
+                <span class="btn join-item btn-disabled calendar-mes">${periodoLabel}</span>
+                <a class="btn join-item" href="${agendaBase}/agenda?inicio=${periodoSeguinte}&view=${viewAtual}">${rotuloSeguinte}</a>
+            </div>
+
+            <%-- Alternancia mes/semana resolvida no servidor (mesmo padrao da navegacao lateral) --%>
+            <div role="tablist" class="tabs tabs-box tabs-sm">
+                <a role="tab" class="tab ${viewAtual eq 'mes' ? 'tab-active' : ''}"
+                   aria-current="${viewAtual eq 'mes' ? 'page' : 'false'}"
+                   href="${agendaBase}/agenda?inicio=${periodoReferencia}&view=mes">Mes</a>
+                <a role="tab" class="tab ${viewAtual eq 'semana' ? 'tab-active' : ''}"
+                   aria-current="${viewAtual eq 'semana' ? 'page' : 'false'}"
+                   href="${agendaBase}/agenda?inicio=${periodoReferencia}&view=semana">Semana</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="calendar"
+         data-view="${viewAtual}"
+         data-referencia="${periodoReferencia}"
+         data-base-url="${agendaBase}"
+         data-modo="${agendaModo}"
+         <%-- O JS nao conhece o id do painel de detalhe: ele o le daqui (o
+              `#drawer-reserva` e declarado pelo `reservas-agenda-paineis.jspf`). --%>
+         data-painel-detalhe="drawer-reserva"></div>
+
+    <div id="reservas-data" class="reservas-data">
+        <c:forEach items="${reservas}" var="r">
+            <span class="reserva-data"
+                  data-id="${r.id}"
+                  data-area-id="${r.areaId}"
+                  data-start="${r.inicio}"
+                  data-end="${r.fim}"
+                  data-area="${fn:escapeXml(r.areaNome)}"
+                  data-morador="${fn:escapeXml(r.moradorNome)}"
+                  data-unidade="${fn:escapeXml(r.unidadeIdentificacao)}"
+                  data-status="${fn:escapeXml(r.status)}"
+                  data-inicio-formatado="${fn:escapeXml(r.inicioFormatado)}"
+                  data-fim-formatado="${fn:escapeXml(r.fimFormatado)}"
+                  data-motivo="${fn:escapeXml(r.motivoNegacao)}"></span>
+        </c:forEach>
+    </div>
+    </div>
+</section>

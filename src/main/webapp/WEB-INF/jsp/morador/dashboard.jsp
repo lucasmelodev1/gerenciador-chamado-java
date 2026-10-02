@@ -1,84 +1,62 @@
+<%@ page pageEncoding="UTF-8" %>
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
-<body data-page="morador-dashboard">
-<div class="app-shell">
-    <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="app-main">
-        <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main class="page-content">
-            <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
+<ui:shell dataPagina="morador-dashboard">
 
-            <section class="stats-grid">
-                <article class="stat-card">
-                    <span>Minhas unidades</span>
-                    <strong>${totalUnidades}</strong>
-                </article>
-                <article class="stat-card">
-                    <span>Meus chamados</span>
-                    <strong>${totalChamados}</strong>
-                </article>
-                <article class="stat-card stat-card-wide">
-                    <span>Novo atendimento</span>
-                    <strong>Abrir chamado</strong>
-                    <a href="${ctx}/morador/chamados/novo" class="btn btn-primary">Registrar agora</a>
-                </article>
+            <section class="grid grid-cols-1 gap-4.5 min-[981px]:grid-cols-3 min-[1201px]:grid-cols-5">
+                    <ui:metrica rotulo="Minhas unidades" valor="${totalUnidades}" />
+                    <ui:metrica rotulo="Meus chamados" valor="${totalChamados}" />
+                    <ui:metrica rotulo="Novo atendimento" valor="Abrir chamado" destaque="true" href="${ctx}/morador/chamados/novo" rotuloLink="Registrar agora" classeLink="btn btn-primary" />
             </section>
 
-            <section class="two-column-grid">
+            <section class="app-grade-lateral">
                 <article class="card">
-                    <div class="section-header">
-                        <div>
-                            <p class="eyebrow">Acesso vinculado</p>
-                            <h2>Minhas unidades</h2>
-                        </div>
-                    </div>
-                    <div class="stack-list">
-                        <c:forEach items="${minhasUnidades}" var="unidade">
-                            <div class="list-row">
-                                <div>
-                                    <strong>${unidade.identificacao}</strong>
-                                    <span>${unidade.blocoIdentificacao} - Andar ${unidade.andar}</span>
-                                </div>
+                    <div class="card-body">
+                    <ui:card-head titulo="Minhas unidades" descricao="Acesso vinculado" />
+                    <c:choose>
+                        <c:when test="${empty minhasUnidades}">
+                            <ui:vazio mensagem="Nenhuma unidade vinculada ao seu acesso." compacto="true" />
+                        </c:when>
+                        <c:otherwise>
+                            <div class="grid gap-4">
+                                <c:forEach items="${minhasUnidades}" var="unidade">
+                                    <div class="flex items-center justify-between gap-3 rounded-xl border border-base-content/10 bg-base-100 px-4.5 py-4 transition duration-200">
+                                        <div>
+                                            <strong>${unidade.identificacao}</strong>
+                                            <span class="text-base-content/60">${unidade.blocoIdentificacao} - Andar ${unidade.andar}</span>
+                                        </div>
+                                    </div>
+                                </c:forEach>
                             </div>
-                        </c:forEach>
-                    </div>
+                        </c:otherwise>
+                    </c:choose>
+                                    </div>
                 </article>
 
                 <article class="card">
-                    <div class="section-header">
-                        <div>
-                            <p class="eyebrow">Acompanhamento</p>
-                            <h2>Chamados recentes</h2>
-                        </div>
-                        <a href="${ctx}/morador/chamados" class="btn btn-secondary">Ver todos</a>
-                    </div>
+                    <div class="card-body">
+                    <ui:card-head titulo="Chamados recentes" descricao="Acompanhamento">
+                        <a href="${ctx}/morador/chamados" class="btn">Ver todos</a>
+                    </ui:card-head>
                     <c:choose>
                         <c:when test="${empty meusChamados}">
-                            <div class="empty-state compact">
-                                <p>Voce ainda nao abriu chamados.</p>
-                            </div>
+                            <ui:vazio mensagem="Voce ainda nao abriu chamados." compacto="true" />
                         </c:when>
                         <c:otherwise>
-                            <div class="stack-list">
+                            <div class="grid gap-4">
                                 <c:forEach items="${meusChamados}" var="chamado">
-                                    <a href="${ctx}/morador/chamados/${chamado.id}" class="list-row link-row">
+                                    <a href="${ctx}/morador/chamados/${chamado.id}" class="flex items-center justify-between gap-3 rounded-xl border border-base-content/10 bg-base-100 px-4.5 py-4 transition duration-200 hover:border-primary/30 hover:translate-x-0.5 hover:shadow-soft">
                                         <div>
                                             <strong>${chamado.tipoChamadoTitulo}</strong>
                                             <span>${chamado.unidadeIdentificacao} - ${chamado.dataAberturaFormatada}</span>
                                         </div>
-                                        <span class="status-pill">${chamado.statusNome}</span>
+                                        <ui:badge variante="ghost">${chamado.statusNome}</ui:badge>
                                     </a>
                                 </c:forEach>
                             </div>
                         </c:otherwise>
                     </c:choose>
+                                    </div>
                 </article>
             </section>
-        </main>
-    </div>
-</div>
-<%@ include file="/WEB-INF/jsp/fragments/scripts.jspf" %>
-</body>
-</html>
+</ui:shell>
+<ui:shell-fim />

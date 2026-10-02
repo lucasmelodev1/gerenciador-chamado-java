@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="chamados">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galeria de componentes | Gerenciador de Chamados</title>
+    <!--
+      Galeria de referencia do rewrite de UI (UI-REWRITE-PLAN.md §3 / S5).
+
+      Pagina ESTATICA de desenvolvimento, nao faz parte do fluxo do produto e nao e
+      linkada por nenhuma tela. Serve para dois propositos:
+        1. contrato visual: e contra ela que as fases P2..P5 sao comparadas;
+        2. safelist: por estar em `@source` no app.css, garante que todo componente
+           que o app vai usar exista no bundle compilado.
+
+      Acesso: /ui-preview.html exige sessao (nao esta na lista de recursos estaticos
+      publicos do SecurityConfig), portanto abra com um usuario autenticado.
+    -->
+    <link rel="stylesheet" href="/css/app.build.css">
+</head>
+<body class="min-h-screen bg-base-200 text-base-content">
+
+<main class="mx-auto grid max-w-[1200px] gap-8 p-6 lg:p-10">
+
+    <header class="flex flex-wrap items-end justify-between gap-4 border-b border-base-300 pb-5">
+        <div>
+            <p class="text-xs uppercase tracking-widest text-base-content/60">Rewrite de UI</p>
+            <h1 class="font-serif text-3xl">Galeria de componentes</h1>
+            <p class="text-base-content/60">Tailwind CSS 4 + daisyUI 5 · tema <code>chamados</code></p>
+        </div>
+        <div class="join">
+            <span class="btn join-item">Tailwind 4</span>
+            <span class="btn join-item btn-primary">daisyUI 5</span>
+        </div>
+    </header>
+
+    <!-- ============================================================ shell -->
+    <section id="shell" class="grid gap-3">
+        <h2 class="text-xl font-semibold">Shell — drawer + navbar + menu</h2>
+        <p class="text-base-content/60">
+            Espelho de <code>fragments/sidebar.jspf</code> + <code>topbar.jspf</code> +
+            <code>ui:nav-grupo</code>/<code>ui:nav-item</code> + <code>ui:shell</code>.
+            A lateral fica <strong>sobre o fundo da página</strong> (sem <code>bg-base-100</code>,
+            borda ou sombra no <code>&lt;aside&gt;</code>) e a topbar é uma linha única com
+            <code>border-b</code>. Fora do app, <code>.app-sidebar</code>,
+            <code>.app-topbar</code>, <code>.app-card-head</code> e
+            <code>.app-card-filtros</code> não têm as regras de <code>custom.css</code>.
+        </p>
+        <div class="drawer lg:drawer-open">
+            <input id="preview-drawer" type="checkbox" class="drawer-toggle" aria-label="Alternar menu lateral">
+            <div class="drawer-content rounded-box border border-base-300 bg-base-100">
+                <header class="app-topbar navbar">
+                    <div class="navbar-start gap-1">
+                        <label for="preview-drawer" class="btn btn-square btn-sm btn-ghost lg:hidden"
+                               aria-controls="preview-drawer" aria-label="Abrir menu">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-5" aria-hidden="true"><path d="M4 6l16 0" /><path d="M4 12l16 0" /><path d="M4 18l16 0" /></svg>
+                        </label>
+                        <span class="mx-2 hidden h-4 w-px shrink-0 bg-base-300 lg:block" aria-hidden="true"></span>
+                        <h1 class="font-display truncate text-lg font-semibold">Painel do Administrador</h1>
+                    </div>
+                    <div class="navbar-end gap-2">
+                        <span class="badge badge-ghost badge-sm gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-3.5 shrink-0" aria-hidden="true"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="3" /></svg>
+                            Administrador
+                        </span>
+                    </div>
+                </header>
+                <div class="p-6">
+                    <!-- ui:card-head (com o subtitulo opcional) + faixa de filtros + paginacao -->
+                    <div class="app-card-head">
+                        <div class="app-card-head__texto">
+                            <p class="eyebrow">Espaços do condomínio</p>
+                            <h2>Áreas cadastradas</h2>
+                            <p class="text-sm opacity-70">O subtítulo opcional do ui:card-head.</p>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm">Nova área</button>
+                    </div>
+
+                    <div class="app-card-filtros app-card-filtros--campos">
+                        <label class="field">
+                            <span>Status</span>
+                            <select class="select"><option>Todos</option></select>
+                        </label>
+                        <div class="button-row">
+                            <button type="button" class="btn btn-primary">Filtrar</button>
+                            <a href="#" class="btn">Limpar</a>
+                        </div>
+                    </div>
+
+                    <div class="pagination">
+                        <a class="btn" href="#">Anterior</a>
+                        <span>Página 1 de 3</span>
+                        <a class="btn" href="#">Próxima</a>
+                    </div>
+
+                    <!-- Coluna de acoes: icone + tooltip, alinhada a direita -->
+                    <div class="cell-actions app-tabela-acoes">
+                        <a href="#" class="btn btn-ghost btn-sm btn-square tooltip" data-tip="Detalhar" aria-label="Detalhar">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-4" aria-hidden="true"><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" /></svg>
+                        </a>
+                        <button type="button" class="btn btn-ghost btn-sm btn-square app-btn-perigo tooltip" data-tip="Remover" aria-label="Remover">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-4" aria-hidden="true"><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /></svg>
+                        </button>
+                    </div>
+
+                    <div class="empty-state compact">
+                        <p>Estado vazio do <code>ui:vazio</code>.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="drawer-side z-30 p-1.5 lg:p-2">
+                <label for="preview-drawer" class="drawer-overlay" aria-label="Fechar menu"></label>
+                <aside class="app-sidebar flex h-full w-72 flex-col bg-base-200 lg:bg-transparent">
+                    <div class="flex shrink-0 items-center p-1.5">
+                        <a href="#" class="flex w-full items-center gap-2 rounded-field px-2 py-2 transition-colors hover:bg-base-content/10">
+                            <span class="grid size-8 shrink-0 place-items-center rounded-field bg-primary text-primary-content">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-5" aria-hidden="true"><path d="M8 9l5 5v7h-5v-4m0 4h-5v-7l5 -5m1 1v-6a1 1 0 0 1 1 -1h10a1 1 0 0 1 1 1v17h-8" /></svg>
+                            </span>
+                            <span class="font-display truncate text-base font-semibold">Gerenciador de Chamados</span>
+                        </a>
+                    </div>
+
+                    <nav class="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto px-1.5 pb-1.5" aria-label="Navegacao principal">
+                        <div class="grid gap-0.5">
+                            <p class="px-2 text-xs font-semibold tracking-wider uppercase opacity-60">Operação</p>
+                            <ul class="menu w-full">
+                                <li>
+                                    <a href="#" class="menu-active" aria-current="page">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-4 shrink-0" aria-hidden="true"><path d="M5 4h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1" /><path d="M15 12h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1" /></svg>
+                                        <span class="min-w-0 truncate">Início</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-4 shrink-0" aria-hidden="true"><path d="M15 5l0 2" /><path d="M5 5h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-3a2 2 0 0 0 0 -4v-3a2 2 0 0 1 2 -2" /></svg>
+                                        <span class="min-w-0 truncate">Chamados</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+
+                    <div class="shrink-0 border-t border-base-300 p-1.5">
+                        <div class="dropdown dropdown-top w-full">
+                            <div tabindex="0" role="button"
+                                 class="flex w-full cursor-pointer items-center gap-2 rounded-field p-2 text-left transition-colors hover:bg-base-content/10 focus-visible:bg-base-content/10">
+                                <div class="avatar avatar-placeholder shrink-0">
+                                    <div class="h-8 w-8 bg-neutral text-xs font-semibold text-neutral-content">AD</div>
+                                </div>
+                                <span class="grid min-w-0 flex-1 leading-tight">
+                                    <span class="truncate text-sm font-medium">admin</span>
+                                    <span class="truncate text-xs opacity-60">Administrador</span>
+                                </span>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-4 shrink-0 opacity-60" aria-hidden="true"><circle cx="12" cy="5" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="12" cy="19" r="1" /></svg>
+                            </div>
+                            <ul tabindex="0"
+                                class="dropdown-content menu z-50 w-full rounded-box border border-base-300 bg-base-100 p-2 shadow-lg">
+                                <li class="menu-title"><span class="truncate">admin@condominio.local</span></li>
+                                <li>
+                                    <button type="button" class="text-error">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-4 shrink-0" aria-hidden="true"><path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" /><path d="M9 12h12l-3 -3" /><path d="M18 15l3 -3" /></svg>
+                                        <span>Sair</span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ buttons -->
+    <section id="buttons" class="card card-border bg-base-100">
+        <div class="card-body">
+            <h2 class="card-title">Botões</h2>
+            <div class="flex flex-wrap items-center gap-3">
+                <button class="btn">Default (legado .btn-secondary)</button>
+                <button class="btn btn-primary">Primary</button>
+                <button class="btn btn-error">Error (legado .btn-danger)</button>
+                <button class="btn btn-ghost">Ghost</button>
+                <button class="btn btn-link">Link</button>
+                <button class="btn btn-outline">Outline</button>
+                <button class="btn btn-sm">Small</button>
+                <button class="btn btn-square btn-ghost" aria-label="Fechar">×</button>
+                <button class="btn btn-disabled" role="button" aria-disabled="true" tabindex="-1">Reservado</button>
+                <button class="btn btn-block btn-primary sm:w-auto">Block</button>
+                <button class="btn btn-primary" disabled><span class="loading loading-spinner loading-sm"></span> Salvando</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ badges -->
+    <section id="badges" class="card card-border bg-base-100">
+        <div class="card-body">
+            <h2 class="card-title">Badges — estados (hoje todos idênticos, o rewrite separa)</h2>
+            <div class="flex flex-wrap gap-3">
+                <span class="badge badge-warning">Solicitado</span>
+                <span class="badge badge-success">Aprovado</span>
+                <span class="badge badge-error">Negado</span>
+                <span class="badge badge-neutral">Cancelado</span>
+                <span class="badge badge-ghost">Status dinâmico (configurável)</span>
+                <span class="badge badge-outline">Ativo</span>
+                <span class="badge badge-soft badge-info">Informativo</span>
+                <span class="badge badge-sm badge-success">small</span>
+                <span class="status status-success" aria-label="Disponível"></span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ alerts -->
+    <section id="alerts" class="grid gap-3">
+        <h2 class="text-xl font-semibold">Alertas (flash pós-redirect)</h2>
+        <div role="alert" class="alert alert-success">
+            <span>Reserva aprovada com sucesso.</span>
+            <button class="btn btn-sm btn-ghost" aria-label="Fechar">×</button>
+        </div>
+        <div role="alert" class="alert alert-error">
+            <span>Não foi possível cancelar: o horário inicial já começou.</span>
+            <button class="btn btn-sm btn-ghost" aria-label="Fechar">×</button>
+        </div>
+        <div role="alert" class="alert alert-info alert-soft"><span>Consulta de disponibilidade atualizada.</span></div>
+    </section>
+
+    <!-- ============================================================ stats -->
+    <section id="stats" class="grid gap-3">
+        <h2 class="text-xl font-semibold">Dashboard — stats</h2>
+        <div class="stats stats-vertical w-full border border-base-300 bg-base-100 shadow-sm lg:stats-horizontal">
+            <div class="stat">
+                <div class="stat-title">Blocos</div>
+                <div class="stat-value">1</div>
+                <div class="stat-desc">estrutura física</div>
+            </div>
+            <div class="stat">
+                <div class="stat-title">Usuários</div>
+                <div class="stat-value">3</div>
+                <div class="stat-desc">ativos</div>
+            </div>
+            <div class="stat">
+                <div class="stat-title">Chamados atrasados</div>
+                <div class="stat-value text-error">0</div>
+                <div class="stat-desc">SLA estourado</div>
+            </div>
+            <div class="stat bg-primary text-primary-content">
+                <div class="stat-title text-primary-content/70">Chamados monitorados</div>
+                <div class="stat-value">1</div>
+                <div class="stat-actions"><a class="btn btn-sm">Abrir fila completa</a></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ table -->
+    <section id="table" class="card card-border bg-base-100">
+        <div class="card-body">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <h2 class="card-title">Tabela + paginação (join)</h2>
+                <input type="search" class="input input-sm w-64" placeholder="Filtrar localmente" aria-label="Filtrar">
+            </div>
+            <div class="overflow-x-auto">
+                <table class="table table-zebra table-pin-rows">
+                    <thead>
+                    <tr><th>Área</th><th>Morador</th><th>Início</th><th>Status</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>Piscina</td><td>Maria Moradora</td><td>03/10/2026 10:00</td>
+                        <td><span class="badge badge-success">Aprovado</span></td>
+                        <td class="flex flex-wrap gap-2">
+                            <button class="btn btn-xs btn-ghost">Cancelar</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Piscina</td><td>Maria Moradora</td><td>04/10/2026 14:00</td>
+                        <td><span class="badge badge-warning">Solicitado</span></td>
+                        <td class="flex flex-wrap gap-2">
+                            <button class="btn btn-xs btn-primary">Aprovar</button>
+                            <button class="btn btn-xs btn-ghost">Negar</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-base-300 pt-4">
+                <div class="join">
+                    <a class="btn join-item">Anterior</a>
+                    <span class="btn join-item btn-disabled">Página 1 de 1</span>
+                    <a class="btn join-item">Próxima</a>
+                </div>
+                <span class="text-sm text-base-content/60">26 registros</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ forms -->
+    <section id="forms" class="card card-border bg-base-100">
+        <div class="card-body">
+            <h2 class="card-title">Formulários</h2>
+            <div class="grid gap-4 md:grid-cols-2">
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend">Área</legend>
+                    <select class="select w-full">
+                        <option>Piscina</option>
+                        <option>Salão de festas</option>
+                    </select>
+                </fieldset>
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend">Início</legend>
+                    <input type="datetime-local" class="input w-full" value="2026-10-03T10:00">
+                </fieldset>
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend">Senha</legend>
+                    <div class="join w-full">
+                        <input type="password" class="input join-item w-full" value="admin123" data-password-input>
+                        <button type="button" class="btn join-item" data-password-toggle>Mostrar</button>
+                    </div>
+                </fieldset>
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend">Anexo</legend>
+                    <input type="file" class="file-input w-full">
+                    <p class="label">Opcional. Tamanho máximo: 5 MB.</p>
+                </fieldset>
+                <fieldset class="fieldset md:col-span-2">
+                    <legend class="fieldset-legend">Descrição</legend>
+                    <textarea class="textarea w-full" rows="3" maxlength="255">Vazamento no teto da garagem.</textarea>
+                    <p class="label" data-character-output>33/255 caracteres</p>
+                </fieldset>
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend">E-mail (validator)</legend>
+                    <input type="email" class="input validator w-full" placeholder="voce@condominio.com" required>
+                    <p class="validator-hint">Informe um e-mail válido</p>
+                </fieldset>
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend">Motivo da negação (obrigatório)</legend>
+                    <input type="text" class="input validator w-full" placeholder="Motivo" required>
+                    <p class="validator-hint">A negação exige um motivo não vazio</p>
+                </fieldset>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ timeline -->
+    <section id="timeline" class="card card-border bg-base-100">
+        <div class="card-body">
+            <h2 class="card-title">Comentários — timeline</h2>
+            <ul class="timeline timeline-vertical timeline-compact">
+                <li>
+                    <div class="timeline-start text-sm text-base-content/60">01/10/2026 10:30</div>
+                    <div class="timeline-middle"><span class="status status-primary"></span></div>
+                    <div class="timeline-end timeline-box bg-base-200">
+                        <strong>Maria Moradora</strong> · Morador
+                        <p class="whitespace-pre-wrap">Comentário da fixture, criado para exercitar a timeline.</p>
+                        <div class="mt-2 flex items-center justify-between gap-3 rounded-box border border-base-300 p-2">
+                            <span class="text-sm">foto.jpg · image/jpeg · 12.3 KB</span>
+                            <a class="btn btn-xs">Baixar anexo</a>
+                        </div>
+                    </div>
+                    <hr class="bg-primary">
+                </li>
+                <li>
+                    <div class="timeline-start text-sm text-base-content/60">01/10/2026 11:05</div>
+                    <div class="timeline-middle"><span class="status status-primary"></span></div>
+                    <div class="timeline-end timeline-box bg-base-200">
+                        <strong>Carlos Colaborador</strong> · Colaborador
+                        <p class="whitespace-pre-wrap">Atendimento iniciado.</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- ============================================================ agenda === -->
+    <section id="agenda" class="card card-border bg-base-100">
+        <div class="card-body">
+            <h2 class="card-title">Agenda — toolbar + tabs</h2>
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <select class="select select-sm w-56" id="filtro-area">
+                    <option>Todas as áreas</option>
+                    <option>Piscina</option>
+                </select>
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="join">
+                        <a class="btn join-item btn-sm">Mês anterior</a>
+                        <span class="btn join-item btn-sm btn-disabled">Outubro de 2026</span>
+                        <a class="btn join-item btn-sm">Próximo mês</a>
+                    </div>
+                    <div role="tablist" class="tabs tabs-box tabs-sm">
+                        <a role="tab" class="tab tab-active">Mês</a>
+                        <a role="tab" class="tab">Semana</a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 rounded-box border border-base-300 bg-base-100 p-4">
+                <p class="mb-3 text-sm text-base-content/60">FullCalendar (mantido) — eventos coloridos pelo tema</p>
+                <div class="flex flex-wrap gap-3 text-sm">
+                    <span class="rounded-box border-2 border-primary px-3 py-1">Solicitado</span>
+                    <span class="rounded-box bg-primary px-3 py-1 text-primary-content">Aprovado</span>
+                    <span class="rounded-box border-2 border-error px-3 py-1 text-error">Negado</span>
+                    <span class="rounded-box bg-base-300 px-3 py-1">Cancelado</span>
+                </div>
+            </div>
+            <div class="mt-3 flex gap-3">
+                <button class="btn btn-primary" onclick="document.getElementById('preview-modal').showModal()">Abrir detalhe da reserva</button>
+                <button class="btn" id="reserva-fechar">Fechar</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ steps -->
+    <section id="steps" class="card card-border bg-base-100">
+        <div class="card-body">
+            <h2 class="card-title">Ciclo de vida da reserva — steps</h2>
+            <ul class="steps steps-vertical lg:steps-horizontal">
+                <li class="step step-primary">Solicitada</li>
+                <li class="step step-primary">Em análise</li>
+                <li class="step">Aprovada</li>
+                <li class="step">Realizada</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- ============================================================ compositions -->
+    <section id="compositions" class="grid gap-4 lg:grid-cols-3">
+        <div class="card card-border bg-base-100">
+            <div class="card-body">
+                <h3 class="card-title">Detalhe (detail-list)</h3>
+                <dl class="grid grid-cols-2 gap-3">
+                    <div class="rounded-box bg-base-200 p-3"><dt class="text-sm text-base-content/60">Unidade</dt><dd class="font-semibold">101</dd></div>
+                    <div class="rounded-box bg-base-200 p-3"><dt class="text-sm text-base-content/60">Bloco</dt><dd class="font-semibold">Bloco A</dd></div>
+                    <div class="rounded-box bg-base-200 p-3"><dt class="text-sm text-base-content/60">Abertura</dt><dd class="font-semibold">01/10/2026 10:00</dd></div>
+                    <div class="rounded-box bg-base-200 p-3"><dt class="text-sm text-base-content/60">Finalização</dt><dd class="font-semibold">Em andamento</dd></div>
+                </dl>
+                <div class="rounded-box bg-base-200 p-4">
+                    <p class="text-sm text-base-content/60">Descrição</p>
+                    <p class="whitespace-pre-wrap">Vazamento no teto da garagem.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-border bg-base-100">
+            <div class="card-body">
+                <h3 class="card-title">Empty state (sem componente daisyUI)</h3>
+                <div class="rounded-box border border-dashed border-base-300 p-9 text-center">
+                    <h4 class="mb-2 font-semibold">Nenhuma reserva encontrada</h4>
+                    <p class="text-base-content/60">Solicite a reserva de uma área comum para planejar o uso.</p>
+                </div>
+                <div class="rounded-box border border-dashed border-base-300 p-4 text-center text-sm text-base-content/60">
+                    Compacto — usado dentro de cards
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-border bg-base-100">
+            <div class="card-body">
+                <h3 class="card-title">List rows + breadcrumbs + tooltip</h3>
+                <div class="breadcrumbs text-sm">
+                    <ul><li><a>Admin</a></li><li><a>Blocos</a></li><li>Bloco A</li></ul>
+                </div>
+                <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 p-3">
+                    <div><strong>101</strong><br><span class="text-sm text-base-content/60">Bloco A · Andar 1</span></div>
+                    <a class="btn btn-sm btn-error">Desvincular</a>
+                </div>
+                <div class="tooltip tooltip-right" data-tip="Libera a disponibilidade">
+                    <span class="badge badge-neutral">Cancelado</span>
+                </div>
+                <div class="toast toast-end">
+                    <div class="alert alert-success"><span>Reserva cancelada.</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ modal -->
+    <dialog id="preview-modal" class="modal">
+        <div class="modal-box">
+            <h3 class="text-lg font-bold">Piscina</h3>
+            <p class="py-4">Maria Moradora · 101 · 03/10/2026 10:00 a 12:00 · Aprovado</p>
+            <div class="modal-action">
+                <button class="btn btn-error">Cancelar reserva</button>
+                <form method="dialog"><button class="btn">Fechar</button></form>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+
+</main>
+
+</body>
+</html>

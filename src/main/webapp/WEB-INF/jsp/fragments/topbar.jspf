@@ -1,22 +1,32 @@
-<header class="topbar">
-    <div>
-        <p class="eyebrow">${currentUserRoleLabel}</p>
-        <h1>${pageTitle}</h1>
-        <p class="topbar-meta">Fluxo visual unificado para operacao, acompanhamento e atendimento.</p>
+<%--
+    Shell: barra superior como daisyUI `navbar`.
+
+    S19 — alinhada ao `SiteHeader` do bloco dashboard-01 do shadcn: linha unica de
+    altura fixa, `border-b` e o titulo da tela ao lado do gatilho da lateral. O perfil
+    e o logout sairam daqui e passaram a viver no cartao do usuario (NavUser), no rodape
+    da lateral — o dashboard-01 nao duplica a identidade do usuario no topo.
+
+    O hamburguer e um <label for="app-drawer"> que aciona o drawer da sidebar
+    (substitui o antigo par button/backdrop controlado por layout.js).
+--%>
+<header class="app-topbar navbar">
+    <div class="navbar-start gap-1">
+        <label for="app-drawer" class="btn btn-square btn-sm btn-ghost lg:hidden"
+               aria-controls="app-drawer" aria-label="Abrir menu">
+            <ui:icone nome="menu" classe="size-5" />
+        </label>
+
+        <%-- Separador vertical: o `divider divider-horizontal` da daisyUI exige altura do
+             pai; um filete de 1px e o mesmo resultado com menos acoplamento ao layout. --%>
+        <span class="mx-2 hidden h-4 w-px shrink-0 bg-base-300 lg:block" aria-hidden="true"></span>
+
+        <h1 class="font-display truncate text-lg font-semibold">${pageTitle}</h1>
     </div>
-    <div class="topbar-actions">
-        <button type="button" class="icon-button mobile-nav-button" data-sidebar-toggle aria-label="Abrir menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-        <div class="profile-chip">
-            <strong>${currentUserEmail}</strong>
-            <span>${currentUserRoleLabel}</span>
-        </div>
-        <form method="post" action="${ctx}/logout" class="inline-form">
-            <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-            <button type="submit" class="btn btn-secondary">Sair</button>
-        </form>
+
+    <div class="navbar-end gap-2">
+        <span class="badge badge-ghost badge-sm gap-1">
+            <ui:icone nome="perfil" classe="size-3.5 shrink-0" />
+            ${currentUserRoleLabel}
+        </span>
     </div>
 </header>

@@ -3,12 +3,15 @@ package br.com.dunnastecnologia.chamados.infrastructure.controller.web;
 import br.com.dunnastecnologia.chamados.application.UserCase.AdminUseCases;
 import br.com.dunnastecnologia.chamados.application.UserCase.AnexoChamadoUseCases;
 import br.com.dunnastecnologia.chamados.application.UserCase.AnexoComentarioUseCases;
+import br.com.dunnastecnologia.chamados.application.UserCase.AreaUseCase;
 import br.com.dunnastecnologia.chamados.application.UserCase.ComentarioUseCase;
 import br.com.dunnastecnologia.chamados.application.pagination.PageResult;
+import br.com.dunnastecnologia.chamados.domain.model.Area;
 import br.com.dunnastecnologia.chamados.domain.model.Bloco;
 import br.com.dunnastecnologia.chamados.domain.model.Comentario;
 import br.com.dunnastecnologia.chamados.domain.model.Morador;
 import br.com.dunnastecnologia.chamados.domain.model.StatusChamado;
+import br.com.dunnastecnologia.chamados.domain.model.StatusArea;
 import br.com.dunnastecnologia.chamados.domain.model.Unidade;
 import br.com.dunnastecnologia.chamados.infrastructure.controller.api.AdminChamadoApiController;
 import br.com.dunnastecnologia.chamados.infrastructure.controller.api.BlocoApiController;
@@ -17,6 +20,7 @@ import br.com.dunnastecnologia.chamados.infrastructure.controller.api.MoradorUni
 import br.com.dunnastecnologia.chamados.infrastructure.controller.api.StatusChamadoApiController;
 import br.com.dunnastecnologia.chamados.infrastructure.controller.api.TipoChamadoApiController;
 import br.com.dunnastecnologia.chamados.infrastructure.controller.api.UsuarioApiController;
+import br.com.dunnastecnologia.chamados.infrastructure.security.JwtService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -39,7 +43,6 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -66,7 +69,13 @@ class AdminWebControllerIntegrationTest {
     private MockMvc mockMvc;
 
     @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
     private AdminUseCases adminUseCases;
+
+    @MockitoBean
+    private AreaUseCase areaUseCase;
 
     @MockitoBean
     private AnexoChamadoUseCases anexoChamadoUseCases;
@@ -76,6 +85,29 @@ class AdminWebControllerIntegrationTest {
 
     @MockitoBean
     private ComentarioUseCase comentarioUseCase;
+
+    @Test
+    void listarAreasDeveExibirAreasEPaginacao() throws Exception {
+        var admin = WebTestAuthenticationFactory.administrador();
+        var usuario = new br.com.dunnastecnologia.chamados.application.Security.AuthenticatedUser(
+                UUID.fromString("00000000-0000-0000-0000-000000000001"),
+                "admin@condominio.local",
+                "ROLE_ADMINISTRADOR"
+        );
+
+        Area area = new Area();
+        area.setId(UUID.fromString("00000000-0000-0000-0000-000000000070"));
+        area.setNome("Piscina");
+        area.setStatus(StatusArea.ATIVO);
+
+        when(areaUseCase.listarAreas(usuario, PageRequest.of(0, 10)))
+                .thenReturn(new PageResult<>(List.of(area), 1, 1, 0, 10));
+
+        mockMvc.perform(get("/admin/areas").with(WebTestAuthenticationFactory.autenticacao(admin)))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/areas/lista"))
+                .andExpect(model().attribute("areas", hasItem(hasEntry("nome", "Piscina"))));
+    }
 
     @Test
     void dashboardDeveExibirContadorDeChamadosAtrasados() throws Exception {
@@ -101,7 +133,7 @@ class AdminWebControllerIntegrationTest {
         when(adminUseCases.buscarChamados(usuario, statusAtrasadoId, null, null, PageRequest.of(0, 1)))
                 .thenReturn(new PageResult<>(List.of(), 3, 3, 0, 1));
 
-        mockMvc.perform(get("/admin").with(authentication(admin)))
+        mockMvc.perform(get("/admin").with(WebTestAuthenticationFactory.autenticacao(admin)))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/dashboard"))
                 .andExpect(model().attribute("totalChamadosAtrasados", 3L));
@@ -120,7 +152,7 @@ class AdminWebControllerIntegrationTest {
 
         mockMvc.perform(
                         get("/admin/vinculos-morador")
-                                .with(authentication(WebTestAuthenticationFactory.administrador()))
+                                .with(WebTestAuthenticationFactory.autenticacao(WebTestAuthenticationFactory.administrador()))
                                 .param("moradorEmail", "ana")
                                 .param("cadastradosEmail", "mar")
                                 .param("cadastradosPage", "1")
@@ -146,7 +178,7 @@ class AdminWebControllerIntegrationTest {
 
         mockMvc.perform(
                         get("/admin/blocos")
-                                .with(authentication(WebTestAuthenticationFactory.administrador()))
+                                .with(WebTestAuthenticationFactory.autenticacao(WebTestAuthenticationFactory.administrador()))
                                 .param("page", "2")
                                 .param("size", "15")
                 )
@@ -187,7 +219,7 @@ class AdminWebControllerIntegrationTest {
 
         mockMvc.perform(
                         get("/admin/blocos/{blocoId}", blocoId)
-                                .with(authentication(WebTestAuthenticationFactory.administrador()))
+                                .with(WebTestAuthenticationFactory.autenticacao(WebTestAuthenticationFactory.administrador()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/blocos/detalhe"))
@@ -222,7 +254,7 @@ class AdminWebControllerIntegrationTest {
 
         mockMvc.perform(
                         get("/admin/chamados")
-                                .with(authentication(WebTestAuthenticationFactory.administrador()))
+                                .with(WebTestAuthenticationFactory.autenticacao(WebTestAuthenticationFactory.administrador()))
                                 .param("statusId", statusId.toString())
                                 .param("moradorNome", "Ana")
                                 .param("dataAbertura", "2026-04-10")
@@ -261,7 +293,7 @@ class AdminWebControllerIntegrationTest {
 
         mockMvc.perform(
                         get("/admin/status-chamado")
-                                .with(authentication(WebTestAuthenticationFactory.administrador()))
+                                .with(WebTestAuthenticationFactory.autenticacao(WebTestAuthenticationFactory.administrador()))
                                 .param("statusId", statusId.toString())
                 )
                 .andExpect(status().isOk())
@@ -276,7 +308,7 @@ class AdminWebControllerIntegrationTest {
 
         mockMvc.perform(
                         delete("/admin/usuarios/{usuarioId}", usuarioId)
-                                .with(authentication(WebTestAuthenticationFactory.administrador()))
+                                .with(WebTestAuthenticationFactory.autenticacao(WebTestAuthenticationFactory.administrador()))
                 )
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/usuarios"));
@@ -320,7 +352,7 @@ class AdminWebControllerIntegrationTest {
         mockMvc.perform(
                         multipart("/admin/chamados/{chamadoId}/comentarios", chamadoId)
                                 .file(arquivo)
-                                .with(authentication(WebTestAuthenticationFactory.administrador()))
+                                .with(WebTestAuthenticationFactory.autenticacao(WebTestAuthenticationFactory.administrador()))
                                 .param("mensagem", "Segue analise")
                 )
                 .andExpect(status().is3xxRedirection())

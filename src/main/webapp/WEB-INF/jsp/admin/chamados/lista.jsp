@@ -1,102 +1,48 @@
+<%@ page pageEncoding="UTF-8" %>
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
-<body data-page="admin-chamados">
-<div class="app-shell">
-    <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="app-main">
-        <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main class="page-content">
-            <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
+<ui:shell dataPagina="admin-chamados">
 
+            <%-- Tela so de leitura: o admin nao abre nem remove chamado, entao o cabecalho
+                 nao tem acao e os filtros sao um formulario GET (o unico filtro do sistema
+                 que vai ao servidor — os outros sao a busca local do `tables.js`). --%>
             <section class="card">
-                <div class="section-header">
-                    <div>
-                        <p class="eyebrow">Monitoramento</p>
-                        <h2>Fila completa de chamados</h2>
-                        <p class="section-subtitle">Os chamados mais antigos aparecem primeiro na lista.</p>
-                    </div>
-                </div>
+                <div class="card-body">
+                    <ui:card-head titulo="Fila completa de chamados" descricao="Monitoramento" />
 
-                <form method="get" action="${ctx}/admin/chamados" class="filter-grid">
-                    <label class="field">
-                        <span>Status</span>
-                        <select name="statusId">
-                            <option value="">Todos</option>
-                            <c:forEach items="${statusDisponiveis}" var="status">
-                                <option value="${status.id}" ${filtroStatusId eq status.id ? 'selected' : ''}>${status.nome}</option>
-                            </c:forEach>
-                        </select>
-                    </label>
-                    <label class="field">
-                        <span>Morador</span>
-                        <input type="text" name="moradorNome" value="${filtroMoradorNome}" placeholder="Ex.: mar">
-                    </label>
-                    <label class="field">
-                        <span>Data de abertura</span>
-                        <input type="date" name="dataAbertura" value="${filtroDataAbertura}">
-                    </label>
-                    <div class="button-row align-end">
-                        <button type="submit" class="btn btn-primary">Filtrar</button>
-                        <a href="${ctx}/admin/chamados" class="btn btn-secondary">Limpar</a>
-                    </div>
-                </form>
-            </section>
-
-            <section class="card">
-                <c:choose>
-                    <c:when test="${empty chamados}">
-                        <div class="empty-state">
-                            <h3>Nenhum chamado encontrado</h3>
-                            <p>Altere os filtros ou aguarde novas aberturas.</p>
-                        </div>
-                    </c:when>
-                    <c:otherwise>
-                        <div class="table-wrap">
-                            <table class="data-table">
-                                <thead>
-                                <tr>
-                                    <th>Unidade</th>
-                                    <th>Morador</th>
-                                    <th>Tipo</th>
-                                    <th>Status</th>
-                                    <th>Abertura</th>
-                                    <th></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <c:forEach items="${chamados}" var="chamado">
-                                    <tr>
-                                        <td>${chamado.unidadeIdentificacao}</td>
-                                        <td>${chamado.moradorNome}</td>
-                                        <td>${chamado.tipoChamadoTitulo}</td>
-                                        <td><span class="status-pill">${chamado.statusNome}</span></td>
-                                        <td>${chamado.dataAberturaFormatada}</td>
-                                        <td class="cell-actions">
-                                            <a href="${ctx}/admin/chamados/${chamado.id}" class="btn btn-link">Detalhar</a>
-                                        </td>
-                                    </tr>
+                    <form method="get" action="${ctx}/admin/chamados" class="app-card-filtros app-card-filtros--campos">
+                        <ui:campo rotulo="Status">
+                            <select class="select" name="statusId">
+                                <option value="">Todos</option>
+                                <c:forEach items="${statusDisponiveis}" var="status">
+                                    <option value="${status.id}" ${filtroStatusId eq status.id ? 'selected' : ''}>${status.nome}</option>
                                 </c:forEach>
-                                </tbody>
-                            </table>
+                            </select>
+                        </ui:campo>
+                        <ui:campo rotulo="Morador">
+                            <input class="input" type="text" name="moradorNome" value="${filtroMoradorNome}" placeholder="Ex.: mar">
+                        </ui:campo>
+                        <ui:campo rotulo="Data de abertura">
+                            <input class="input" type="date" name="dataAbertura" value="${filtroDataAbertura}">
+                        </ui:campo>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <button type="submit" class="btn btn-primary">Filtrar</button>
+                            <a href="${ctx}/admin/chamados" class="btn">Limpar</a>
                         </div>
-                    </c:otherwise>
-                </c:choose>
+                    </form>
 
-                <div class="pagination">
-                    <c:if test="${chamadosPage.hasPrevious}">
-                        <a class="btn btn-secondary" href="${ctx}/admin/chamados?page=${chamadosPage.page - 1}&size=${chamadosPage.size}&statusId=${filtroStatusId}&moradorNome=${filtroMoradorNome}&dataAbertura=${filtroDataAbertura}">Anterior</a>
-                    </c:if>
-                    <span>Pagina ${chamadosPage.page + 1} de ${chamadosPage.totalPages == 0 ? 1 : chamadosPage.totalPages}</span>
-                    <c:if test="${chamadosPage.hasNext}">
-                        <a class="btn btn-secondary" href="${ctx}/admin/chamados?page=${chamadosPage.page + 1}&size=${chamadosPage.size}&statusId=${filtroStatusId}&moradorNome=${filtroMoradorNome}&dataAbertura=${filtroDataAbertura}">Proxima</a>
-                    </c:if>
+                    <c:choose>
+                        <c:when test="${empty chamados}">
+                            <ui:vazio titulo="Nenhum chamado encontrado" mensagem="Altere os filtros ou aguarde novas aberturas." />
+                        </c:when>
+                        <c:otherwise>
+                            <ui:tabela-chamados itens="${chamados}" base="${ctx}/admin/chamados"
+                                                mostrarMorador="true" acaoIcone="ver" acaoRotulo="Detalhar" />
+                        </c:otherwise>
+                    </c:choose>
+
+                    <%-- A paginacao repete os filtros: sem isso, paginar perderia o recorte. --%>
+                    <ui:paginacao pagina="${chamadosPage}" url="${ctx}/admin/chamados" parametros="&statusId=${filtroStatusId}&moradorNome=${filtroMoradorNome}&dataAbertura=${filtroDataAbertura}" />
                 </div>
             </section>
-        </main>
-    </div>
-</div>
-<%@ include file="/WEB-INF/jsp/fragments/scripts.jspf" %>
-</body>
-</html>
+</ui:shell>
+<ui:shell-fim />

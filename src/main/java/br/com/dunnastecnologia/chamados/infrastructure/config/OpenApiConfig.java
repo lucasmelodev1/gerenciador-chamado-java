@@ -23,7 +23,8 @@ import org.springframework.context.annotation.Configuration;
         @Tag(name = "10 - Colaborador Web - Paginas", description = "Paginas da interface web disponiveis para colaborador."),
         @Tag(name = "11 - Colaborador Web - Chamados", description = "Operacoes de chamados disponiveis para colaborador."),
         @Tag(name = "12 - Morador Web - Paginas", description = "Paginas da interface web disponiveis para morador."),
-        @Tag(name = "13 - Morador Web - Chamados", description = "Operacoes de chamados disponiveis para morador.")
+        @Tag(name = "13 - Morador Web - Chamados", description = "Operacoes de chamados disponiveis para morador."),
+        @Tag(name = "14 - Admin Web - Areas", description = "Operacoes de areas disponiveis para administrador.")
 })
 public class OpenApiConfig {
 

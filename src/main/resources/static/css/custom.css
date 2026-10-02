@@ -1,0 +1,743 @@
+/*
+ * CSS proprio do projeto (UI-REWRITE-MAP.md §8.2).
+ *
+ * Ordem de carregamento em head.jspf:
+ *   app.build.css  -> Tailwind + daisyUI (tema "chamados")
+ *   custom.css     -> este arquivo
+ *
+ * Ate a S33 havia mais quatro folhas depois desta (`base.css`, `layout.css`,
+ * `components.css`, `responsive.css`), fora de cascade layer e por isso vencedoras da
+ * daisyUI. Elas foram removidas quando a ultima classe delas saiu do markup; o que sobrou
+ * virou utilitario no markup ou regra daqui. `scripts/ui-legado.sh check` reprova quem
+ * reintroduzir arquivo, `<link>` ou classe daquela lista.
+ *
+ * ATENCAO a ordem das camadas (medida em app.build.css):
+ *   @layer properties < @layer base < @layer utilities < @layer daisyui
+ * A daisyUI vem DEPOIS de `utilities`, entao uma classe utilitaria do Tailwind NAO
+ * sobrescreve uma declaracao da daisyUI sobre o mesmo elemento e a mesma propriedade.
+ * Por isso os dois ajustes de geometria do shell (S19) moram aqui, sem camada e
+ * escopados em `.app-sidebar`: e o unico lugar onde eles vencem de forma deterministica.
+ * Nenhum arquivo da daisyUI e alterado.
+ *
+ * DENTRO da daisyUI ha sub-layers (`daisyui.l1` > `l1.l2` > `l1.l2.l3` > `l1.l2.l3.l4`) e,
+ * para declaracoes NORMAIS, os estilos do proprio layer vencem os dos seus sub-layers
+ * ("non-nested styles in a layer have precedence over normal nested styles" — CSS Cascade 5).
+ * E o que explica um `.btn:hover` (`daisyui.l1`) sobrepor o `color` do `.btn-ghost`
+ * (`daisyui.l1.l2.l3`) no hover; ver a coluna de acoes (S25). Errar essa direcao leva a
+ * "consertar" o que nao esta quebrado: o `btn-square`, por exemplo, funciona — ele mora no
+ * layer PAI do `.btn`.
+ */
+
+/* ---------------------------------------------------------------------------
+ * Fundacao do shell (S33) — assume o que os quatro arquivos legados faziam em
+ * `html`, `body` e no antigo `.page-content`.
+ *
+ * Vem da migracao do CSS legado (F1): as regras sao as MESMAS de antes, so mudaram de
+ * dono. Enquanto `base.css`/`layout.css`/`responsive.css` ainda estiverem linkados no
+ * `head.jspf` as duas definicoes coexistem (mesmos valores); no F6 o legado sai e estas
+ * passam a ser as unicas.
+ *
+ * `.app-page` e o `<main>` emitido pelo `ui:shell`; `.app-page--estreito` e o `classeMain`
+ * dos dois formularios estreitos (morador/chamados/novo e morador/reservas/nova).
+ * ------------------------------------------------------------------------ */
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.app-page {
+    padding: 18px 24px 28px;
+    display: grid;
+    gap: 16px;
+    align-content: start;
+}
+
+/* O `> *` e o que mantem o painel da esquerda e o conteudo alinhados: os paineis
+   (`ui:drawer`/`ui:dialog`) sao renderizados FORA daqui justamente porque esta regra
+   espremeria o backdrop. Ver custom.css > Drawer lateral. */
+.app-page > * {
+    width: min(100%, 1360px);
+    margin-inline: auto;
+}
+
+.app-page--estreito {
+    max-width: 900px;
+}
+
+@media (max-width: 980px) {
+    .app-page {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}
+
+body[data-page]:not([data-page="login"]) .app-page > * {
+    animation: fadeLift 0.36s ease both;
+}
+
+body[data-page]:not([data-page="login"]) .app-page > *:nth-child(2) {
+    animation-delay: 0.04s;
+}
+
+body[data-page]:not([data-page="login"]) .app-page > *:nth-child(3) {
+    animation-delay: 0.08s;
+}
+
+body[data-page]:not([data-page="login"]) .app-page > *:nth-child(4) {
+    animation-delay: 0.12s;
+}
+
+@keyframes fadeLift {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ---------------------------------------------------------------------------
+ * Grades de duas colunas e cartao de metrica (S33/F5) — eram `.two-column-grid`,
+ * `.detail-grid` e `.stat-card`/`.stat-card::after` no legado.
+ *
+ * As grades ficam aqui (e nao em utilitario) porque a receita tem `minmax()` e media query:
+ * abaixo de 981px empilha, acima a primeira coluna fica entre 320/360px e 420/500px.
+ * O resto do cartao de metrica e utilitario no tag `ui:metrica`; so a barra de destaque
+ * (pseudo-elemento) precisa de regra propria.
+ * ------------------------------------------------------------------------ */
+
+.app-grade-lateral,
+.app-grade-detalhe {
+    display: grid;
+    gap: 24px;
+}
+
+.app-grade-lateral {
+    grid-template-columns: 1fr;
+}
+
+.app-grade-detalhe {
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 981px) {
+    .app-grade-lateral {
+        grid-template-columns: minmax(320px, 420px) 1fr;
+    }
+
+    .app-grade-detalhe {
+        grid-template-columns: minmax(360px, 500px) 1fr;
+    }
+}
+
+.app-metrica::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 72px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--color-accent);
+}
+
+/* ---------------------------------------------------------------------------
+ * Shell: conteudo "inset" (S19)
+ *
+ * No bloco dashboard-01 do shadcn a area de conteudo e uma superficie propria,
+ * arredondada, sobre o fundo da pagina — enquanto a LATERAL fica sobre o mesmo fundo,
+ * sem ilha (S21). O fundo da pagina e `--bg` do body do legado, alinhado com
+ * `--color-base-200` do tema.
+ * ------------------------------------------------------------------------ */
+
+/* A folga sai do `p-1.5 lg:p-2` do `.drawer-side` (que fica no JSP) e da margem
+   abaixo. */
+@media (min-width: 1024px) {
+    .drawer-content {
+        margin: 0.5rem 0.5rem 0.5rem 0;
+        border: 1px solid var(--color-base-300);
+        border-radius: var(--radius-box);
+        background-color: var(--color-base-100);
+        box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    }
+}
+
+/* A daisyUI define `.menu` como `width: fit-content` e `padding: .5rem`; a lateral
+   precisa que o menu ocupe os 288px do painel e que o espacamento venha do container
+   (que separa os grupos). Ajuste de layout, nao de identidade do componente. */
+.app-sidebar .menu {
+    width: 100%;
+    padding: 0;
+}
+
+/* Respiro interno dos cards. A daisyUI le `var(--card-p, 1.5rem)` em `.card-body`;
+   declarar o token aqui (fora de layer, entao vence) reduz o padding de 24px para
+   20px em todas as telas sem tocar no CSS da daisyUI. */
+:root {
+    --card-p: 1.25rem;
+}
+
+/* Barra superior: o `SiteHeader` do dashboard-01 e uma linha unica com `border-b`,
+   nao um cartao flutuante. `.navbar` da daisyUI cuida do alinhamento; aqui ficam
+   altura, respiro, filete e o fundo translucido. */
+.app-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    min-height: 3.25rem;
+    padding: 0.375rem 0.75rem;
+    border-bottom: 1px solid var(--color-base-300);
+    background: color-mix(in oklab, var(--color-base-100) 88%, transparent);
+    backdrop-filter: blur(12px);
+}
+
+@media (min-width: 1024px) {
+    .app-topbar {
+        /* Acompanha a margem do painel inset para nao "descolar" ao rolar. */
+        top: 0.5rem;
+        /* Raio interno do painel (raio externo menos a borda de 1px). */
+        border-radius: calc(var(--radius-box) - 1px) calc(var(--radius-box) - 1px) 0 0;
+    }
+}
+
+/* O shell novo nao usa mais `.app-shell`/`.app-main`; o daisyUI controla o grid do
+   drawer. Este bloco garante que o conteudo ocupe a coluna restante em telas grandes. */
+.drawer-content {
+    min-width: 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Cabecalho de card de listagem + faixa de filtros (S24)
+ *
+ * Padrao novo das telas de listagem: descricao e titulo a esquerda, acao primaria
+ * a direita, na MESMA linha; um filete fecha esse cabecalho e os filtros ficam
+ * ABAIXO dele, na propria faixa.
+ *
+ * Nao reusa `.section-header` + `.toolbar-inline` do legado de proposito:
+ *   - aquelas classes nao estao em cascade layer e carregam DEPOIS deste arquivo;
+ *   - `responsive.css` as empilha (`flex-direction: column`) abaixo de 900px, contra
+ *     o alinhamento em linha pedido aqui;
+ *   - la a busca divide a linha do titulo com o botao, e aqui ela pertence aos filtros.
+ * Com classes novas o legado nao alcanca o bloco e nenhuma regra precisa de !important.
+ * ------------------------------------------------------------------------ */
+
+.app-card-head {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    padding-bottom: 1rem;
+    /* O filete que separa o cabecalho da faixa de filtros logo abaixo. */
+    border-bottom: 1px solid var(--color-base-300);
+}
+
+.app-card-head__texto {
+    display: grid;
+    /* 2px: a descricao e o titulo viram um bloco unico. Desde o F4 da S33 a descricao e
+       utilitario (nao tem `margin-bottom`), entao o espaco vem so daqui. */
+    gap: 0.125rem;
+    min-width: 0;
+}
+
+/* Mesma receita de `.section-header h2` (components.css), que este cabecalho nao usa.
+   Sem ela o preflight do Tailwind (`@layer base`) zera o tamanho do <h2>. */
+.app-card-head h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.5rem;   /* text-2xl */
+    line-height: 2rem;
+    font-weight: 600;    /* font-semibold */
+}
+
+/* Mantem a acao encostada na direita tambem quando o cabecalho quebra linha em
+   telas estreitas (com `space-between` sozinho ela cairia para a esquerda). */
+.app-card-head > .btn {
+    margin-inline-start: auto;
+}
+
+/* Faixa de filtros. Hoje so a busca, mas o container e flexivel: os proximos
+   filtros sao irmaos dentro dele, sem mexer no cabecalho.
+   O `margin-bottom` soma ao `gap: .5rem` do `.card-body`: sem ele a tabela ficaria a
+   apenas 8px da barra de busca. */
+.app-card-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Variante para a faixa que e um formulario GET com rotulo acima do controle
+   (`.field`): as acoes alinham pela BASE dos controles, nao pelo centro da caixa.
+   Precisa existir porque `.app-card-filtros` nao esta em layer e venceria o
+   utilitario `items-end` do Tailwind. */
+.app-card-filtros--campos {
+    align-items: flex-end;
+}
+
+/* ---------------------------------------------------------------------------
+ * Dialogo central (S28) — componente `WEB-INF/tags/dialog.tag`.
+ *
+ * Mesmo componente do drawer, outra forma: o painel nao desliza da borda, aparece
+ * centrado com fade + escala. O comportamento (backdrop, Esc, foco preso, trava de
+ * scroll, conteudo dinamico) e o MESMO `drawer.js` — por isso o marcador no DOM
+ * continua sendo `data-drawer`. Aqui so muda a apresentacao.
+ *
+ * Centralizar com `inset: 0` + `margin: auto` (e nao com `translate`) para o painel
+ * nunca sair da tela quando o conteudo for mais alto que a viewport: quem manda e o
+ * `max-height`, e o corpo rola.
+ *
+ * `height: fit-content` NAO e redundante. Com `inset: 0` e `height: auto`, um elemento
+ * `position: fixed` ESTICA entre top e bottom (o `height` automatico preenche o espaco
+ * que sobra), e o dialogo virava uma coluna da altura da tela com o corpo vazio no meio.
+ * Com altura de conteudo sobram as duas folgas que o `margin: auto` divide — e o dialogo
+ * fica centrado e JUSTO: cresce com o formulario e para no `max-height`, quando entao o
+ * corpo rola.
+ * ------------------------------------------------------------------------ */
+
+.app-dialog {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    width: calc(100% - 2rem);
+    max-width: 28rem; /* md, o padrao */
+    height: fit-content;
+    max-height: calc(100dvh - 2rem);
+    margin: auto;
+    border-radius: var(--radius-box);
+    background-color: var(--color-base-100);
+    box-shadow: 0 18px 50px rgb(18 32 51 / 0.22);
+    visibility: hidden;
+    opacity: 0;
+    scale: 0.96;
+    transition: opacity 0.2s ease, scale 0.2s ease, visibility 0.2s;
+}
+
+.app-dialog--sm {
+    max-width: 22rem;
+}
+
+.app-dialog--lg {
+    max-width: 36rem;
+}
+
+.app-dialog[data-drawer-aberto] {
+    opacity: 1;
+    scale: 1;
+    visibility: visible;
+}
+
+.app-dialog-topo {
+    display: flex;
+    flex-shrink: 0;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+}
+
+/* Unica regiao com scroll: topo e rodape ficam sempre visiveis.
+   NAO tem filete: no dialogo a forma ja e dada pelo raio e pela sombra, e como o corpo e
+   OPCIONAL um filete so viraria uma linha solta no meio de um dialogo de confirmacao.
+
+   Respiro vertical MINIMO, dos dois lados por motivos diferentes:
+     - em cima, 0.25rem (4px): e o tamanho do anel de foco do primeiro campo (outline de 2px
+       + offset de 2px, ver a regra de acessibilidade no fim deste arquivo). Com `padding-top`
+       zero, este container — que e o `overflow-y: auto` — corta o anel, e o campo parece
+       colado/atras do titulo;
+     - embaixo, 1rem: separa o ultimo campo do rodape.
+   O que nao pode e um `padding` cheio dos quatro lados: abria um vao entre a descricao e o
+   primeiro campo. O respiro de cima da faixa ja vem do `padding` do topo. */
+.app-dialog-corpo {
+    display: grid;
+    flex: 1 1 auto;
+    min-height: 0;
+    align-content: start;
+    gap: 1rem;
+    overflow-y: auto;
+    padding: 0.25rem 1.25rem 1rem;
+}
+
+.app-dialog-rodape {
+    display: flex;
+    flex-shrink: 0;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem;
+}
+
+/* Dialogo sem campos (confirmacao pura): o corpo continua existindo porque e ele que
+   carrega o <form>, mas sem padding — senao sobraria uma faixa vazia entre o titulo e os
+   botoes. */
+.app-dialog-corpo--vazio {
+    padding: 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Coluna de acoes das tabelas + botoes so com icone (S25)
+ *
+ * O `.table :where(th,td){padding-inline:1rem}` da daisyUI deixa a ultima celula a
+ * 16px da borda; zerado aqui (fora de layer, entao vence) a acao encosta na borda
+ * direita da tabela.
+ *
+ * Os botoes usam o `btn-square` da daisyUI normalmente. A regra de precedencia entre
+ * layers aninhados vale a pena registrar, porque ela explica os dois ajustes de cor
+ * abaixo: para declaracoes NORMAIS, os estilos do proprio layer vencem os dos seus
+ * sub-layers ("non-nested styles in a layer have precedence over normal nested
+ * styles"). Ou seja, `daisyui.l1` vence `daisyui.l1.l2`, que vence `daisyui.l1.l2.l3`.
+ * ------------------------------------------------------------------------ */
+
+/* `.cell-actions` (legado) dava o `display:flex` e o `align-items:center`; desde o F4 da
+   S33 a coluna e auto-suficiente. O `gap: 12px` do `.cell-actions` (carregado DEPOIS deste
+   arquivo, por isso vencia) era maior que os 4px pretendidos aqui — com a classe fora do
+   markup, o espacamento curto entre os icones passa a valer. */
+.app-tabela-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.25rem;
+    padding-inline-end: 0;
+}
+
+/* Sem isto o `form` que envolve o botao de remover fica alguns px mais alto que o
+   botao (ele e inline-level e sobra a folga de descida da linha), e os dois icones
+   saem do eixo um do outro. */
+.app-tabela-acoes form {
+    display: flex;
+}
+
+/* Hover previsivel tambem nas linhas zebradas: o `.btn:hover` pinta `base-200`, que
+   e exatamente o fundo das linhas pares da `.table-zebra`. */
+.app-tabela-acoes .btn:hover {
+    background-color: color-mix(in oklab, var(--color-base-content) 10%, transparent);
+}
+
+/* Acao destrutiva. `btn-ghost btn-error` NAO serve: o `.btn-error` define
+   `--btn-fg: --color-error-content` (quase branco) e o `.btn:hover{color:var(--btn-fg)}`
+   vive em `daisyui.l1` — layer PAI de onde mora o `.btn-ghost` — entao no hover o icone
+   fica quase branco sobre o fundo transparente. Fora de layer, esta regra vence. */
+.app-btn-perigo {
+    color: var(--color-error);
+}
+
+.app-tabela-acoes .app-btn-perigo:hover {
+    background-color: color-mix(in oklab, var(--color-error) 12%, transparent);
+}
+
+/* O balao alinha pela DIREITA do botao. Centralizado (padrao da daisyUI) ele vazaria
+   para fora da tabela, e o `.overflow-x-auto` em volta — que vira container de rolagem
+   nos DOIS eixos — cortaria o balao da ultima coluna. */
+.app-tabela-acoes .tooltip[data-tip]:before {
+    left: auto;
+    right: 0;
+    transform: translateY(var(--tt-pos, 0.25rem));
+}
+
+/* A seta segue centrada no BOTAO (o balao e mais largo que ele). */
+.app-tabela-acoes .tooltip:after {
+    left: auto;
+    right: calc(50% - 0.3125rem);
+    transform: translateY(var(--tt-pos, 0.25rem));
+}
+
+/* ---------------------------------------------------------------------------
+ * Drawer lateral (S23) — componente `WEB-INF/tags/drawer.tag` (implementacao em
+ * `painel.tag` desde a S31).
+ *
+ * Nao usa o `modal` da daisyUI de proposito. O `modal` nao tem `::backdrop` (a daisyUI
+ * aplica `display:none` nele e pinta o proprio elemento) e, como o componente era
+ * renderizado dentro do `<main>`, a regra
+ * `.app-page > * { width: min(100%, 1360px); margin-inline: auto }` — que desde o F1 da
+ * migracao do CSS legado vive NESTE arquivo, fora de cascade layer — espremia o
+ * escurecimento e deixava as bordas da tela claras.
+ *
+ * Aqui o backdrop e um elemento proprio, irmao do painel e `position: fixed; inset: 0`,
+ * e o painel desliza por `translate`. O componente PRECISA ser renderizado fora de
+ * `.app-page` (filho direto do <body>), senao herda o mesmo `width`.
+ *
+ * Escala inspirada nas folhas laterais do shadcn (sm/md/lg). O padrao e `sm`, estreito
+ * de proposito: sao formularios curtos, nao tabelas.
+ * ------------------------------------------------------------------------ */
+
+.app-drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background-color: oklch(0% 0 0 / 0.4);
+    opacity: 0;
+    visibility: hidden;
+    /* `visibility` transiciona discretamente: fica visivel na ida e so some no fim da
+       volta, o que dispensa `allow-discrete` e mantem compatibilidade. */
+    transition: opacity 0.28s ease, visibility 0.28s;
+}
+
+.app-drawer-backdrop[data-drawer-aberto] {
+    opacity: 1;
+    visibility: visible;
+}
+
+.app-drawer {
+    position: fixed;
+    inset-block: 0;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    width: 100%;
+    max-width: 24rem; /* 384px — sm, o padrao */
+    background-color: var(--color-base-100);
+    box-shadow: 0 10px 40px rgb(18 32 51 / 0.18);
+    visibility: hidden;
+    transition: translate 0.28s ease, visibility 0.28s;
+}
+
+.app-drawer--end {
+    inset-inline-end: 0;
+    border-inline-start: 1px solid var(--color-base-300);
+    translate: 100% 0;
+}
+
+.app-drawer--start {
+    inset-inline-start: 0;
+    border-inline-end: 1px solid var(--color-base-300);
+    translate: -100% 0;
+}
+
+.app-drawer[data-drawer-aberto] {
+    translate: 0 0;
+    visibility: visible;
+}
+
+.app-drawer--md {
+    max-width: 28rem; /* 448px */
+}
+
+.app-drawer--lg {
+    max-width: 36rem; /* 576px */
+}
+
+.app-drawer-topo {
+    display: flex;
+    flex-shrink: 0;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--color-base-300);
+}
+
+/* Unica regiao com scroll: topo e rodape ficam sempre visiveis. */
+.app-drawer-corpo {
+    display: grid;
+    flex: 1 1 auto;
+    min-height: 0;
+    align-content: start;
+    gap: 1rem;
+    overflow-y: auto;
+    padding: 1.25rem;
+}
+
+.app-drawer-rodape {
+    display: flex;
+    flex-shrink: 0;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--color-base-300);
+}
+
+/* Trava o scroll da pagina enquanto houver drawer aberto (aplicada pelo JS no <body>). */
+body.app-drawer-trava-scroll {
+    overflow: hidden;
+}
+
+/* ---------------------------------------------------------------------------
+ * Lista de detalhes (S30) — componente `WEB-INF/tags/detalhe-linha.tag`.
+ *
+ * Cada linha e "rotulo a esquerda, valor em negrito a direita": o `<dl>` agrupa, o `<div>`
+ * da linha e o par `<dt>`/`<dd>`. Os dois `margin` do padrao do navegador (`<dl>` e o
+ * recuo de 40px do `<dd>`) sao zerados aqui, senao a linha nao encosta nas duas bordas.
+ *
+ * `min-width: 0` no valor: item flex nasce com `min-width: auto` e um valor longo sem
+ * espaco (um motivo, por exemplo) empurraria a linha para fora do painel.
+ * ------------------------------------------------------------------------ */
+
+.app-detalhe-lista {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.app-detalhe-linha {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.app-detalhe-rotulo {
+    flex-shrink: 0;
+    color: color-mix(in oklab, var(--color-base-content) 60%, transparent);
+    font-size: 0.875rem;
+}
+
+.app-detalhe-valor {
+    min-width: 0;
+    margin: 0;
+    font-weight: 700;
+    text-align: end;
+}
+
+/* ---------------------------------------------------------------------------
+ * Linha do tempo do chamado (S33/F4) — era `.timeline`/`.timeline-item` no legado.
+ *
+ * A geometria (o filete vertical e o ponto de cada item) usa pseudo-elementos, entao nao
+ * cabe em utilitario: vira classe do projeto, com os mesmos numeros. As regras de
+ * `header`/`p` que o legado tinha junto vieram no mesmo bloco.
+ * ------------------------------------------------------------------------ */
+
+.app-linha-tempo {
+    position: relative;
+    display: grid;
+    gap: 16px;
+    padding-left: 20px;
+}
+
+.app-linha-tempo::before {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 4px;
+    bottom: 4px;
+    width: 2px;
+    background: var(--color-base-300);
+}
+
+.app-linha-tempo-item {
+    position: relative;
+    padding: 0 0 0 20px;
+}
+
+.app-linha-tempo-item::before {
+    content: "";
+    position: absolute;
+    left: -1px;
+    top: 8px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-accent) 18%, transparent);
+}
+
+.app-linha-tempo-item header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.app-linha-tempo-item p {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+/* ---------------------------------------------------------------------------
+ * Padrao decorativo do login (S34) — coluna da direita do bloco `login-02` do shadcn.
+ *
+ * No bloco original essa coluna e uma imagem (`<img class="object-cover">`); aqui e o padrao
+ * CSS que o time de design passou, sem asset novo e sem dependencia nova. As seis camadas
+ * (`background-image` + `background-position` + `background-size`) andam juntas: cada camada
+ * de imagem casa, pela ordem, com a posicao de mesmo indice.
+ *
+ * As cores sao as da identidade do projeto (`#0d5c63` e o `--color-primary`; o creme
+ * `#f4f0eb` e o fundo do padrao, nao um token do tema — o `base-200` e cinza-neutro desde a
+ * S21). O padrao de referencia do design usava azul/lilas; trocar as cores mudaria a
+ * identidade.
+ *
+ * A classe e usada por `auth/login.jsp` na coluna `hidden lg:block`; abaixo de `lg` ela nao
+ * e renderizada.
+ * ------------------------------------------------------------------------ */
+
+.app-padrao-login {
+    background-color: #f4f0eb;
+    opacity: 0.8;
+    background-image:
+        linear-gradient(30deg, #0d5c63 12%, transparent 12.5%, transparent 87%, #0d5c63 87.5%, #0d5c63),
+        linear-gradient(150deg, #0d5c63 12%, transparent 12.5%, transparent 87%, #0d5c63 87.5%, #0d5c63),
+        linear-gradient(30deg, #0d5c63 12%, transparent 12.5%, transparent 87%, #0d5c63 87.5%, #0d5c63),
+        linear-gradient(150deg, #0d5c63 12%, transparent 12.5%, transparent 87%, #0d5c63 87.5%, #0d5c63),
+        linear-gradient(60deg, #0d5c6377 25%, transparent 25.5%, transparent 75%, #0d5c6377 75%, #0d5c6377),
+        linear-gradient(60deg, #0d5c6377 25%, transparent 25.5%, transparent 75%, #0d5c6377 75%, #0d5c6377);
+    background-size: 54px 95px;
+    background-position: 0 0, 0 0, 27px 47px, 27px 47px, 0 0, 27px 47px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Botao de mostrar/ocultar senha (`tags/campo-senha.tag`, S34).
+ *
+ * Os dois glifos (`ver` e `ocultar`) vem do markup e quem escolhe qual aparece e o CSS,
+ * por `aria-pressed` — o JS nao conhece icone. Fora de layer, entao vence o `hidden`/
+ * `flex` de utilitario que estivesse no elemento.
+ *   aria-pressed="false" -> senha oculta, glifo `mostrar` (olho)
+ *   aria-pressed="true"  -> senha visivel, glifo `ocultar` (olho cortado)
+ * ------------------------------------------------------------------------ */
+
+[data-password-toggle] [data-password-icone="mostrar"] {
+    display: flex;
+}
+
+[data-password-toggle] [data-password-icone="ocultar"] {
+    display: none;
+}
+
+[data-password-toggle][aria-pressed="true"] [data-password-icone="mostrar"] {
+    display: none;
+}
+
+[data-password-toggle][aria-pressed="true"] [data-password-icone="ocultar"] {
+    display: flex;
+}
+
+/* ---------------------------------------------------------------------------
+ * Acessibilidade (S8)
+ * ------------------------------------------------------------------------ */
+
+/* Anel de foco do projeto. Sem `!important`: o legado nao define mais `outline: none`
+   (a justificativa antiga deixou de valer na S33) e, fora de cascade layer, esta regra
+   vence as declaracoes em layer da daisyUI. */
+body :is(.btn, .field input, .field select, .field textarea, a, summary):focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Respeita "prefers-reduced-motion": a animacao de entrada e a do `.app-page` (custom.css)
+   e o drawer usa transicao de transform. */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    body[data-page] .app-page > * {
+        animation: none !important;
+    }
+
+    .drawer-side,
+    .drawer-overlay,
+    .app-drawer,
+    .app-dialog,
+    .app-drawer-backdrop {
+        transition: none !important;
+    }
+}

@@ -2,9 +2,11 @@ package br.com.dunnastecnologia.chamados.infrastructure.controller.web;
 
 import br.com.dunnastecnologia.chamados.application.Security.AuthenticatedUser;
 import br.com.dunnastecnologia.chamados.application.pagination.PageResult;
+import br.com.dunnastecnologia.chamados.domain.model.Area;
 import br.com.dunnastecnologia.chamados.domain.model.Bloco;
 import br.com.dunnastecnologia.chamados.domain.model.Chamado;
 import br.com.dunnastecnologia.chamados.domain.model.Comentario;
+import br.com.dunnastecnologia.chamados.domain.model.SolicitacaoArea;
 import br.com.dunnastecnologia.chamados.domain.model.StatusChamado;
 import br.com.dunnastecnologia.chamados.domain.model.TipoChamado;
 import br.com.dunnastecnologia.chamados.domain.model.Unidade;
@@ -18,10 +20,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -134,6 +140,82 @@ public class WebControllerSupport {
         );
     }
 
+    public Map<String, Object> toAreaMap(Area area) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("id", area.getId());
+        values.put("nome", area.getNome());
+        values.put("status", area.getStatus() == null ? null : area.getStatus().getValor());
+        values.put("statusNome", area.getStatus() == null ? null : area.getStatus().name());
+        return values;
+    }
+
+    public List<Map<String, Object>> areasDasReservas(List<SolicitacaoArea> reservas) {
+        Map<UUID, Area> distintas = new LinkedHashMap<>();
+        for (SolicitacaoArea reserva : reservas) {
+            Area area = reserva.getArea();
+            if (area != null) {
+                distintas.putIfAbsent(area.getId(), area);
+            }
+        }
+        return mapContent(new ArrayList<>(distintas.values()), this::toAreaMap);
+    }
+
+    /**
+     * Calcula a janela, a navegacao e o rotulo da agenda/calendario a partir de uma referencia.
+     * Visao mensal: primeiro dia do mes, com folga de 7 dias em cada lado para a grade. Visao semanal:
+     * domingo a sabado, alinhada ao firstDay padrao do FullCalendar.
+     */
+    public PeriodoAgenda periodoAgenda(LocalDate inicio, boolean porSemana) {
+        LocalDate referencia = inicio == null ? LocalDate.now() : inicio;
+        LocalDate periodoReferencia = porSemana
+                ? referencia.with(DayOfWeek.SUNDAY)
+                : referencia.withDayOfMonth(1);
+
+        LocalDateTime janelaInicio;
+        LocalDateTime janelaFim;
+        LocalDate anterior;
+        LocalDate seguinte;
+        String label;
+        if (porSemana) {
+            janelaInicio = periodoReferencia.atStartOfDay();
+            janelaFim = periodoReferencia.plusDays(7).atStartOfDay();
+            anterior = periodoReferencia.minusWeeks(1);
+            seguinte = periodoReferencia.plusWeeks(1);
+            DateTimeFormatter diaMes = DateTimeFormatter.ofPattern("dd/MM");
+            label = "Semana de " + periodoReferencia.format(diaMes)
+                    + " a " + periodoReferencia.plusDays(6).format(diaMes);
+        } else {
+            janelaInicio = periodoReferencia.minusDays(7).atStartOfDay();
+            janelaFim = periodoReferencia.plusMonths(1).plusDays(7).atStartOfDay();
+            anterior = periodoReferencia.minusMonths(1);
+            seguinte = periodoReferencia.plusMonths(1);
+            DateTimeFormatter formato = DateTimeFormatter.ofPattern("MMMM 'de' yyyy", new Locale("pt", "BR"));
+            String rotulo = periodoReferencia.format(formato);
+            label = Character.toUpperCase(rotulo.charAt(0)) + rotulo.substring(1);
+        }
+        return new PeriodoAgenda(
+                periodoReferencia, janelaInicio, janelaFim, anterior, seguinte, label, porSemana ? "semana" : "mes");
+    }
+
+    public record PeriodoAgenda(
+            LocalDate referencia,
+            LocalDateTime janelaInicio,
+            LocalDateTime janelaFim,
+            LocalDate anterior,
+            LocalDate seguinte,
+            String label,
+            String view
+    ) {
+    }
+
+    public void adicionarPeriodoAgenda(Model model, PeriodoAgenda periodo) {
+        model.addAttribute("viewAtual", periodo.view());
+        model.addAttribute("periodoReferencia", periodo.referencia());
+        model.addAttribute("periodoLabel", periodo.label());
+        model.addAttribute("periodoAnterior", periodo.anterior());
+        model.addAttribute("periodoSeguinte", periodo.seguinte());
+    }
+
     public Map<String, Object> toTipoChamadoMap(TipoChamado tipoChamado) {
         return Map.of(
                 "id", tipoChamado.getId(),
@@ -176,6 +258,29 @@ public class WebControllerSupport {
         );
         values.put("statusId", chamado.getStatus() == null ? null : chamado.getStatus().getId());
         values.put("statusNome", chamado.getStatus() == null ? null : chamado.getStatus().getNome());
+        return values;
+    }
+
+    public Map<String, Object> toSolicitacaoAreaMap(SolicitacaoArea solicitacao) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("id", solicitacao.getId());
+        values.put("areaId", solicitacao.getArea() == null ? null : solicitacao.getArea().getId());
+        values.put("areaNome", solicitacao.getArea() == null ? null : solicitacao.getArea().getNome());
+        values.put("moradorId", solicitacao.getMorador() == null ? null : solicitacao.getMorador().getId());
+        values.put("moradorNome", solicitacao.getMorador() == null ? null : solicitacao.getMorador().getNome());
+        values.put("unidadeId", solicitacao.getUnidade() == null ? null : solicitacao.getUnidade().getId());
+        values.put(
+                "unidadeIdentificacao",
+                solicitacao.getUnidade() == null ? null : solicitacao.getUnidade().getIdentificacao()
+        );
+        values.put("inicio", solicitacao.getInicio());
+        values.put("inicioFormatado", formatDateTime(solicitacao.getInicio()));
+        values.put("fim", solicitacao.getFim());
+        values.put("fimFormatado", formatDateTime(solicitacao.getFim()));
+        values.put("status", solicitacao.getStatus() == null ? null : solicitacao.getStatus().getValor());
+        values.put("statusNome", solicitacao.getStatus() == null ? null : solicitacao.getStatus().name());
+        values.put("motivoNegacao", solicitacao.getMotivoNegacao());
+        values.put("createdAt", solicitacao.getCreatedAt());
         return values;
     }
 

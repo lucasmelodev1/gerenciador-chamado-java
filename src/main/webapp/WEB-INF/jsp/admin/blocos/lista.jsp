@@ -1,70 +1,35 @@
+<%@ page pageEncoding="UTF-8" %>
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
-<body data-page="admin-blocos">
-<div class="app-shell">
-    <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="app-main">
-        <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main class="page-content">
-            <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
+<ui:shell dataPagina="admin-blocos">
 
-            <section class="two-column-grid">
-                <article class="card">
-                    <div class="section-header">
-                        <div>
-                            <p class="eyebrow">Cadastro</p>
-                            <h2>Novo bloco</h2>
-                        </div>
-                    </div>
-                    <form method="post" action="${ctx}/admin/blocos" class="stack-form">
-                        <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                        <label class="field">
-                            <span>Identificacao</span>
-                            <input type="text" name="identificacao" value="${blocoForm.identificacao}" placeholder="Bloco A" maxlength="255" required>
-                        </label>
-                        <div class="form-grid">
-                            <label class="field">
-                                <span>Andares</span>
-                                <input type="number" name="quantidadeAndares" min="1" value="${blocoForm.quantidadeAndares}" required>
-                            </label>
-                            <label class="field">
-                                <span>Apartamentos por andar</span>
-                                <input type="number" name="apartamentosPorAndar" min="1" value="${blocoForm.apartamentosPorAndar}" required>
-                            </label>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Cadastrar bloco</button>
-                    </form>
-                </article>
+            <%-- Bloco nao tem endpoint de edicao nem de remocao (BlocoApiController so
+                 expoe POST), entao a tabela apenas navega para as unidades; a criacao
+                 vive no drawer. --%>
+            <section class="card">
+                <div class="card-body">
+                    <ui:card-head titulo="Blocos cadastrados" descricao="Estrutura do condominio">
+                        <button type="button" class="btn btn-primary btn-sm" data-drawer-abrir="drawer-bloco">
+                            Novo bloco
+                        </button>
+                    </ui:card-head>
 
-                <article class="card">
-                    <div class="section-header">
-                        <div>
-                            <p class="eyebrow">Lista</p>
-                            <h2>Blocos cadastrados</h2>
-                        </div>
-                        <div class="toolbar-inline">
-                            <input type="search" class="table-search" placeholder="Filtrar localmente" data-filter-input data-filter-target="blocos-table">
-                        </div>
+                    <div class="app-card-filtros">
+                        <ui:busca alvo="blocos-table" rotulo="Pesquisar blocos" />
                     </div>
 
                     <c:choose>
                         <c:when test="${empty blocos}">
-                            <div class="empty-state">
-                                <h3>Nenhum bloco cadastrado</h3>
-                                <p>Cadastre o primeiro bloco para gerar as unidades automaticamente.</p>
-                            </div>
+                            <ui:vazio titulo="Nenhum bloco cadastrado" mensagem="Cadastre o primeiro bloco para gerar as unidades automaticamente." />
                         </c:when>
                         <c:otherwise>
-                            <div class="table-wrap">
-                                <table class="data-table" data-filter-table="blocos-table">
+                            <div class="overflow-x-auto">
+                                <table class="table table-zebra" data-filter-table="blocos-table">
                                     <thead>
                                     <tr>
                                         <th>Identificacao</th>
                                         <th>Andares</th>
                                         <th>Aptos/andar</th>
-                                        <th></th>
+                                        <th><span class="sr-only">Ações</span></th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -73,8 +38,9 @@
                                             <td>${bloco.identificacao}</td>
                                             <td>${bloco.quantidadeAndares}</td>
                                             <td>${bloco.apartamentosPorAndar}</td>
-                                            <td class="cell-actions">
-                                                <a href="${ctx}/admin/blocos/${bloco.id}" class="btn btn-link">Ver unidades</a>
+                                            <td class="app-tabela-acoes">
+                                                <ui:acao-link href="${ctx}/admin/blocos/${bloco.id}"
+                                                              icone="ver" rotulo="Ver unidades" />
                                             </td>
                                         </tr>
                                     </c:forEach>
@@ -84,20 +50,30 @@
                         </c:otherwise>
                     </c:choose>
 
-                    <div class="pagination">
-                        <c:if test="${blocosPage.hasPrevious}">
-                            <a class="btn btn-secondary" href="${ctx}/admin/blocos?page=${blocosPage.page - 1}&size=${blocosPage.size}">Anterior</a>
-                        </c:if>
-                        <span>Pagina ${blocosPage.page + 1} de ${blocosPage.totalPages == 0 ? 1 : blocosPage.totalPages}</span>
-                        <c:if test="${blocosPage.hasNext}">
-                            <a class="btn btn-secondary" href="${ctx}/admin/blocos?page=${blocosPage.page + 1}&size=${blocosPage.size}">Proxima</a>
-                        </c:if>
-                    </div>
-                </article>
+                    <ui:paginacao pagina="${blocosPage}" url="${ctx}/admin/blocos" />
+                </div>
             </section>
-        </main>
+</ui:shell>
+
+<%-- Fora de `.app-page`: la o legado aplica
+     `.app-page > * { width: min(100%, 1360px); margin-inline: auto }` e espremeria o
+     backdrop do drawer. Ver custom.css > Drawer. --%>
+<ui:drawer id="drawer-bloco"
+           titulo="Novo bloco"
+           descricao="As unidades do bloco sao geradas automaticamente."
+           acao="${ctx}/admin/blocos">
+    <ui:campo rotulo="Identificacao">
+        <input class="input w-full" type="text" name="identificacao" value="${blocoForm.identificacao}" placeholder="Bloco A" maxlength="255" required>
+    </ui:campo>
+
+    <div class="grid gap-4 min-[981px]:grid-cols-2">
+        <ui:campo rotulo="Andares">
+            <input class="input w-full" type="number" name="quantidadeAndares" min="1" value="${blocoForm.quantidadeAndares}" required>
+        </ui:campo>
+        <ui:campo rotulo="Apartamentos por andar">
+            <input class="input w-full" type="number" name="apartamentosPorAndar" min="1" value="${blocoForm.apartamentosPorAndar}" required>
+        </ui:campo>
     </div>
-</div>
-<%@ include file="/WEB-INF/jsp/fragments/scripts.jspf" %>
-</body>
-</html>
+</ui:drawer>
+
+<ui:shell-fim />

@@ -1,0 +1,15 @@
+{
+  "name": "gerenciador-chamados-ui",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Pipeline de build do frontend (Tailwind CSS 4 + daisyUI 5) para as views JSP. Ferramenta de desenvolvimento; nao faz parte do runtime Java.",
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/main/resources/static/css/app.css -o ./src/main/resources/static/css/app.build.css --minify",
+    "watch:css": "tailwindcss -i ./src/main/resources/static/css/app.css -o ./src/main/resources/static/css/app.build.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "daisyui": "^5.7.47",
+    "tailwindcss": "^4.3.3"
+  }
+}

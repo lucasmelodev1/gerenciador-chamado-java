@@ -48,3 +48,13 @@ Thumbs.db
 *.mov
 *.wmv
 
+.pi
+.pi/**
+
+# P0 baseline: artefatos brutos sao locais; apenas o log de evidencias e versionado
+baseline/*
+!baseline/EVIDENCE.md
+.npm-cache/
+
+# CSS compilado (gerado por npm run build:css / estagio frontend do Dockerfile)
+src/main/resources/static/css/app.build.css

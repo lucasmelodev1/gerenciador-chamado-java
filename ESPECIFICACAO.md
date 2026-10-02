@@ -1,17 +1,66 @@
+# Interface diferente?
+Eu julguei ter concluído o projeto 3 dias antes do merge da branch de `feat/ui-overhaul`, e como eu vi oportunidade de melhorar a interface e deixar mais intuitivo, eu usei o tempo extra para isso. Nesse processo da refatoração da interface, eu usei IA extensivamente, seguindo esses passos:
+1. Seleção das tecnologias: Eu escolhi DaisyUI com TailwindCSS, pois essas tecnologias se encaixam com as dependências que o criador do projeto escolheu (Spring e JSP) e a adição das tecnologias levou apenas a leve alteração do processo de build do docker, onde precisaríamos traduzir Tailwind para CSS em tempo de build.
+2. Troca de componentes: Trocamos os componentes simples (Botões e Inputs) para os equivalentes em DaisyUI. Nesse momento a IA foi extensamente usada para identificar todas as instâncias e substituir.
+3. Reformulação da interface: Usei como base os blocks do `shadcn/ui`, pois a licença empregada por eles é aberta. Eu já comprei anteriormente o pacote de interfaces do Tailwind Plus e do Untitled UI, mas como a licença deles é mais restritiva, não pude usar nesse projeto. Nesse momento a IA foi usada extensamente para traduzir os componentes shadcn para seus equivalentes DaisyUI.
+4. Melhoria de fluxos de trabalho: Os fluxos de cadastro e edição, em várias páginas, poderiam ter melhoras, então eu criei dois modais, um Dialog e um Drawer, ambos com javascript puro, para que as interfaces parecessem mais reativas, melhorando a experiência do usuário.
+5. Refatoração: Remover CSS antigo e classes antigas que sobraram no código.
+
+Caso eu tivesse poder sobre as decisões da interface desde o início, eu não tomaria esse caminho. Eu teria iniciado já com uma biblioteca de componentes (com uma licença aberta), e isso salvaria o projeto incontáveis horas de desenvolvimento, tanto dos componentes quanto do layout, e isso também agradaria mais o cliente, pois ele receberia uma interface mais profissional. Isso não significa que os produtos terão aparência genérica, pois nós seríamos responsáveis, também, por alterar a aparência dos componentes em massa, para ficar com a cara do projeto que o cliente deseja. É assim que trabalhos de frontend são feitos com desenvolvedores + designers. Por exemplo, designers usam algo como um Untitled UI Figma como base e aplicam suas modificações, e os desenvolvedores usam o Untitled UI React e aplicam as modificações dos designers.
+
+Antes de fazer essa mudança, falei com Clara para validação por ser uma mudança significativa. Ela mencionou que, contanto que eu implemente bem tudo que vocês solicitaram no escopo do documento oficial, uma mudança assim seria bem vinda. 
+
 # Ferramentas de IA usadas
-Estou usando Opencode como Harness e usando puramente o DeepSeek V4.1 Flash como modelo.
-Uso skills de autoração minha para que eu tenha maior controle sobre o que é gerado. Eu conheço 
-melhor os limites do que minha IA consegue e não consegue fazer.
+Estou usando Opencode como Harness e usando puramente o DeepSeek V4.1 Flash como modelo. Uso skills de autoração minha para que eu tenha maior controle sobre o que é gerado. Eu conheço melhor os limites do que minha IA consegue e não consegue fazer. Também comecei a usar o agente Pi recentemente, e ele demonstrou resultados similares, com menos variância e com menos tokens, pois usa mais o cache do modelo que eu uso.
+
+Durante o desenvolvimento do projeto, eu passei a usar o DeepSeek V4.1 Flash diretamente pela API da DeepSeek, pois o custo estava acessível e me permite trabalhar sem ser interrompido por limites de uso. Utilizei tanto o harness Pi quanto o DeepSeek Harness, que lançou recentemente. No total, todo o trabalho que eu tive nesse projeto me custou em torno de 20 reais em tokens.
 
 # Sugestões de IA aceitas
-Nenhuma, eu não aceito sugestão de IA, toda decisão arquitetônica é feita por mim. A decisão da
-IA se limita a escrever o código seguindo todas as minhas regras.
+Eu não aceito sugestão arquitetônica de IA, e a decisão dela se limita a escrever o código seguindo todas as minhas regras. O meu agente customizado de Review normalmente recomenda alguns caminhos para seguir em micro partes do sistema, e eu vou mencionar as que, depois da minha pesquisa independente, se mostraram interessantes:
+1. Usar a extensao padrao `btree_gist` do PostgreSQL para evitar race conditions na tabela `solicitacoes_area`. [Documentacao oficial](https://www.postgresql.org/docs/current/btree-gist.html). As alternativas seriam fazer a verificação apenas no lado da aplicação ou usar soluções de row locking nativas do postgres. btree_gist ganhou por ser conciso e um único esforço.
+2. Usar FullCalendar.js como calendário. Depois da sugestão, eu pesquisei todas as alternativas e percebi que essa era a correta mesmo, igual o processo que fiz pra decidir a btree_gist.
 
 # Como validei conteúdo e código gerados
-Cada iteração de funcionalidade e bugfix é isolada em um commit no git, e eu checo as diffs de 
-todos os arquivos. Como as mudanças são pequenas e pontuais, isso não cria um gargalo de review.
+Cada iteração de funcionalidade e bugfix é isolada em um commit no git, e eu checo as diffs de todos os arquivos. Como as mudanças são pequenas e pontuais, isso não cria um gargalo de review. Cada iteração de geração de código eu verifico o output imediato pra identificar desvios no objetivo. Pequenos prompts com especificações técnicas é bem efetivo para evitar retrabalhos.
 
 # Quais decisões de negócio, segurança, escopo e aceite não foram delegadas à IA
 Todas, mas eu vou listando por aqui todas as decisões que tomei.
+- Manter campos de tempo de criação e tempo de deleção (pouco código agora, essencial pra auditoria)
+- Utilizar TEXT ao invés de VARCHAR (recomendado pela própria documentação oficial do POSTGRESQL)
+- Utilizar TEXT ao invés de enums (maior flexibilidade, checagem feita a nível de aplicação)
+- Schemas. Eu criei todos os schemas na mão, porque acredito que o schema do banco de dados necessita de um 
+entendimento muito bom do contexto humano da aplicação, como escala e expectativas futuras do cliente, coisas 
+que não estão escritas em canto nenhum.
+- Arquitetura de testes, pois a IA vai tentar sempre se esforçar o mínimo possível para o trabalho dela ser validado. Dessa forma, eu escolhi ser robusto na arquitetura de testes. Eu escolhi seguir com E2E-first, onde poucos testes vão testar muita superfície do código. Essa estratégia é válida especialmente para ambientes de alta velocidade, onde parar para fazer testes custa caro. O lado ruim de testes E2E é que eles são mais fáceis de quebrar por mudanças na API e interfaces, mas na minha experiência eles são muito mais efetivos que testes unitários por esforço e tempo.
 
 # Interações relevantes
+1. Utilizei a IA para identificar padrões de nomenclatura e projeto na camada de banco de dados, especificamente para saber o padrão de escrita (camelCase, snake_case, etc) usado em enumeradores no formato string na camada do BD, e saber se havia algum tipo de soft delete aplicado com Hibernate.
+2. IA quis mapear `deleted_at` como campo na classe da Area, mas o Hibernate já faz isso na sua versão mais nova. Jogando essa responsabilidade pra o Hibernate, temos menos área de superfície pra bugs.
+3. IA quis usar H2 como banco de dados para executar os testes E2E, mesmo sem nenhuma mencao sobre. Como eu entendi a visao sobre os testes serem reprodutivos em multiplos ambientes, eu dei um upgrade na arquitetura de testes usando o proprio `docker compose` como motor para replicar o ambiente e utilizar o BD por la.
+4. A IA quebrou as barreiras e limites que eu impus no escopo da implementação várias vezes, porque fazer a API e testar ela em isolamento é muito mais difícil quando se usa JSP ou qualquer tipo de tecnologia HATEOAS, como o HTMX ou Thymeleaf. Eu percebo que a separação da API do frontend por meio de JSON ou gRPC é MUITO mais efetiva para programação com IA. Podemos criar testes muito mais robustos e legíveis, pois eles são mais localizados e específicos. Creio que o melhor tradeoff de velocidade e robustez seria trocar a API do backend de forms para JSON, usando OpenAPI como ponte para o frontend. O frontend usaria bibliotecas que convertem de OpenAPI spec para tipos typescript e seguiria consumindo a API por ele. O repositório seria único, back e front no mesmo repositório. O pipeline de deploy primeiro geraria o arquivo do OpenAPI, yaml ou json, depois geraria os tipos do front por meio desse arquivo, depois executaria todos os testes do front e do back, e caso passasse tudo, seguiria para build e deploy. Claro que esse pipeline já estaria pronto de antemão, dependendo da ferramenta em núvem usada, então não teria atraso de projeto em projeto.
+
+# Decisões fora de escopo + motivos
+1. Usei FullCalendar.js para fazer o calendário por ser feito em vanilla Javascript, ser padrão no mercado, ter interfaces para se comunicar com o sistema atual e ser estilizável. Ao invés de baixar direto do CDN, baixei uma versão fixa e coloquei no código por motivos de estabiliidade.
+2. Fiz testes E2E acima dos testes unitários solicitados, pois vejo que eles se encaixam melhor para esse tipo de projeto, como eu mencionei alguns pontos acima. Além disso, eles estão mais próximos do que o Kent Beck menciona em Extreme Programming Explained, que se mostrou ser efetivo no passado.
+3. Reformular a interface. Diante do tempo que me sobrou, resolvi melhorar o projeto por meio da interface. Descrevi melhor o processo na seção sobre a interface.
+
+# Decisões técnicas
+1. Ambiente de testes deve ser 1:1 o máximo possível com ambiente de produção. Testes são executados via 
+docker compose sobre a mesma imagem docker da produção.
+2. Evitar race conditions nas solicitações diretamente no banco de dados para evitar que regressões no 
+código afetem os clientes diretamente (ambos código e banco devem ser comprometidos, diminuindo a 
+surface area para bugs).
+3. Evitar grandes funções pl/SQL, pois são extremamente difíceis de atualizar e debugar, sendo um pesadelo em produção e atrasando o tempo de solução de bugs que passam por essa camada. Views complexas demais e triggers fazem sentido, mas não funções de query básicas.
+4. Utilizar Tailwind no lugar de CSS. Mesmo que usemos IA muitas vezes para fazer os códigos, Tailwind é mais fácil de interpretar tanto para uma LLM quanto para um humano. O fator cascata do CSS faz com que detalhes se percam no mar de componentes e interfaces, enquanto abstrair essa cascada por meio de elementos isolados com suas classes Tailwind diminui a complexidade. O custo para implementar essa tecnologia é quase zero, a dificuldade era apenas traduzir o código antigo, mas a IA é muito boa nisso e é fácil de verificar o output.
+5. Utilizar soft-delete, pois de acordo com a LGPD, precisamos manter os dados dos clientes por no mínimo 5 anos. Existe uma lei na união europeia que obriga software houses a permitir que o usuário delete permanentemente seus dados e que a software house não pode guardar mais nada dele, mas essa lei não existe no Brasil por enquanto, então podemos manter soft delete em todas as tabelas. Eu não alterei tabelas passadas por estar muito fora do escopo, mas é uma ideia para projetos futuros.
+6. Não usar `administradores` no schema do banco de dados, e tentar focar apenas no `usuarios`. Explico melhor o motivo na seção abaixo, mas o motivo principal é evitar erro humano futuro e evitar JOINs futuros.
+
+# Interpretações
+1. O código atual usa muito pl/SQL, e eu interpreto isso como um futuro débito técnico, porque engessa atualizações lógicas, pois migrations no banco de dados são mais difíceis de atualizar do que apenas códigos na camada de serviço.
+2. Código atual usa TIMESTAMP WITHOUT TIMEZONE, e isso é um bug esperando pra acontecer. Devido ao escopo da aplicação, eu não vou alterar isso, mas em um aplicação real e em produção, eu investiria sim 2 dias para fazer as migrations da seguinte forma: Primeiro, criamos um lock de escrita no postgres para limitar a escrita de até 10 mil linhas por vez, para não criar downtime. Criamos uma nova coluna com time zone e clonamos os dados da coluna atual para a nova coluna e criamos um trigger para manter elas sincronizadas e botamos em produção. No próximo deploy, trocamos todas as leituras e escritas de tempo para essa coluna nova e apagamos a coluna antiga. Caso seja desejável, depois podemos fazer um processo similar para renomear essa coluna para o nome antigo.
+3. A arquitetura de pastas usadas no Spring para separar as implementações é boa, eu achei um ponto muito positivo. Acho que o código Java feito é, no geral, sólido e bom de se trabalhar.
+4. Eu não gostei dos schemas do banco de dados que foi criado, e vou explicar os motivos abaixo:
+    1. `administradores`, `colaboradores` e `moradores` são apenas cascas para `usuarios`. Independente de quais informações sejam futuramente armazenadas nessa tabela, uma relação one-to-one é muito prejudicial tanto para entendimento da arquitetura como um todo quanto para a performance das queries, que agora vão ter um overhead de múltiplas tabelas, quando todas as informações podiam estar numa tabela só. Sim, para um entendimento "POO", é interessante separar cada domínio, mas RDBMS não foi pensado para isso. Mesmo o PostgreSQL, que é um RDBMS Object Oriented, usa objetos de forma diferente. Exemplo: `CREATE SCHEMA .. TABLE .. VIEW ..`. Eu droparia todas essas tabelas e inseriria tudo em `usuarios`.
+    2. Quase não há `NOT NULL` nas tabelas, permitindo bugs catastróficos de serem introduzidos com regressões no código de aplicação. Exemplo: todas as entradas de `chamados` são opcionais.
+    3. Utilização de `gen_randum_uuid()`. Essa função do PostreSQL implementa UUIDv4, que é conhecido por ser ruim para indexação na BTree do banco de dados. Isso acontece porque não há sequência nos ids. Uma alternativa muito melhor seria usar o UUIDv7, que tem um bloco temporal, criando uma sequência e assim melhorando os índices e, no final, melhorando muito a performance das queries. Caso estivéssemos usando a versão 18 do PostgreSQL, eu usaria [uuidv7()](https://www.postgresql.org/docs/current/functions-uuid.html) para geração direto no schema. Caso contrário, eu usaria [UuidVersion7Strategy](https://docs.hibernate.org/orm/7.4/javadocs/org/hibernate/id/uuid/UuidVersion7Strategy.html).
+

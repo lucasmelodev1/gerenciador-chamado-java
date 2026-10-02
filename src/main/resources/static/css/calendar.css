@@ -1,0 +1,67 @@
+/* Calendario de reservas (FullCalendar). Ajusta os tokens --fc-classic-* a paleta do app.
+   Os tokens daisyUI (`--color-*`) sao a fonte; os fallbacks legados sairam no F1 da
+   migracao do CSS legado (base.css deixava de existir e as referencias ficariam mortas). */
+:root {
+    --fc-classic-primary: var(--color-primary);
+    --fc-classic-primary-foreground: #ffffff;
+    --fc-classic-button: var(--color-primary);
+    --fc-classic-button-border: var(--color-primary);
+    --fc-classic-button-strong: var(--color-primary);
+    --fc-classic-button-strong-border: var(--color-primary);
+    --fc-classic-button-outline: var(--color-base-300);
+    --fc-classic-button-foreground: #ffffff;
+    --fc-classic-event: var(--color-primary);
+    --fc-classic-event-contrast: #ffffff;
+    --fc-classic-background-event: var(--color-accent);
+    --fc-classic-highlight: color-mix(in oklab, var(--color-primary) 12%, transparent);
+    --fc-classic-today: color-mix(in oklab, var(--color-accent) 16%, transparent);
+    --fc-classic-now: var(--color-error);
+    --fc-classic-background: var(--color-base-100);
+    --fc-classic-faint: rgba(18, 32, 51, 0.04);
+    --fc-classic-muted: rgba(18, 32, 51, 0.08);
+    --fc-classic-strong: rgba(18, 32, 51, 0.14);
+    --fc-classic-foreground: var(--color-base-content);
+    --fc-classic-faint-foreground: color-mix(in oklab, var(--color-base-content) 60%, transparent);
+    --fc-classic-muted-foreground: color-mix(in oklab, var(--color-base-content) 60%, transparent);
+    --fc-classic-border: var(--color-base-300);
+    --fc-classic-strong-border: var(--color-base-300);
+
+    /* Paleta dos EVENTOS de reserva — fonte unica (S32). O `calendar.js` le estes tokens por
+       `getComputedStyle` e usa os mesmos valores como fallback, porque o harness em Node
+       (`scripts/ui-calendar-js.mjs`) roda sem CSS. Antes os hex viviam soltos no JS, longe
+       dos tokens do tema. */
+    --reserva-cor-1: #0d5c63;
+    --reserva-cor-2: #dba24a;
+    --reserva-cor-3: #167c5b;
+    --reserva-cor-4: #b64134;
+    --reserva-cor-5: #5f6c80;
+    --reserva-cor-6: #7c3aed;
+    --reserva-cor-7: #0ea5e9;
+    --reserva-cor-8: #c2410c;
+    --reserva-cor-texto: #ffffff;
+    --reserva-pendente-fundo: #ffffff;
+    --reserva-negado-fundo: #ffffff;
+    --reserva-negado-cor: #b64134;
+    --reserva-cancelado-fundo: #e9edf2;
+    --reserva-cancelado-borda: #9aa4b2;
+    --reserva-cancelado-texto: #5f6c80;
+}
+
+.calendar-mes {
+    align-self: center;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--color-base-content);
+}
+
+#calendar {
+    min-height: 640px;
+}
+
+#calendar .fc-event {
+    cursor: pointer;
+}
+
+.reservas-data {
+    display: none;
+}
