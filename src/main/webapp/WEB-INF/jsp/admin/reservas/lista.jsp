@@ -1,15 +1,6 @@
 <%@ page pageEncoding="UTF-8" %>
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
-<body data-page="admin-reservas-lista">
-<div class="drawer lg:drawer-open">
-    <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="drawer-content">
-        <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main id="conteudo-principal" class="page-content">
-            <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
+<ui:shell dataPagina="admin-reservas-lista">
 
             <%-- Decisao da reserva. Aprovar e direto; negar e cancelar passam por um
                  dialogo CENTRAL, e negar pede o motivo.
@@ -78,9 +69,7 @@
                     <ui:paginacao pagina="${reservasPage}" url="${ctx}/admin/reservas" />
                 </div>
             </section>
-        </main>
-    </div>
-</div>
+</ui:shell>
 
 <%-- Fora de `.page-content`: o legado espremeria o backdrop. Ver custom.css > Dialogo. --%>
 <ui:dialog id="dialog-negacao"
@@ -102,6 +91,4 @@
            rotuloConfirmar="Cancelar reserva" varianteConfirmar="error" iconeConfirmar="fechar"
            rotuloCancelar="Voltar" />
 
-<%@ include file="/WEB-INF/jsp/fragments/scripts.jspf" %>
-</body>
-</html>
+<ui:shell-fim />

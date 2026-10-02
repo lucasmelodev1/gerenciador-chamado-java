@@ -1,15 +1,6 @@
 <%@ page pageEncoding="UTF-8" %>
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
-<body data-page="morador-dashboard">
-<div class="drawer lg:drawer-open">
-    <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="drawer-content">
-        <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main id="conteudo-principal" class="page-content">
-            <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
+<ui:shell dataPagina="morador-dashboard">
 
             <section class="stats-grid">
                 <article class="stat-card">
@@ -77,9 +68,5 @@
                                     </div>
                 </article>
             </section>
-        </main>
-    </div>
-</div>
-<%@ include file="/WEB-INF/jsp/fragments/scripts.jspf" %>
-</body>
-</html>
+</ui:shell>
+<ui:shell-fim />

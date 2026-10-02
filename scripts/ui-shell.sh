@@ -148,12 +148,22 @@ grep -q 'value="${_csrf.token}"' src/main/webapp/WEB-INF/jsp/fragments/head.jspf
   || { echo "  FAIL head.jspf nao materializa \${_csrf.token} antes do corpo"; fail=1; }
 
 n=0
-for jsp in $(grep -rl 'DOCTYPE html' src/main/webapp/WEB-INF/jsp --include=*.jsp); do
+for jsp in $(find src/main/webapp/WEB-INF/jsp -name '*.jsp' | sort); do
     n=$((n + 1))
-    grep -q 'fragments/head.jspf' "$jsp" \
-      || { echo "  FAIL $jsp emite <body> mas nao inclui head.jspf"; fail=1; }
+    # O login tem shell proprio (`auth-body`, sem drawer) e nao usa o `ui:shell`.
+    [ "$(basename "$jsp")" = "login.jsp" ] && continue
+
+    # S31: a pagina nao emite mais doctype/head — quem emite e o `ui:shell`, que inclui o
+    # `head.jspf` (e portanto a materializacao do token). A checagem passa a exigir o par
+    # `ui:shell`/`ui:shell-fim` em toda tela e a inclusao do head dentro do tag.
+    grep -q 'fragments/head.jspf' src/main/webapp/WEB-INF/tags/shell.tag \
+      || { echo "  FAIL tags/shell.tag nao inclui head.jspf"; fail=1; }
+    grep -q '<ui:shell ' "$jsp" \
+      || { echo "  FAIL $jsp nao usa ui:shell"; fail=1; }
+    grep -q '<ui:shell-fim />' "$jsp" \
+      || { echo "  FAIL $jsp nao fecha com ui:shell-fim"; fail=1; }
 done
-echo "  OK   token CSRF no <head> e head.jspf presente nas $n paginas"
+echo "  OK   token CSRF no <head> e ui:shell presente nas $n paginas"
 
 # ------------------------------------------------------- encoding do fonte
 # A diretiva `pageEncoding` vale para o ARQUIVO em que ela aparece. Como ela vive em

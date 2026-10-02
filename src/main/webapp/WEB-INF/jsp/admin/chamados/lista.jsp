@@ -1,15 +1,6 @@
 <%@ page pageEncoding="UTF-8" %>
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
-<body data-page="admin-chamados">
-<div class="drawer lg:drawer-open">
-    <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="drawer-content">
-        <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main id="conteudo-principal" class="page-content">
-            <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
+<ui:shell dataPagina="admin-chamados">
 
             <%-- Tela so de leitura: o admin nao abre nem remove chamado, entao o cabecalho
                  nao tem acao e os filtros sao um formulario GET (o unico filtro do sistema
@@ -56,9 +47,5 @@
                     <ui:paginacao pagina="${chamadosPage}" url="${ctx}/admin/chamados" parametros="&statusId=${filtroStatusId}&moradorNome=${filtroMoradorNome}&dataAbertura=${filtroDataAbertura}" />
                 </div>
             </section>
-        </main>
-    </div>
-</div>
-<%@ include file="/WEB-INF/jsp/fragments/scripts.jspf" %>
-</body>
-</html>
+</ui:shell>
+<ui:shell-fim />

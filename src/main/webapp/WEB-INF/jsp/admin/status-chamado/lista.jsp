@@ -1,15 +1,6 @@
 <%@ page pageEncoding="UTF-8" %>
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
-<body data-page="admin-status">
-<div class="drawer lg:drawer-open">
-    <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="drawer-content">
-        <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main id="conteudo-principal" class="page-content">
-            <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
+<ui:shell dataPagina="admin-status">
 
             <%-- A lista era um `stack-list` de `.list-row`; virou tabela para usar a mesma
                  coluna de acoes das outras telas. Os tres status reservados do sistema
@@ -84,9 +75,7 @@
                     <ui:paginacao pagina="${statusChamadoPage}" url="${ctx}/admin/status-chamado" />
                 </div>
             </section>
-        </main>
-    </div>
-</div>
+</ui:shell>
 
 <%-- Fora de `.page-content`: o legado espremeria o backdrop. Ver custom.css > Drawer. --%>
 <ui:drawer id="drawer-status"
@@ -99,6 +88,4 @@
     </label>
 </ui:drawer>
 
-<%@ include file="/WEB-INF/jsp/fragments/scripts.jspf" %>
-</body>
-</html>
+<ui:shell-fim />

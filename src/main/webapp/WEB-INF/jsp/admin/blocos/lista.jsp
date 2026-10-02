@@ -1,15 +1,6 @@
 <%@ page pageEncoding="UTF-8" %>
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
-<body data-page="admin-blocos">
-<div class="drawer lg:drawer-open">
-    <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="drawer-content">
-        <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main id="conteudo-principal" class="page-content">
-            <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
+<ui:shell dataPagina="admin-blocos">
 
             <%-- Bloco nao tem endpoint de edicao nem de remocao (BlocoApiController so
                  expoe POST), entao a tabela apenas navega para as unidades; a criacao
@@ -62,9 +53,7 @@
                     <ui:paginacao pagina="${blocosPage}" url="${ctx}/admin/blocos" />
                 </div>
             </section>
-        </main>
-    </div>
-</div>
+</ui:shell>
 
 <%-- Fora de `.page-content`: la o legado aplica
      `.page-content > * { width: min(100%, 1360px); margin-inline: auto }` e espremeria o
@@ -90,6 +79,4 @@
     </div>
 </ui:drawer>
 
-<%@ include file="/WEB-INF/jsp/fragments/scripts.jspf" %>
-</body>
-</html>
+<ui:shell-fim />

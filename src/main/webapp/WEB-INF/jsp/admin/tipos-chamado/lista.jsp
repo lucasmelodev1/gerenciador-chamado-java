@@ -1,15 +1,6 @@
 <%@ page pageEncoding="UTF-8" %>
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
-<body data-page="admin-tipos-chamado">
-<div class="drawer lg:drawer-open">
-    <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="drawer-content">
-        <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main id="conteudo-principal" class="page-content">
-            <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
+<ui:shell dataPagina="admin-tipos-chamado">
 
             <%-- Tipo de chamado nao tem endpoint de remocao (TipoChamadoApiController so
                  expoe POST e PATCH), entao a tabela so oferece a edicao, no drawer. --%>
@@ -62,9 +53,7 @@
                     <ui:paginacao pagina="${tiposChamadoPage}" url="${ctx}/admin/tipos-chamado" />
                 </div>
             </section>
-        </main>
-    </div>
-</div>
+</ui:shell>
 
 <%-- Fora de `.page-content`: o legado espremeria o backdrop. Ver custom.css > Drawer.
      O PATCH devolve `?tipoId=<id>` para a listagem — o parametro nao e mais lido por
@@ -84,6 +73,4 @@
     </label>
 </ui:drawer>
 
-<%@ include file="/WEB-INF/jsp/fragments/scripts.jspf" %>
-</body>
-</html>
+<ui:shell-fim />

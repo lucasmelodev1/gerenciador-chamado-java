@@ -1,15 +1,6 @@
 <%@ page pageEncoding="UTF-8" %>
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
-<body data-page="admin-usuarios">
-<div class="drawer lg:drawer-open">
-    <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="drawer-content">
-        <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main id="conteudo-principal" class="page-content">
-            <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
+<ui:shell dataPagina="admin-usuarios">
 
             <%-- Criar e editar no mesmo drawer. "Gerenciar" continua levando ao detalhe,
                  que e onde ficam os vinculos de morador e os tipos do colaborador. --%>
@@ -73,9 +64,7 @@
                     <ui:paginacao pagina="${usuariosPage}" url="${ctx}/admin/usuarios" />
                 </div>
             </section>
-        </main>
-    </div>
-</div>
+</ui:shell>
 
 <%-- `travar="tipo"`: na edicao o perfil fica desabilitado e um espelho escondido envia
      o valor atual — o servidor recusa a troca de tipo de qualquer forma.
@@ -115,6 +104,4 @@
     </label>
 </ui:drawer>
 
-<%@ include file="/WEB-INF/jsp/fragments/scripts.jspf" %>
-</body>
-</html>
+<ui:shell-fim />

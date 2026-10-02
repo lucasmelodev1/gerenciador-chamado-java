@@ -187,13 +187,13 @@ print(f"confirmacoes_via_tag={confirmacoes_tag}")
 PY
 }
 
-# Toda pagina JSP declara o marcador do <body> — hoje `data-page="..."`, e a partir do
-# `ui:shell` o atributo `dataPagina` do proprio tag. O valor nao tem consumidor; o que a
-# checagem protege e a presenca (a animacao de `base.css` depende dela).
+# Toda pagina JSP declara o marcador do <body> — `data-page="..."` na fonte (login, que tem
+# shell proprio) ou o atributo `dataPagina` do `ui:shell` (as 25 telas autenticadas). O valor
+# nao tem consumidor; o que a checagem protege e a presenca (a animacao de `base.css` depende
+# dela).
 check_page_markers() {
     local total=0 faltando=""
     while IFS= read -r jsp; do
-        grep -q '<!DOCTYPE html>' "$jsp" || continue
         total=$((total + 1))
         grep -qE 'data-page=|dataPagina=' "$jsp" || faltando="$faltando $jsp"
     done < <(find "$WEBAPP/WEB-INF/jsp" -name '*.jsp' | sort)
