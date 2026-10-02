@@ -1104,12 +1104,405 @@ com o drawer aberto, e remove (com limpeza do residuo).
    faz parte do que foi pedido aqui.
 3. **Os `GET` com `?areaId=`, `?statusId=` e `?tipoId=` continuam nos controllers** e agora sao
    codigo morto: nenhuma tela aponta para eles. Sao `src/main/java`, congelado pelo guard.
-4. **`tipos-chamado` e as telas de reservas/vinculos/escopo nao foram migradas** — ficaram de
-   fora do escopo combinado (area, bloco, chamado, status, usuario), embora `tipos-chamado` seja
-   quase identica a `areas`.
+4. **`tipos-chamado` saiu desta lista na S27** (era a mais parecida com `areas`). Continuam
+   fora as telas de reservas, vinculos-morador e escopo-colaborador.
 5. **O admin de chamados perdeu o subtitulo** "Os chamados mais antigos aparecem primeiro na
    lista.": o `ui:card-head` tem uma linha de descricao, que ficou com o eyebrow
    ("Monitoramento"). A frase tambem prometia uma ordenacao que a consulta nao garante.
+
+## S27 — Tipos de chamado no mesmo padrao
+
+Ultima tela de tabela do admin a sair do formato antigo. Ela era a mais parecida com `areas`
+— cartao de criacao a esquerda, listagem a direita, edicao por `?tipoId=` — e virou a sexta
+tela do padrao, com uma diferenca: **nao tem remocao**.
+
+`TipoChamadoApiController` so expoe `POST` e `PATCH /{tipoId}`; nao existe `@DeleteMapping`.
+Entao a coluna de acoes tem **uma** acao, `ui:acao-editar`, e a tabela perdeu o
+"Editar" que era um link para a mesma tela com o parametro de query.
+
+O que saiu:
+
+| Antes | Depois |
+|---|---|
+| `c:set tipoChamadoAction` (POST ou PATCH conforme `?tipoId=`) | `acao="${ctx}/admin/tipos-chamado"` no drawer + `data-drawer-acao` por linha |
+| `<form method="post">` no cartao esquerdo, com `csrf.jspf` e `_method=patch` condicional | `ui:drawer` (ja traz os dois) |
+| `<input type="search" placeholder="Filtrar localmente" ...>` a mao | `ui:busca alvo="tipos-table"` |
+| `<a href="...?tipoId=" class="btn btn-link">Editar</a>` | `ui:acao-editar` (icone + tooltip) |
+| dois cartoes em `two-column-grid` | um cartao, como as outras cinco telas |
+
+O `PATCH` continua devolvendo `?tipoId=<id>` para a listagem. O parametro nao e mais lido por
+ninguem — o `GET` tambem aceita e preenche `tipoChamadoForm`, mas nenhuma tela aponta para ele
+— entao salvar cai na lista com o drawer fechado, que e o comportamento das outras telas.
+Mexer nisso e mexer em `src/main/java`, que o `ui-invariants.sh` congela.
+
+### Verificacao
+
+| # | Check | Result |
+|---|---|---|
+| 1 | `ui-tabelas.sh` cobre as **6** telas (a nova entra com alvo `tipos-table` e drawer `drawer-tipo`) | OK |
+| 2 | check por tela: sem coluna de status, um gatilho de editar por linha, nenhuma acao de remocao, e o gatilho levando `titulo` e `prazoHoras` | OK |
+| 3 | self-test negativo do markup: **11/11** (a nova sabotagem aponta o gatilho de tipos para outro drawer) | OK |
+| 4 | secao D tambem trava `listarTiposChamado`: nenhum parametro de busca no servidor | OK |
+| 5 | `ui-drawer.sh`: o escopo passou de 4 para **5** telas de cadastro | OK |
+| 6 | `ui-routes.sh shell` · `ui-shell.sh` · `ui-tabelas.sh` · `ui-invariants.sh` | 26/26 · OK · OK · `INVARIANTS OK` |
+| 7 | `docker compose run --rm test` | **153 testes, 0 falhas** |
+
+### Deriva do snapshot, revisada
+
+| Item | Antes | Depois | Por que |
+|---|---|---|---|
+| `action-urls` | 30 entradas | 29 | `-1 ${tipoChamadoAction}`: o form inline virou `acao=` do drawer. Nada mais mudou |
+| `method_inputs` | 23 | 22 | o `_method=patch` condicional do form inline saiu |
+| `csrf_includes` | 31 | 30 | o `csrf.jspf` do form inline saiu (o drawer ja tem o dele) |
+| `data-filter-input` / `-target` | 3 | 2 | a busca a mao de `tipos-chamado` virou `ui:busca`; sobra a ocorrencia dentro do `busca.tag` |
+| `data-drawer` | 18 | **19** | subiu: a tela nova acrescenta o drawer |
+| `data-drawer-abrir` | 6 | **7** | subiu: idem |
+
+A revisao de `action-urls` foi de uma linha so (`-1 ${tipoChamadoAction}`), o que confirma que
+a migracao nao tocou nenhum formulario de outra tela. Como na S26, a queda e consolidacao —
+o `_method` e o `csrf` da tela reapareceram dentro do `ui:drawer`.
+
+## S28 — Decisao de reserva: tres acoes com icone e dialogo central
+
+### O problema
+
+Na lista de reservas as tres acoes de decisao eram links de texto ("Aprovar", "Negar",
+"Cancelar") e o **motivo da negacao era um `<input class="input w-full">` dentro da propria
+celula de acoes**. Como `w-full` dentro de uma celula de tabela nao tem largura para
+resolver, o campo estourava a coluna e empurrava os botoes uns sobre os outros — foi o que
+a captura de tela mostrou.
+
+### O que ficou
+
+Tres acoes so com icone, na mesma coluna `cell-actions app-tabela-acoes` das outras telas:
+
+| Acao | Icone | Como decide |
+|---|---|---|
+| Aprovar | `aprovar` (check) | direto: `ui:acao-form` com `metodo="patch"` |
+| Negar | `negar` (ban) | `ui:dialog` pedindo o **motivo**, com confirmar vermelho e "Voltar" esmaecido |
+| Cancelar | `fechar` (X) | `ui:dialog` de confirmacao, **sem** motivo, tambem com confirmar vermelho |
+
+O `data-confirm` nativo do cancelamento saiu: a confirmacao passou a ser o dialogo central,
+que e o que o pedido descrevia. O `ui-tabelas.sh` reprova se `data-confirm` voltar a
+aparecer nessa tela.
+
+### O componente novo: `ui:dialog`
+
+Um dialogo e um drawer centralizado — mesmo backdrop, mesmo Esc, mesmo foco preso, mesma
+trava de scroll, mesmo conteudo dinamico. Entao **nao ha JS novo**: o `dialog.tag` emite o
+mesmo protocolo `data-drawer*` e o `drawer.js` que ja existia cuida do resto. O que muda e
+apenas a apresentacao (`.app-dialog`: `inset: 0` + `margin: auto`, com fade e escala no lugar
+do `translate`) e o rodape, que confirma em vez de salvar.
+
+Duplicar o comportamento num `dialog.js` separado seria duplicar os bugs: os 21 casos do
+`ui-drawer-js.mjs` (foco preso, Esc, devolucao de foco, trava de scroll, campos do gatilho,
+campo travado) cobrem o dialogo sem uma linha a mais de teste.
+
+Centralizar com `margin: auto` e nao com `translate` e proposital: com `translate` um
+conteudo mais alto que a viewport sairia da tela; com `inset: 0` + `margin: auto` quem manda
+e o `max-height: calc(100dvh - 2rem)`, e o corpo rola.
+
+**Um dialogo para cada decisao, nao um por linha.** O gatilho de cada linha
+(`ui:acao-editar`, com `icone`/`rotulo`/`metodo` trocados) leva a acao daquela reserva por
+`data-drawer-acao`; o `reporInicial` limpa o motivo digitado entre uma linha e outra — o que
+so funciona porque a S26 fez o gatilho de edicao passar pelo estado inicial antes de aplicar.
+
+### Mais uma vez o verificador pegou o verificador
+
+A checagem nova "a celula de acoes nao pode conter campo de formulario" reprovou o markup
+**correto**: o `ui:acao-form` emite `_csrf` e `_method` como inputs escondidos, e eles vivem
+dentro da celula por natureza. O que nao pode ali e campo **visivel** — era o caso do motivo.
+A checagem passou a olhar so `input` sem `type="hidden"`, `select` e `textarea`.
+
+### Correcao: a altura do dialogo
+
+A primeira versao saiu com o painel **esticado na altura da tela**, com o corpo vazio no
+meio — a captura do usuario mostrou. Causa: `inset: 0` define `top` e `bottom` como zero e,
+com `height: auto`, um elemento `position: fixed` **preenche** o espaco entre os dois. Nao
+sobrava folga para o `margin: auto` dividir, entao o dialogo nao "centralizava": ele ocupava
+tudo.
+
+Correcao: `height: fit-content`. Com altura de conteudo sobram as duas folgas, o `margin:
+auto` centraliza, e o `max-height: calc(100dvh - 2rem)` continua sendo o teto — quando o
+conteudo passa dele, o teto manda e o corpo rola. O dialogo agora cresce com o formulario e
+para.
+
+`ui-tabelas.sh` ganhou a checagem (com sabotagem propria) porque e um erro silencioso: o
+dialogo continua abrindo e funcionando, so com a altura errada.
+
+### Correcao: sem filetes, corpo opcional e o titulo no placeholder
+
+Tres ajustes pedidos depois de ver o dialogo de cancelamento:
+
+1. **Filetes fora.** `.app-dialog-topo` tinha `border-bottom` e `.app-dialog-rodape`
+   `border-top`. No dialogo a forma ja e dada pelo raio e pela sombra, e como o corpo e
+   opcional um filete virava uma linha solta no meio de um dialogo de confirmacao. O
+   `ui:drawer` mantem os filetes: ali as tres faixas sao sempre preenchidas.
+
+2. **Corpo opcional de verdade.** O `<form>` e o `.app-dialog-corpo`, entao ele existe mesmo
+   num dialogo sem campos — e o `padding` de 1.25rem sobrava como faixa em branco entre o
+   titulo e os botoes. O `dialog.tag` agora captura o corpo (`<jsp:doBody var="dialogCorpo"/>`)
+   e marca o form com `app-dialog-corpo--vazio` quando `fn:trim` da vazio; a classe zera o
+   padding. Um dialogo sem `acao` e sem corpo nao renderiza a faixa.
+
+3. **Titulo no placeholder.** O rotulo `<span>Motivo da negacao</span>` saia grande (o
+   `.field span` e `font-weight: 600` no tamanho do corpo) e competia com o titulo do dialogo.
+   Saiu: o texto virou `placeholder="Motivo da negacao"` **e** `aria-label`, porque sem rotulo
+   visivel o campo precisa de nome acessivel.
+
+Verificacao: o markup de reservas passa a conferir que o dialogo de negacao NAO esta marcado
+como vazio e o de cancelamento ESTA, que o campo usa o titulo como placeholder, que tem
+`aria-label` e que nao voltou `<span>` de rotulo. O CSS confere que os dois blocos nao tem
+`border` e que `.app-dialog-corpo--vazio` zera o padding. Self-tests: **15/15** markup e
+**16/16** CSS.
+
+### Correcao: o corpo do dialogo sem respiro vertical
+
+O `padding: 1.25rem` do corpo e dos quatro lados abria um vao entre a descricao do topo e o
+primeiro campo. Virou `padding: 0 1.25rem 1rem`: o respiro de cima ja vem do `padding` do
+topo (que fecha o titulo e a descricao) e o de baixo, do rodape. O `--vazio` continua zerando
+tudo.
+
+### Ajuste: o respiro de topo passou de zero para 4px
+
+Zero resolvia o vao sob a descricao mas criava outro defeito: o corpo e o `overflow-y: auto`,
+e com `padding-top: 0` o container **cortava o anel de foco** do primeiro campo — outline de
+2px + offset de 2px = 4px acima da borda do input. O campo parecia colado (e atras) do titulo.
+
+`padding: 0.25rem 1.25rem 1rem` — 4px em cima, exatamente o tamanho do anel, e os 1rem de
+baixo seguem separando o ultimo campo do rodape.
+
+O `ui-tabelas.sh` deixou de aceitar zero: agora exige um respiro de topo **pequeno e
+nao-zero** (0 < x <= 8px, convertendo rem/px), com duas sabotagens (voltar ao `padding` cheio
+e voltar a zero). Self-test de CSS: **18/18**.
+
+### Verificacao
+
+| # | Check | Result |
+|---|---|---|
+| 1 | `ui-tabelas.sh` cobre as **7** telas; reservas entra com `filtros: False` (e a unica sem faixa de busca) | OK |
+| 2 | reservas: os dois dialogos existem, com `.app-dialog` + `role="dialog" aria-modal="true"`, fora de `.page-content` | OK |
+| 3 | reservas: as tres acoes com `data-tip`, o campo `motivo` no dialogo de negacao, `btn-error` no confirmar e nenhum `data-confirm` | OK |
+| 4 | reservas: nenhuma celula de acoes com campo **visivel** (o defeito original) | OK |
+| 5 | CSS: `.app-dialog` com `position: fixed` + `inset: 0` + `margin: auto` + `max-height` e o estado aberto | OK |
+| 6 | self-test negativo: **13/13** markup (dialogo virando drawer lateral e o motivo desaparecendo) e **13/13** CSS (o dialogo deixando de centralizar, nascendo visivel e perdendo a altura de conteudo) | OK |
+| 7 | `ui-drawer-js.mjs` continua 21/21 — o dialogo e coberto pelo mesmo harness | OK |
+| 8 | `ui-routes.sh shell` · `ui-shell.sh` · `ui-drawer.sh` · `ui-invariants.sh` | 26/26 · OK · OK · `INVARIANTS OK` |
+| 9 | `docker compose run --rm test` | **153 testes, 0 falhas** |
+
+### Deriva do snapshot, revisada
+
+| Item | Antes | Depois | Por que |
+|---|---|---|---|
+| `action-urls` | `${acao}` x2 | `${acao}` x3 | o `dialog.tag` soma um `action="${acao}"` |
+| `action-urls` | 29 entradas | 27 | as tres acoes de reserva viraram o atributo `acao=` de um tag |
+| `method_inputs` | 22 | 20 | tres forms com `_method` saem de reservas; `dialog.tag` soma um |
+| `csrf_includes` | 30 | 28 | idem para o `csrf.jspf` |
+| `confirmations` | 13 | 12 | saiu o `data-confirm` do cancelamento (virou dialogo) |
+| `utf8_decls` | 9 | **10** | subiu: o `dialog.tag` declara `pageEncoding` |
+
+Fecham arquivo por arquivo: os tres `action`/`_method`/`csrf.jspf` de reservas reapareceram
+dentro de `ui:acao-form`, `ui:acao-editar` e `ui:dialog`.
+
+## S29 — Acentuacao: o portugues da tela de reservas e a causa raiz do "sem acento"
+
+### O pedido
+
+Revisar o portugues da tela de reservas: faltavam acentos ("Reservas das areas comuns",
+"Agenda unica", "Inicio", "Pagina", "Proxima", "visivel", "horario", "negacao").
+
+### O que a revisao encontrou: um bug de encoding, nao só de texto
+
+Depois de acentuar, a tela passou a render **mojibake**:
+
+    fonte : 41 67 65 6e 64 61 20 c3 ba ...   -> "Agenda u-acute"      (UTF-8 correto)
+    servido: 41 67 65 6e 64 61 20 c3 83 c2 ba -> "Agenda A-tilde-ordfeminine" (duplicado)
+
+A causa: **a diretiva `pageEncoding` vale para o arquivo em que ela aparece**. Ela estava (e
+continua) em `fragments/taglibs.jspf`, que e *incluido* por `<%@ include %>` — entao **nao
+valia para a pagina que o inclui**. O Jasper lia cada JSP como ISO-8859-1: os bytes UTF-8 do
+fonte viravam dois caracteres Latin-1, e o resultado saia re-codificado.
+
+Isso explica a convencao informal de "portugues sem acento" no projeto: nao era preferencia
+estetica, era a unica forma de o texto visivel nao quebrar. E os unicos nao-ASCII que existiam
+em JSP eram `×`, `•` e `—`: dois deles estao no intervalo Latin-1 e passavam batido; o `—`
+vivia em comentarios, onde mojibake nao aparece.
+
+**Bug pre-existente encontrado de quebra:** o separador `•` (U+2022, fora do Latin-1) de
+`admin/chamados/detalhe.jsp`, `colaborador/.../detalhe.jsp` e `morador/.../detalhe.jsp` era
+texto visivel e estava saindo como `â€¢`. Corrigido junto.
+
+### A correcao
+
+Cada pagina declara a sua propria diretiva, na primeira linha:
+
+```jsp
+<%@ page pageEncoding="UTF-8" %>
+<%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
+```
+
+Sao **26 paginas** (19 ganharam agora, 7 ja tinham desde o comeco desta rodada). `taglibs.jspf`
+mantem a sua — mas ela vale **so para o proprio `taglibs.jspf`**: a S30 mostrou que a diretiva de
+um `.jspf` não cobre os outros fragmentos incluídos (ver S30 > "Segundo bug de encoding").
+
+`ui-shell.sh` passou a reprovar pagina que inclua `taglibs.jspf` e nao declare `pageEncoding` na
+primeira linha — a sabotagem (tirar a linha de `areas/lista.jsp`) reprova. Sem isso a armadilha
+volta na proxima pagina nova, e volta **silenciosa**: o texto continua la, so com os acentos
+duplicados.
+
+### O portugues da tela de reservas
+
+| Antes | Depois |
+|---|---|
+| Reservas das areas comuns | Reservas das **áreas** comuns |
+| Agenda unica | Agenda **única** |
+| Area / Inicio (colunas) | **Área** / **Início** |
+| Pagina X de Y / Proxima | **Página** X de Y / **Próxima** |
+| As solicitacoes ... aparecerao aqui para decisao. | As **solicitações** ... **aparecerão** aqui para **decisão**. |
+| O motivo fica visivel para o morador ... | O motivo fica **visível** para o morador ... |
+| Motivo da negacao (placeholder + aria-label) | Motivo da **negação** |
+| O horario volta a ficar livre na agenda. Nao ha motivo a informar. | O **horário** volta a ficar livre na agenda. **Não é** preciso informar um motivo. |
+
+O rotulo acessivel da coluna de acoes (`<span class="sr-only">Acoes</span>`) tambem estava sem
+acento e e lido por leitor de tela. Como essa string e do framework (aparece nas 7 telas), foi
+acentuada de uma vez nas sete, junto do check do `ui-tabelas.sh` e do esqueleto em
+`tags/CONTEXT.md`.
+
+### Verificacao
+
+| # | Check | Result |
+|---|---|---|
+| 1 | bytes servidos de `Agenda única` = `c3 ba` (UTF-8 correto), e nao `c3 83 c2 ba` | OK |
+| 2 | `•` das tres telas de detalhe de chamado: 2 ocorrencias corretas, 0 `â€¢` | OK |
+| 3 | `ui-shell.sh`: as 26 paginas declaram `pageEncoding` na primeira linha; sabotagem reprova | OK |
+| 4 | o texto renderizado da tela de reservas sai acentuado, sem mojibake | OK |
+| 5 | `ui-tabelas.sh` (7 telas) · `ui-routes.sh shell` · `ui-drawer.sh` | OK · 26/26 · OK |
+| 6 | `ui-invariants.sh check` (o floor de `utf8_decls` sobe, nao desce) | `INVARIANTS OK` |
+| 7 | `docker compose run --rm test` | **153 testes, 0 falhas** |
+
+### Fica para depois
+
+- **So a tela de reservas teve o texto acentuado.** As outras seis telas de tabela que migrei
+  (areas, blocos, usuarios, status-chamado, tipos-chamado, chamados) continuam com o texto em
+  ASCII, e o mesmo vale para as demais telas do app. Agora que o encoding esta resolvido,
+  acentuar e uma passada de texto por tela, sem risco de mojibake.
+- A paginacao ainda e copiada em cada tela; quando virar `ui:paginacao`, a acentuacao de
+  "Página/Próxima" sai de uma vez.
+
+## S30 — Agenda: detalhe no drawer, cancelamento no diálogo central
+
+### O pedido
+
+Na Agenda (calendário de reservas), o clique no evento deixou de escrever no painel do fim da
+página. Agora abre um **drawer** com a informação em lista de detalhes — rótulo à esquerda, valor
+**em negrito** à direita —, um botão **Fechar** no rodapé e, ao lado, um **Cancelar vermelho com
+ícone de bloqueio** que abre um **diálogo de confirmação no centro** da tela.
+
+### Decisão registrada: Aprovar/Negar saem da agenda
+
+Perguntado sobre o que fazer com as duas ações que o painel antigo oferecia, a resposta foi "apenas
+detalhes, cancelar e fechar, pois essa tela mostra apenas solicitações aprovadas, e solicitações
+aprovadas não podem ser negadas".
+
+**A premissa não confere, e a consequência fica registrada aqui:** a agenda do admin lista
+reservas **Solicitado e Aprovado** — `listarReservasNoPeriodo` chama
+`buscarNoPeriodo(..., STATUS_DISPONIBILIDADE)` e `STATUS_DISPONIBILIDADE = {SOLICITADO, APROVADO}`
+(as duas que disputam ou ocupam horário); a agenda do morador lista **todos** os status. Ou seja:
+até a S29 o admin podia aprovar/negar uma reserva pendente direto do evento; agora não pode mais —
+a decisão continua disponível na tela de Reservas, que tem as três ações com ícone desde a S28.
+Cancelar continua aparecendo para Solicitado/Aprovado (é o que o servidor aceita).
+
+### O framework veio antes
+
+1. **`ui:drawer` ganhou o rodapé informativo.** Antes, sem `acao` o rodapé nem era renderizado.
+   Agora um drawer sem `acao` é um painel **informativo** e o rodapé traz o botão **Fechar**;
+   `rotuloAcao` (`iconeAcao`, `varianteAcao`) acrescenta um segundo botão à esquerda, e
+   `painelAcao` + `metodoAcao` fazem esse botão abrir outro painel pelo protocolo que já existia
+   (`data-drawer-editar` + `data-campo-_method`). O drawer de formulário não mudou.
+2. **`ui:detalhe-linha`** (`tags/detalhe-linha.tag`) + `.app-detalhe-*` no `custom.css`: uma linha
+   `<dt>`/`<dd>` com `space-between`, valor em `font-weight: 700` e `text-align: end`, os dois
+   `margin` do navegador zerados e `min-width: 0` no valor (item flex nasce com `min-width: auto`).
+   Quem usa declara o `<dl class="app-detalhe-lista">`; `campo="x"` sai como `data-detalhe="x"`
+   para o JS preencher, e sem `campo` o valor vem do corpo — o tag serve também para detalhe
+   estático.
+3. **Ícone `bloquear`**: mesmo glifo de `negar` (círculo cortado) com o nome do vocabulário desta
+   tela.
+4. **`drawer.js` com pilha de painéis abertos.** Um painel pode abrir outro por cima, e Esc, o Tab
+   e o foco preso passaram a valer para o **último aberto** (o de cima) em vez do primeiro no DOM.
+   O `destravarScroll` já estava certo: só destrava quando não sobra painel aberto.
+
+### A agenda
+
+- Novo fragmento `fragments/reservas-agenda-paineis.jspf` com o drawer (título, a lista de 7
+  campos, rodapé `[Cancelar][Fechar]`) e o `ui:dialog` de cancelamento (sem campo, `btn-error`,
+  `Voltar`). Cada agenda o inclui **depois de `</main>`**, que é onde o componente precisa nascer.
+- O `<section id="reserva-detalhe">` do fim da página e os três `<form>` escondidos
+  (`#form-aprovar`, `#form-negar`, `#form-cancelar`) foram removidos.
+- `calendar.js` deixou de mexer em `hidden` de painel: preenche cada `dd[data-detalhe]`, esconde a
+  **linha** do Motivo quando não há motivo, abre o drawer e reescreve o `data-drawer-acao` do botão
+  de cancelar a cada evento. O botão é escondido quando o servidor recusaria a ação — status fora
+  de {Solicitado, Aprovado} (`SolicitacaoAreaService.cancelar`) ou início já alcançado —, espelhando
+  a regra do servidor em vez de oferecer um botão que só pode falhar.
+- Acentos nas strings que a mudança tocou (título da página, "Filtrar por área", "Todas as áreas",
+  "Mês/Próximo mês", "Agenda única", "Áreas comuns", rótulos da lista).
+
+### Segundo bug de encoding (encontrado ao acentuar o fragmento)
+
+Escrever `Área` no `reservas-agenda-paineis.jspf` reproduziu o mojibake da S29 — mas **no arquivo
+incluído**: `<%@ include %>` é resolvido na tradução e o `pageEncoding` **da página que inclui não
+vale para o fragmento**, que é lido como ISO-8859-1. A correção é a mesma, um nível abaixo: a
+diretiva como **primeira linha do próprio `.jspf`**.
+
+**Bug pré-existente corrigido de quebra:** o `×` de fechar alerta (`fragments/alerts.jspf`) é
+texto Unicode visível e estava saindo **`Ã`** em toda página com mensagem de flash — mesmo
+mecanismo, nunca notado porque `×` está no intervalo Latin-1 (sobra só o `Ã`). Agora o
+`alerts.jspf` declara a diretiva e a `ui-agenda.sh` confere o `×` no HTML servido.
+
+`ui-shell.sh` passou a reprovar **qualquer** arquivo de markup (`.jsp`, `.jspf`, `.tag`) cujo
+primeiro byte não-ASCII venha antes da declaração de encoding — a regra precisa (e não só "na
+primeira linha da página"), porque é isso que o Jasper exige: a troca de encoding só vale se nada
+tiver sido lido antes. Texto não-ASCII dentro de comentário JSP não conta (sai na tradução).
+
+### Verificação
+
+`bash scripts/ui-agenda.sh` (novo) cobre cinco camadas:
+
+| # | Check | Resultado |
+|---|---|---|
+| 1 | A · markup das duas agendas: drawer informativo fora de `.page-content`, 7 linhas na ordem, rótulos acentuados, rodapé com Cancelar (vermelho, ícone de bloqueio) + Fechar, diálogo central sem campo e sem `data-confirm`, nada de JSP vazado | OK |
+| 2 | A · self-test negativo do markup (inclui uma sentinela que reinjeta o painel antigo para provar que a checagem mede) | **10/10** |
+| 3 | B · `custom.css` da lista de detalhes (esquerda/direita, negrito, `text-align: end`, `margin: 0`, `min-width: 0`) | OK |
+| 4 | B · self-test negativo do CSS | **8/8** |
+| 5 | C · `node scripts/ui-calendar-js.mjs` (FullCalendar de mentira: clique no evento, preenchimento, linha Motivo, ação reescrita a cada reserva, `_method=delete` chegando ao form pelo `drawer.js`, Cancelar escondido, filtro local) e `node scripts/ui-drawer-js.mjs` | **14/14** · **24/24** |
+| 6 | C · self-test negativo do harness do calendário | **4/4** |
+| 7 | D · fluxo real: reserva criada pelo formulário do morador, cancelada pelo contrato do diálogo (`POST {base}/{id}` + `_method=delete`, `_csrf` lido da própria agenda) → 302 e status `Cancelado` no banco; a segunda tentativa é recusada com o aviso na agenda | OK |
+| 8 | D · o `×` do alerta servido em UTF-8 (prova o conserto do fragmento no HTML de verdade) | OK |
+| 9 | E · fonte: nenhum markup do painel antigo, rodapé informativo em `drawer.tag`, `data-detalhe` em `detalhe-linha.tag`, as duas agendas incluindo os painéis | OK |
+| 10 | `ui-shell.sh` (encoding de página e de fragmento) · `ui-drawer.sh` · `ui-tabelas.sh` · `ui-routes.sh shell` | OK · OK · OK · 26/26 |
+| 11 | `ui-invariants.sh check` | `INVARIANTS OK` |
+| 12 | `docker compose run --rm test` | **153 testes, 0 falhas** |
+
+Contabilidade das mudanças de floor do `ui-invariants.sh` (todas revisadas por arquivo e
+re-snapshotadas):
+
+| Floor | Antes | Depois | Por quê |
+|---|---|---|---|
+| `method_inputs` | 20 | 17 | os três `_method` escondidos do painel antigo da agenda; o `_method` do diálogo vem do `dialog.tag`, que já era contado |
+| `csrf_includes` | 28 | 25 | os três `csrf.jspf` que só existiam para os formulários escondidos |
+| `confirmations` / `data-confirm` | 12 | 11 | o `data-confirm` nativo do cancelar da agenda virou `ui:dialog` (a S28 fez o mesmo na lista de reservas) |
+| `utf8_decls` | 10 | 40 | floor velho, de antes da varredura da S29: o valor real sempre foi 36+; agora está alinhado (26 páginas + `taglibs.jspf` + 12 tags + 3 fragmentos) |
+| contrato do calendário | 12 seletores do painel antigo | 7 do drawer/diálogo | saíram `#reserva-detalhe`, `.reserva-titulo|meta|motivo`, `#form-aprovar|negar|cancelar`, `#reserva-fechar`; entram `#drawer-reserva`, `painelAcao="dialog-cancelamento"` e `data-drawer-editar="${painelAcao}"` (o `data-detalhe` ficou nos hooks, com floor 4) |
+
+### Limitações novas
+
+- **Dois backdrops empilhados.** Com o drawer aberto e o diálogo por cima, os dois
+  `.app-drawer-backdrop` (40% de preto cada) cobrem a área fora do diálogo, que fica mais escura
+  que num diálogo isolado. É o preço de manter o detalhe visível atrás; nenhuma verificação
+  automática consegue julgar isso — ver `Known limitations` 1.
+- **O Cancelar depende de `Date.now()` contra o `data-start`.** O `LocalDateTime.toString()` do
+  evento (`2099-03-01T10:00`) é aceito por `new Date(...)` nos navegadores atuais; um formato não
+  previsto cairia em "não cancelável" (o botão some, e a ação continua na lista). O harness cobre
+  passado/futuro, não o formato.
 
 ## Known limitations (carried to the end)
 
@@ -1121,13 +1514,14 @@ com o drawer aberto, e remove (com limpeza do residuo).
    remaining legacy rule whose selector matches a daisyUI component still wins. The fix — declaring the
    legacy layer *before* Tailwind's — depends on (2) being finished.
 4. **Dark mode, pill-button radius and the pt-BR accent decision remain open** (plan §11).
-5. **The drawer's logic is executed; its rendering is not.** `ui-drawer-js.mjs` runs the real `drawer.js`
-   against a minimal DOM in Node, so open/close, the `drawer:fechado` event, the backdrop click, Esc, the
-   focus trap and the scroll lock are actually executed. What still cannot be checked here is everything that
+5. **The drawer's logic is executed; its rendering is not.** `ui-drawer-js.mjs` (**24 casos**) runs the real
+   `drawer.js` against a minimal DOM in Node, so open/close, the `drawer:fechado` event, the backdrop click, Esc,
+   the focus trap (now on the TOP panel of a stack) and the scroll lock are actually executed. `ui-calendar-js.mjs`
+   (**14 casos**) faz o mesmo com o `calendar.js` e um FullCalendar de mentira. What still cannot be checked here is everything that
    depends on the browser engine: the `translate` animation, `100dvh`, the `position: fixed` stacking against
    the shell, and the real layout of the three bands. The `_csrf` lesson of S19 stands — source-level
    agreement is not proof of behaviour.
-6. **The action tooltips are verified structurally, not visually.** `ui-areas.sh` proves the balloon is
+6. **The action tooltips are verified structurally, not visually.** `ui-tabelas.sh` proves the balloon is
    anchored to the button's right edge (`right: 0` on `.tooltip[data-tip]:before`, arrow re-centred on the
    button) and that the `data-tip` wiring is intact. Whether the balloon actually clears the table header
    vertically and whether `.overflow-x-auto` clips it are exactly the kind of questions only a browser can

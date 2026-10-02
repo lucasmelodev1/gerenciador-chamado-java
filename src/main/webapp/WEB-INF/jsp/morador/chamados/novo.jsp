@@ -1,28 +1,14 @@
+<%@ page pageEncoding="UTF-8" %>
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
-<body data-page="morador-novo-chamado">
-<div class="drawer lg:drawer-open">
-    <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="drawer-content">
-        <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main id="conteudo-principal" class="page-content narrow-content">
-            <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
+<ui:shell dataPagina="morador-novo-chamado" classeMain="app-page--estreito">
 
             <section class="card">
                 <div class="card-body">
-                <div class="section-header">
-                    <div>
-                        <p class="eyebrow">Registro de ocorrencia</p>
-                        <h2>Abrir chamado</h2>
-                    </div>
-                </div>
+                <ui:card-head titulo="Abrir chamado" descricao="Registro de ocorrencia" />
 
-                <form method="post" action="${ctx}/morador/chamados" enctype="multipart/form-data" class="stack-form">
+                <form method="post" action="${ctx}/morador/chamados" enctype="multipart/form-data" class="grid gap-4">
                     <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                    <label class="field">
-                        <span>Unidade</span>
+                    <ui:campo rotulo="Unidade">
                         <select class="select w-full" name="unidadeId" required>
                             <option value="">Selecione uma unidade</option>
                             <c:forEach items="${unidades}" var="unidade">
@@ -31,9 +17,8 @@
                                 </option>
                             </c:forEach>
                         </select>
-                    </label>
-                    <label class="field">
-                        <span>Tipo do chamado</span>
+                    </ui:campo>
+                    <ui:campo rotulo="Tipo do chamado">
                         <select class="select w-full" name="tipoChamadoId" required>
                             <option value="">Selecione um tipo</option>
                             <c:forEach items="${tiposChamado}" var="tipo">
@@ -42,27 +27,21 @@
                                 </option>
                             </c:forEach>
                         </select>
-                    </label>
-                    <label class="field">
-                        <span>Descricao</span>
+                    </ui:campo>
+                    <ui:campo rotulo="Descricao">
                         <textarea class="textarea w-full" name="descricao" rows="6" maxlength="255" required data-character-count>${abrirChamadoForm.descricao}</textarea>
-                        <small class="field-hint" data-character-output>0 caracteres</small>
-                    </label>
-                    <label class="field">
-                        <span>Anexo inicial</span>
+                        <small class="text-base-content/60" data-character-output>0 caracteres</small>
+                    </ui:campo>
+                    <ui:campo rotulo="Anexo inicial">
                         <input class="file-input" type="file" name="arquivo">
-                        <small class="field-hint">Opcional. Se enviado, sera anexado logo na abertura do chamado. Tamanho maximo: 5 MB.</small>
-                    </label>
-                    <div class="button-row">
+                        <small class="text-base-content/60">Opcional. Se enviado, sera anexado logo na abertura do chamado. Tamanho maximo: 5 MB.</small>
+                    </ui:campo>
+                    <div class="flex flex-wrap items-center gap-3">
                         <button type="submit" class="btn btn-primary">Registrar chamado</button>
                         <a href="${ctx}/morador/chamados" class="btn">Cancelar</a>
                     </div>
                 </form>
                             </div>
             </section>
-        </main>
-    </div>
-</div>
-<%@ include file="/WEB-INF/jsp/fragments/scripts.jspf" %>
-</body>
-</html>
+</ui:shell>
+<ui:shell-fim />

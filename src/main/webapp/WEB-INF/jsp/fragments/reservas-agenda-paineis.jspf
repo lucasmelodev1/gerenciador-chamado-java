@@ -1,0 +1,36 @@
+<%@ page pageEncoding="UTF-8" %>
+<%--
+    Paineis da agenda de reservas (S30): o detalhe da reserva clicada e a confirmacao de
+    cancelamento. Compartilhado por `admin/reservas/agenda.jsp` e `morador/reservas/agenda.jsp`.
+
+    Variavel esperada (page scope, definida pela pagina antes do include do calendario):
+      agendaBase — a mesma que o `#calendar` le em `data-base-url`.
+
+    INCLUA DEPOIS DE `</main>`: o legado aplica `.app-page > * { width: min(100%, 1360px) }`
+    e espremeria o backdrop (ver custom.css > Drawer lateral).
+
+    O calendario preenche a lista de detalhes e aponta a acao de cancelar para a reserva
+    clicada (`calendar.js`). O botao Cancelar sai do rodape do drawer informativo
+    (`rotuloAcao` + `painelAcao` + `metodoAcao` do `ui:drawer`) e abre o dialogo central.
+--%>
+<ui:drawer id="drawer-reserva"
+           titulo="Detalhes da reserva"
+           rotuloAcao="Cancelar" iconeAcao="bloquear" varianteAcao="error"
+           painelAcao="dialog-cancelamento" metodoAcao="delete">
+    <dl class="app-detalhe-lista">
+        <ui:detalhe-linha rotulo="Área" campo="area" />
+        <ui:detalhe-linha rotulo="Morador" campo="morador" />
+        <ui:detalhe-linha rotulo="Unidade" campo="unidade" />
+        <ui:detalhe-linha rotulo="Início" campo="inicio" />
+        <ui:detalhe-linha rotulo="Fim" campo="fim" />
+        <ui:detalhe-linha rotulo="Status" campo="status" />
+        <ui:detalhe-linha rotulo="Motivo" campo="motivo" />
+    </dl>
+</ui:drawer>
+
+<ui:dialog id="dialog-cancelamento"
+           titulo="Cancelar reserva"
+           descricao="O horário volta a ficar livre na agenda. Não é preciso informar um motivo."
+           acao="${agendaBase}"
+           rotuloConfirmar="Cancelar reserva" varianteConfirmar="error" iconeConfirmar="bloquear"
+           rotuloCancelar="Voltar" />

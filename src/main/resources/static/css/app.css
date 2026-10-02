@@ -87,6 +87,20 @@
     --font-serif: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
     /* Fonte padrao do documento (usada pelo preflight); depois de S17 e a unica fonte do body. */
     --default-font-family: var(--font-sans);
+
+    /* Tokens que vieram do legado junto com a migracao (S33, F2): a marca do login usa o
+       tom forte do primary e os dois paineis usam a sombra `--shadow` do base.css. O
+       `--tracking-eyebrow` e o `letter-spacing: .12em` do antigo `.eyebrow`: escrito como
+       `tracking-[0.12em]` o extrator do Tailwind nao emite a classe. */
+    --color-primary-strong: #093f44;
+    --shadow-painel: 0 22px 40px rgb(18 32 51 / 0.08);
+    --shadow-soft: 0 14px 32px rgb(18 32 51 / 0.08);
+    --shadow-forte: 0 28px 60px rgb(18 32 51 / 0.14);
+    /* S34: sombra do card do login. As tres camadas sao o "3d" discreto do Notion/Untitled UI:
+       um contato curto (1px) que assenta o card, um degrade medio e um halo suave ABAIXO — no
+       lugar da sombra larga e difusa do `--shadow-painel`, que serve de hover nas outras telas. */
+    --shadow-cartao: 0 1px 2px rgb(18 32 51 / 0.06), 0 4px 8px -2px rgb(18 32 51 / 0.06), 0 12px 24px -6px rgb(18 32 51 / 0.08);
+    --tracking-eyebrow: 0.12em;
 }
 
 @plugin "daisyui" {

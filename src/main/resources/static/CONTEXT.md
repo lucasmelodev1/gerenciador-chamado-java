@@ -8,18 +8,25 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
   apenas em documentação. Também define a escala de raios do tema (`--radius-box: 1rem`,
   `--radius-field: .625rem`, `--radius-selector: .5rem`), reduzida em S20, e as superfícies
   (`--color-base-200: #f3f4f6`, `--color-base-300: #e5e7eb`) — cinza-neutro desde S21, no lugar do creme
-  `#f3efe7/#e4ded2`. O `--bg` do `base.css` (fundo real do `body`) acompanha o `base-200`.
+  `#f3efe7/#e4ded2`. O fundo real do `body` é `bg-base-200` no `ui:shell` (S33 deixou de vir do `base.css`).
 - `css/app.build.css`: **gerado** (`npm run build:css` ou estágio `frontend` do Dockerfile); não versionado.
 - `css/custom.css`: shell — painel *inset* do `drawer-content` e topbar (linha única com `border-b`) —,
+  o **diálogo central** `.app-dialog` (mesmo componente do drawer, centralizado com `inset: 0` +
+  `margin: auto` e `max-height`, aberto por `[data-drawer-aberto]`),
   dois ajustes de geometria escopados em `.app-sidebar` (a daisyUI vem depois de `utilities` no cascade, então
   `.menu{width:fit-content;padding:.5rem}` precisa ser sobrescrito fora de layer), o token `--card-p` (respiro
   interno dos cards) e acessibilidade.
+  Desde o F1 da migração do CSS legado (S33) também a **fundação do shell**: `html { scroll-behavior }`,
+  `body { min-height, overflow-x }`, `.app-page` (padding/grid/gap do antigo `.page-content` + o `> *`
+  com `width: min(100%, 1360px)` e `margin-inline: auto`), `.app-page--estreito` (os dois formulários
+  estreitos) e a animação `fadeLift` com os delays por `nth-child`. É a mesma receita que o legado tinha,
+  só que com dono — e é o motivo de os paineis (`ui:drawer`/`ui:dialog`) serem renderizados fora do
+  `<main>`: a regra `> *` espremeria o backdrop.
   Também o **cabeçalho de card de listagem** (S24): `.app-card-head` é uma linha (`flex-direction: row` +
   `space-between`) com a descrição e o título num bloco de `gap: 2px` à esquerda e a ação primária à direita,
   fechada por um filete (`border-bottom: 1px solid var(--color-base-300)`) que a separa da faixa de filtros
-  `.app-card-filtros`. São classes **novas** de propósito: `.section-header`/`.toolbar-inline` são legado sem
-  layer (carregam depois deste arquivo) e a `responsive.css` as empilha abaixo de 900px — contra o alinhamento
-  em linha. Como o `<h2>` deixa de casar com `.section-header h2`, `.app-card-head h2` repõe a tipografia
+  `.app-card-filtros`. É classe **nova** de propósito: `.section-header`/`.toolbar-inline` eram legado sem
+  layer, e o `<h2>` não casa mais com `.section-header h2` — daí `.app-card-head h2` repor a tipografia
   (o preflight do Tailwind zera o tamanho do título). `scripts/ui-tabelas.sh` confere tudo isso.
   A **variante `--campos`** é para a faixa que é um `<form method="get">` com rótulo acima do
   controle: alinha as ações pela base. Ela existe porque `.app-card-filtros` não está em layer e
@@ -30,22 +37,56 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
   o `base-200` do `btn-ghost` some sobre a linha zebrada. `.app-btn-perigo` pinta o ícone de excluir com
   `--color-error` — `btn-ghost btn-error` não serve: `.btn:hover{color:var(--btn-fg)}` e o `--btn-fg` do
   `btn-error` é quase branco. Os botões usam `btn-square` normalmente.
+  Também a **lista de detalhes** (S30): `.app-detalhe-*` é o "rótulo à esquerda, valor em negrito à
+  direita" do `ui:detalhe-linha` — linha em `flex` com `space-between`, valor com `font-weight: 700` e
+  `text-align: end`, os dois `margin` do navegador zerados e `min-width: 0` no valor (item flex nasce com
+  `min-width: auto` e um motivo longo empurraria a linha para fora do painel).
+  Também o **padrão decorativo do login** (S34): `.app-padrao-login` é a coluna da direita do bloco
+  `login-02` do shadcn, que no original é uma imagem. São seis camadas de `background-image`
+  (`linear-gradient` ×6, duas a duas em 30/150/60 graus) com `background-size` e
+  `background-position` de mesmo índice; as cores são as da identidade (`#0d5c63`, o
+  `--color-primary`, e o creme `#f4f0eb`), e não as do padrão de referência do design.
+  Também o **glifo do botão de senha** (S34): as quatro regras
+  `[data-password-toggle][aria-pressed=...]` escolhem entre os dois `ui:icone` do
+  `campo-senha.tag` — o JS não conhece ícone (ver `js/forms.js`).
   **Camadas aninhadas:** dentro da daisyUI (`daisyui.l1` > `l1.l2` > `l1.l2.l3` > `l1.l2.l3.l4`), para
   declarações **normais** o layer **pai vence o filho** ("non-nested styles in a layer have precedence over
   normal nested styles"). É o que faz o `.btn:hover` de `l1` sobrepor o `color` do `.btn-ghost` de `l1.l2.l3` —
   e é o motivo dos dois ajustes de cor acima. O `btn-square` funciona: ele mora no layer pai do `.btn`.
-  **Raio:** o legado tem valores fixos (`base.css` e `components.css`/`responsive.css`) que vencem a daisyUI por
-  não estar em layer — ao mexer no raio, ajuste os dois lados, senão cards e `stat-card` divergem do shell.
-- `css/calendar.css`: tema do FullCalendar; tokens `--fc-classic-*` apontam para as variáveis da daisyUI,
-  com os tokens legados como fallback.
+  **Raio:** desde a S33 não há mais valor de raio fora do tema — `app.css` (`--radius-*`) e `custom.css`
+  mandam sozinhos; não existe mais o "ajuste os dois lados" do legado.
+- `css/calendar.css`: tema do FullCalendar; tokens `--fc-classic-*` apontam direto para as variáveis da
+  daisyUI (os fallbacks legados saíram no F1 da S33) e a paleta dos eventos (`--reserva-*`) mora aqui.
 - `css/fonts/`: Inter (variável, títulos) e Noto Sans 400/500/600/700 (texto). Ficam sob `/css/` porque o
   `SecurityConfig` só libera `/css/**` sem autenticação — `/fonts/**` exigiria sessão e quebraria o login.
-- `css/base.css`, `css/layout.css`, `css/components.css`, `css/responsive.css`: **legado transitório**
-  (não está em cascade layer, por isso vence a daisyUI). Remoção em S17/S18.
+- **Os quatro arquivos legados foram removidos na S33** (`base.css`, `layout.css`, `components.css`,
+  `responsive.css`): eram as últimas folhas fora de cascade layer, carregadas depois de `custom.css` e
+  por isso vencedoras da daisyUI. Onde cada coisa vive agora:
+  fundação do shell (`html`/`body`/`.app-page`) e grades de duas colunas no `custom.css`; tipografia,
+  cores e raios no tema do `app.css`; campos (`ui:campo`), listas, cartões de métrica, paginação, estados
+  vazios e tudo o mais em **utilitários no markup**; a coluna de ações, o cabeçalho de card, a linha do
+  tempo e o painel modal como classes `.app-*` do `custom.css`.
+  `scripts/ui-legado.sh check` reprova quem reintroduzir arquivo, `<link>` ou classe delas.
 
 ## JS
 - `core` (`window.AppDom`), `alerts`, `forms` (`data-confirm`, `data-password-*`, `data-character-*`,
-  `data-auto-submit`), `tables` (`data-filter-*`) e `calendar.js` (agendas mês/semana do admin e do morador).
+  `data-auto-submit`) e `tables` (`data-filter-*`; esconde a linha com o utilitário `hidden` do Tailwind,
+  que substituiu o `.is-hidden` do legado no F1 da S33).
+- `forms.js` > botão de senha (S34): acha o input por `[data-password-campo]` (o `.password-field`
+  do legado saiu do markup na S33 e deixava o botão sem efeito) e troca `type`, `aria-pressed`,
+  `aria-label` e `data-tip`; o glifo é escolha do CSS. Comportamento executado por
+  `scripts/ui-forms-js.mjs` (rodado no `ui-invariants.sh check`), porque não há browser no ambiente.
+- `calendar.js` (agendas mês/semana do admin e do morador): monta os eventos a partir dos
+  `.reserva-data`, filtra por área **no cliente** e, no clique do evento, abre o painel de detalhe
+  declarado em `data-painel-detalhe` no `#calendar` (o JS não conhece o id `drawer-reserva`)
+  preenchendo cada `dd[data-detalhe]`. A ação de cancelar é um `ui:dialog`: o botão do rodapé do
+  drawer nasce com `data-drawer-editar` e o `calendar.js` o acha **dentro do painel** (não pelo id
+  `dialog-cancelamento`), reescrevendo só o `data-drawer-acao` da reserva clicada (o `drawer.js` lê
+  no clique) — o mesmo diálogo serve todas as reservas. O botão é escondido quando o servidor
+  recusaria a ação (status que não seja Solicitado/Aprovado, ou início já alcançado).
+  A **paleta dos eventos** tem fonte única em `calendar.css` (`--reserva-cor-1..8`,
+  `--reserva-negado-*`, `--reserva-cancelado-*`): o JS lê por `getComputedStyle` e usa os mesmos
+  valores como fallback, porque o harness em Node roda sem CSS.
 - `drawer.js` (`window.AppDrawer`): abre/fecha o `ui:drawer` e reemite o fechamento como evento
   `drawer:fechado` (`detail = { id, valor }`, borbulha). Hooks: `data-drawer`, `data-drawer-form`,
   `data-drawer-titulo`, `data-drawer-abrir`, `data-drawer-editar`, `data-drawer-fechar`,
@@ -55,10 +96,12 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
   `data-drawer-acao`/`data-drawer-titulo` e os campos do gatilho; `data-drawer-abrir` devolve tudo ao
   estado que o servidor renderizou (`reset()`), de modo que criar e editar usam o mesmo drawer sem
   reload. Os campos vêm de duas formas: `data-campo-<name>` no botão (formato da S23) ou
-  `<input data-campo="<name>">` dentro do botão (S26, a que `ui:acao-editar` usa — `value` de input
+  `<input data-campo="<name>">` dentro do botão (S26, a que `ui:acao-painel` usa — `value` de input
   aceita qualquer dado de usuário sem codificação em string). Com `data-drawer-travar` no formulário,
   os campos listados ficam desabilitados na edição e um espelho escondido com o mesmo `name` assume o
-  envio (`disabled` não é submetido); a criação desfaz. Carregado em todas as páginas (é inerte sem
+  envio (`disabled` não é submetido); a criação desfaz. Uma pilha (`abertos`) guarda a ordem de abertura:
+  com dois painéis empilhados (o detalhe e o diálogo que ele abre), Esc, o Tab e o foco preso valem para o
+  de **cima**, e o scroll só destrava quando não sobra painel aberto. Carregado em todas as páginas (é inerte sem
   `data-drawer`); o visual fica em `custom.css` sob `.app-drawer*`, junto do `prefers-reduced-motion`.
 - `layout.js` foi removido: o drawer da daisyUI dispensa toggle por JS e a navegação ativa é server-side.
 - `js/vendor/fullcalendar/`, `css/vendor/fullcalendar/`: FullCalendar 7.1.0 vendorizado para uso offline,
@@ -66,3 +109,16 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
 
 ## Build
 - `npm run build:css` / `watch:css`. O bundle não é versionado; o estágio 0 do `Dockerfile` o gera.
+- `ui-preview.html` é a galeria de componentes e a **safelist explícita** do Tailwind (`@source` em
+  `app.css`): precisa listar toda classe montada por variável (as variantes de `ui:badge`). O bloco
+  `#shell` espelha a lateral/topbar reais desde a S32 (antes mostrava a lateral antiga, com `bg-base-100`
+  e `.divider`).
+- Tokens que existem para o login, herdados do legado na migração (S33/F2): `--color-primary-strong`
+  (`bg-primary-strong`, o #093f44 da marca) e `--shadow-painel` (`shadow-painel`, a `--shadow` do
+  `base.css`). A S34 acrescentou `--shadow-cartao` (`shadow-cartao`): três camadas curtas
+  (contato de 1px + degradê médio + halo abaixo) para o relevo discreto do card, no estilo
+  Notion/Untitled UI — o `--shadow-painel` continua sendo o hover das outras telas. A tela
+  `auth/login.jsp` foi a primeira convertida para utilitários — as classes
+  `.auth-*`, `.feature-list` e `.eyebrow` saíram do markup. Na S34 ela passou ao layout de duas
+  colunas do `login-02`, com o formulário num `card` de `max-w-88` (22rem) centrado na coluna (a marca
+  fica fora do fluxo) e o marcador `data-page="login"` no `ui-routes.sh`.

@@ -4,12 +4,40 @@ Componentes JSP reutilizáveis (tag files), servidos pelo prefixo `ui` declarado
 `../jsp/fragments/taglibs.jspf`. Ficam fora de `jsp/` de propósito: são componentes, não
 páginas, e por isso ficam fora do diretório que os resolvers de view varrem.
 
+## Índice (S31)
+
+| Tag | Para |
+|---|---|
+| `ui:shell` / `ui:shell-fim` | casca da página: doctype, `<head>` (com o token CSRF), drawer, lateral, topbar, `<main>` e flash; o par fecha com os scripts |
+| `ui:nav-grupo` / `ui:nav-item` | navegação lateral: grupo com rótulo + item (ícone, rótulo e estado ativo no servidor) |
+| `ui:card-head` | cabeçalho de card (título, descrição, `subtitulo` opcional; corpo = ação) |
+| `ui:busca` | campo de busca local da faixa de filtros |
+| `ui:campo` / `ui:campo-senha` | campo com rótulo (e dica opcional); o de senha tem o botão de olho (`data-password-campo`, `aria-pressed` — o glifo é escolha do CSS) |
+| `ui:paginacao` | Anterior/Próxima + "Página X de Y", preservando os filtros (`parametros`) |
+| `ui:badge` | `<span class="badge badge-<variante>">` |
+| `ui:acao-link` | ação de linha que navega: ícone + tooltip, ou `texto` visível |
+| `ui:acao-painel` | ação de linha que abre um painel já preenchido (`data-drawer-editar`) |
+| `ui:acao-form` | ação que envia formulário — dono do par CSRF + `_method`; ícone ou `texto` |
+| `ui:tabela-chamados` | as 5 tabelas de chamados (colunas por flag, ação por texto ou ícone) |
+| `ui:detalhe-chamado` | as 3 telas de detalhe do chamado |
+| `ui:painel` | implementação única do drawer/diálogo (backdrop, topo, corpo, form, rodapé) |
+| `ui:drawer` / `ui:dialog` | cascas finas sobre `ui:painel` (lateral / centralizado) |
+| `ui:detalhe-linha` | linha "rótulo à esquerda, valor à direita" |
+| `ui:icone` | glifo Tabler por alias (`nome` + `classe`) |
+| `ui:vazio` | estado vazio (`.empty-state`) |
+| `ui:reserva-status` | badge de status de reserva com cor semântica |
+| `ui:flash` | mensagens de redirect (`successMessage`/`errorMessage`) |
+
+Os fragmentos `vazio.jspf`, `icone.jspf`, `reserva-status.jspf` e `alerts.jspf` foram
+substituídos por esses tags na S31 — não os recrie.
+
 ---
 
 # Padrão de tela de tabela (S26)
 
-Toda tela de listagem do admin — **areas, blocos, chamados, status-chamado, usuarios** — é
-montada com os mesmos seis tags. Uma tela nova é ~15 linhas de estrutura:
+Toda tela de listagem do admin — **reservas, areas, blocos, chamados, status-chamado,
+tipos-chamado e usuarios** — é montada com os mesmos componentes (seis tags de listagem e
+os dois paineis: `ui:drawer` e `ui:dialog`). Uma tela nova é ~15 linhas de estrutura:
 
 ```jsp
 <section class="card">
@@ -31,7 +59,7 @@ montada com os mesmos seis tags. Uma tela nova é ~15 linhas de estrutura:
                     <table class="table table-zebra" data-filter-table="blocos-table">
                         <thead><tr>
                             <th>Identificacao</th> …
-                            <th><span class="sr-only">Acoes</span></th>
+                            <th><span class="sr-only">Ações</span></th>
                         </tr></thead>
                         <tbody>
                         <c:forEach items="${blocos}" var="bloco">
@@ -115,16 +143,18 @@ coluna é `<td class="cell-actions app-tabela-acoes">`, que alinha à direita e 
 | Tag | Para | Atributos |
 |---|---|---|
 | `ui:acao-link` | navegar (detalhe, unidades) | `href`, `rotulo`, `icone` |
-| `ui:acao-editar` | abrir o drawer preenchido | `drawer`, `titulo`, `acao`; opcionais `metodo` (padrão `patch`), `rotulo`, `icone` |
+| `ui:acao-painel` | abrir um painel preenchido | `painel`, `titulo`, `acao`; opcionais `metodo` (padrão `patch`), `rotulo`, `icone` |
 | `ui:acao-form` | enviar um formulário | `acao`, `rotulo`, `icone`; opcionais `metodo` (padrão `delete`), `confirmacao`, `perigo` |
 
-`ui:acao-editar` recebe os campos do drawer no **corpo**, como inputs escondidos:
+`ui:acao-painel` recebe os campos do painel no **corpo**, como inputs escondidos (chamava-se
+`ui:acao-editar` até a S32: em reservas ele abre o diálogo de negação e o de cancelamento, que
+não são edição de registro nenhum):
 
 ```jsp
-<ui:acao-editar drawer="drawer-area" titulo="Editar area" acao="${ctx}/admin/areas/${area.id}">
+<ui:acao-painel painel="drawer-area" titulo="Editar area" acao="${ctx}/admin/areas/${area.id}">
     <input type="hidden" data-campo="nome" value="${fn:escapeXml(area.nome)}">
     <input type="hidden" data-campo="status" value="${fn:escapeXml(area.status)}">
-</ui:acao-editar>
+</ui:acao-painel>
 ```
 
 Isso substituiu o formato `data-campo-<name>="<valor>"` direto no botão. O motivo é dado de
@@ -139,20 +169,42 @@ esse trio. O corpo dele é opcional e recebe campos escondidos extras. `perigo="
 
 ## `ui:drawer` (`drawer.tag`)
 
+**Casca fina sobre `ui:painel` (S31)**: o esqueleto é um só; o `drawer.tag` existe para manter
+o nome e os atributos que as telas já usavam. Toda a regra de posicionamento/CSRF/travados
+está em `painel.tag`.
+
 Painel lateral que desliza da borda, em três faixas:
 
 | Faixa | Conteúdo |
 |---|---|
 | topo | `titulo`, `descricao` (opcional) e o botão X |
 | meio | `<jsp:doBody/>` — slot livre, com scroll próprio |
-| rodapé | **só** o botão Salvar com ícone (e só quando `acao` é informado) |
+| rodapé | **só** o Salvar com ícone (com `acao`); **Fechar** + a ação declarada (sem `acao`) |
 
-Fechar é responsabilidade do X no topo, do Esc e do clique fora — não há botão "Fechar"
-no rodapé.
+São duas formas, decididas por `acao`:
+
+- **com `acao`** — é um formulário. Fechar é responsabilidade do X no topo, do Esc e do clique
+  fora: não há botão "Fechar" no rodapé.
+- **sem `acao`** — é um painel **informativo** (um detalhe, por exemplo). O rodapé passa a ter o
+  botão **Fechar**, e `rotuloAcao` acrescenta um segundo botão à esquerda.
 
 Atributos: `id` e `titulo` (obrigatórios); `descricao`, `acao`, `metodo`, `tamanho`
 (`sm` padrão/estreito, `md`, `lg`), `lado` (`end` padrão/direita, `start`), `rotuloSalvar`
-(padrão "Salvar"), `rotuloFechar` (só o `aria-label` do X), `aberto`, `travar`.
+(padrão "Salvar"), `rotuloFechar` (o `aria-label` do X e o rótulo do Fechar informativo),
+`aberto`, `travar`.
+
+### Drawer informativo e painéis empilhados (S30)
+
+`rotuloAcao` (com `iconeAcao` e `varianteAcao` — `primary` padrão, `error` para vermelho) cria o
+botão da esquerda, e `painelAcao` + `metodoAcao` fazem esse botão **abrir outro painel** pelo
+mesmo protocolo do gatilho de editar (`data-drawer-editar` + `data-campo-_method`). É assim que o
+detalhe da reserva, na agenda, abre o diálogo central de cancelamento sem JS próprio: o
+`calendar.js` só reescreve o `data-drawer-acao` do botão a cada evento.
+
+Um painel pode, então, abrir outro por cima. Esc, o Tab e o foco preso valem sempre para o painel
+de **cima** (o último aberto — a pilha `abertos` do `drawer.js`), e o de baixo continua aberto por
+trás: é o que faz o "Voltar" do diálogo devolver a reserva detalhada. Por isso o diálogo precisa
+ser renderizado **depois** do drawer no DOM (mesmo `z-index`; quem vem depois pinta por cima).
 
 ### Conteúdo dinâmico (criar e editar no mesmo drawer)
 
@@ -192,8 +244,8 @@ persistido e o serviço recusa a troca (`Nao e permitido alterar o tipo do usuar
 - **Não é `<dialog>`.** São dois elementos irmãos: o backdrop e o `<aside>`. O porquê
   está em `baseline/EVIDENCE.md` > S23 (o `modal` da daisyUI não tem `::backdrop` e o
   legado espremia o escurecimento).
-- **Renderize FORA de `.page-content`** — como filho direto do `<body>`. Lá o legado
-  aplica `.page-content > * { width: min(100%, 1360px); margin-inline: auto }` (sem
+- **Renderize FORA de `.app-page`** — como filho direto do `<body>`. Lá o legado
+  aplica `.app-page > * { width: min(100%, 1360px); margin-inline: auto }` (sem
   cascade layer, logo vence qualquer utilitário) e o backdrop deixaria as bordas da tela
   claras, além de o `animation: fadeLift` criar containing block.
 - O corpo é renderizado **dentro** do `<form>`; o botão Salvar fica fora e o referencia
@@ -205,8 +257,81 @@ persistido e o serviço recusa a troca (`Nao e permitido alterar o tipo do usuar
 
 Comportamento em `static/js/drawer.js`: `AppDrawer.abrir(id)` / `AppDrawer.fechar(id)`,
 gatilho declarativo `data-drawer-abrir="id"`, abertura no carregamento via `aberto="true"`
-e evento `drawer:fechado` (borbulha, `detail = { id, valor }`). Esc, foco preso no painel,
-devolução do foco e trava de scroll são implementados no JS, já que não há `<dialog>`.
+e evento `drawer:fechado` (borbulha, `detail = { id, valor }`). Esc, foco preso no painel de
+cima, devolução do foco e trava de scroll são implementados no JS, já que não há `<dialog>`.
+
+---
+
+## `ui:detalhe-linha` (`detalhe-linha.tag`)
+
+Uma linha de lista de detalhes: **rótulo à esquerda, valor em negrito à direita**. O
+`<dl class="app-detalhe-lista">` em volta é declarado por quem usa — a lista é a composição de
+várias linhas irmãs, e um tag não abre a lista.
+
+```jsp
+<dl class="app-detalhe-lista">
+    <ui:detalhe-linha rotulo="Aberta em">${area.criadoEm}</ui:detalhe-linha>
+    <ui:detalhe-linha rotulo="Área" campo="area" />
+</dl>
+```
+
+Atributos: `rotulo` (obrigatório) e `campo` (opcional). Com `campo`, o `<dd>` sai com
+`data-detalhe="<campo>"` para o JS preencher (`calendar.js` faz isso nas 7 linhas do detalhe da
+reserva); sem ele a linha é estática e o valor vem do corpo.
+
+A geometria está em `custom.css` sob `.app-detalhe-*`: `space-between` na linha (valor à direita),
+`font-weight: 700` e `text-align: end` no valor, os dois `margin` do navegador zerados (`<dl>` e o
+recuo de 40px do `<dd>`) e `min-width: 0` para um valor longo não estourar o painel.
+
+---
+
+## `ui:dialog` (`dialog.tag`)
+
+**Casca fina sobre `ui:painel` (S31)**, pelo mesmo motivo do `ui:drawer`.
+
+Mesmo componente do `ui:drawer`, outra forma: em vez de deslizar da borda, aparece
+**centrado** na tela (fade + escala). Serve para confirmar uma decisao — negar uma reserva
+pedindo o motivo, cancelar uma reserva sem motivo.
+
+| Atributo | |
+|---|---|
+| `id`, `titulo` | obrigatorios |
+| `descricao` | opcional — a explicacao abaixo do titulo |
+| `acao` | action do form; sem ela o dialogo e so informativo |
+| `metodo` | method do form (padrao `post`; o `_method` vem do gatilho) |
+| `tamanho` | `sm`, `md` (padrao), `lg` |
+| `rotuloConfirmar` | padrao "Confirmar" |
+| `varianteConfirmar` | `primary` (padrao) ou `error` — vermelho |
+| `iconeConfirmar` | alias opcional do icone do botao de confirmar |
+| `rotuloCancelar` | botao esmaecido que fecha; sem ela o rodape so confirma |
+| `aberto` | `true` abre no carregamento |
+
+**Por baixo e o mesmo protocolo do `ui:drawer`**: os atributos `data-drawer*` e o
+`drawer.js`. Backdrop, Esc, foco preso, trava de scroll e o conteudo dinamico
+(`data-drawer-editar` + `data-drawer-acao`) sao o mesmo codigo — um dialogo e um drawer
+centralizado, e duplicar o comportamento seria duplicar os bugs. O que muda e o CSS
+(`.app-dialog`) e o rodape, que confirma em vez de salvar.
+
+Como no drawer, precisa ser renderizado **fora de `.app-page`**. Um dialogo so e
+reaproveitado por varias linhas: o gatilho de cada linha leva a acao daquele registro e o
+`reporInicial` limpa o que foi digitado entre uma e outra.
+
+Em reservas isso resolve o motivo da negacao, que antes era um `<input>` solto dentro da
+celula de acoes e estourava a coluna.
+
+O dialogo **nao tem filetes** (nem sob o titulo, nem sobre o rodape): a forma e dada pelo raio
+e pela sombra, e como o corpo e opcional um filete viraria uma linha solta numa confirmacao
+pura. Um dialogo sem campos sai com `app-dialog-corpo--vazio` (padding zero) para nao sobrar
+faixa em branco entre o titulo e os botoes.
+
+O corpo tem **respiro vertical minimo**, e pelos dois lados por motivos diferentes: `0.25rem`
+em cima (o corpo e o `overflow-y: auto`, e sem respiro ele corta o anel de foco do primeiro
+campo, que ocupa 4px) e `1rem` embaixo (separa o ultimo campo do rodape). Um `padding` cheio
+dos quatro lados abria um vao entre a descricao e o primeiro campo; zero corta o anel.
+
+O painel tem **altura de conteudo** (`height: fit-content` + `max-height` de viewport): cresce
+com o formulario, para num teto e so entao o corpo rola. Sem o `fit-content` o `inset: 0` do
+`position: fixed` estica o painel entre top e bottom e o dialogo ocupa a tela inteira.
 
 ---
 
@@ -216,13 +341,20 @@ devolução do foco e trava de scroll são implementados no JS, já que não há
 e `iconeClasse`. Alias desconhecido cai num círculo de fallback — que `ui-shell.sh` e
 `ui-tabelas.sh` reprovam, para o erro não passar despercebido.
 
+`negar` e `bloquear` são o mesmo glifo (círculo cortado) com dois nomes: cada tela usa o
+vocabulário dela (negar a reserva × cancelar/bloquear a reserva).
+
 ## Verificação
 
-- `bash scripts/ui-tabelas.sh` — contrato das **5 telas** de tabela: cabeçalho, faixa de
-  filtros, coluna de ações, badges, drawers, as regras do `custom.css`, as classes do bundle,
-  e o `tables.js` executado. Traz self-test negativo (10 sabotagens de markup + 10 de CSS).
+- `bash scripts/ui-tabelas.sh` — contrato das **7 telas** de tabela: cabeçalho, faixa de
+  filtros, coluna de ações, badges, paineis, as regras do `custom.css`, as classes do bundle,
+  e o `tables.js` executado. Traz self-test negativo (15 sabotagens de markup + 18 de CSS).
 - `bash scripts/ui-drawer.sh` — contrato do `ui:drawer` nos dois estados, posição fora de
-  `.page-content`, escopo de uso, fluxo criar→editar→remover e o `drawer.js` executado
-  por `node scripts/ui-drawer-js.mjs` (21 casos).
+  `.app-page`, escopo de uso (nas telas e nos fragmentos), fluxo criar→editar→remover e o
+  `drawer.js` executado por `node scripts/ui-drawer-js.mjs` (**24 casos**, incluindo os painéis
+  empilhados).
+- `bash scripts/ui-agenda.sh` — a agenda de reservas (admin e morador): o detalhe no drawer
+  informativo com a lista `ui:detalhe-linha`, o diálogo de cancelamento, as regras do
+  `custom.css` da lista e o fluxo real de cancelamento.
 - `bash scripts/ui-invariants.sh check` — congela o contrato que os JSPs compartilham com
   controllers, JS, testes e build.

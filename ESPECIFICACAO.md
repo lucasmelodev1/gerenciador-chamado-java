@@ -1,5 +1,19 @@
+# Interface diferente?
+Eu julguei ter concluído o projeto 3 dias antes do merge da branch de `feat/ui-overhaul`, e como eu vi oportunidade de melhorar a interface e deixar mais intuitivo, eu usei o tempo extra para isso. Nesse processo da refatoração da interface, eu usei IA extensivamente, seguindo esses passos:
+1. Seleção das tecnologias: Eu escolhi DaisyUI com TailwindCSS, pois essas tecnologias se encaixam com as dependências que o criador do projeto escolheu (Spring e JSP) e a adição das tecnologias levou apenas a leve alteração do processo de build do docker, onde precisaríamos traduzir Tailwind para CSS em tempo de build.
+2. Troca de componentes: Trocamos os componentes simples (Botões e Inputs) para os equivalentes em DaisyUI. Nesse momento a IA foi extensamente usada para identificar todas as instâncias e substituir.
+3. Reformulação da interface: Usei como base os blocks do `shadcn/ui`, pois a licença empregada por eles é aberta. Eu já comprei anteriormente o pacote de interfaces do Tailwind Plus e do Untitled UI, mas como a licença deles é mais restritiva, não pude usar nesse projeto. Nesse momento a IA foi usada extensamente para traduzir os componentes shadcn para seus equivalentes DaisyUI.
+4. Melhoria de fluxos de trabalho: Os fluxos de cadastro e edição, em várias páginas, poderiam ter melhoras, então eu criei dois modais, um Dialog e um Drawer, ambos com javascript puro, para que as interfaces parecessem mais reativas, melhorando a experiência do usuário.
+5. Refatoração: Remover CSS antigo e classes antigas que sobraram no código.
+
+Caso eu tivesse poder sobre as decisões da interface desde o início, eu não tomaria esse caminho. Eu teria iniciado já com uma biblioteca de componentes (com uma licença aberta), e isso salvaria o projeto incontáveis horas de desenvolvimento, tanto dos componentes quanto do layout, e isso também agradaria mais o cliente, pois ele receberia uma interface mais profissional. Isso não significa que os produtos terão aparência genérica, pois nós seríamos responsáveis, também, por alterar a aparência dos componentes em massa, para ficar com a cara do projeto que o cliente deseja. É assim que trabalhos de frontend são feitos com desenvolvedores + designers. Por exemplo, designers usam algo como um Untitled UI Figma como base e aplicam suas modificações, e os desenvolvedores usam o Untitled UI React e aplicam as modificações dos designers.
+
+Antes de fazer essa mudança, falei com Clara para validação por ser uma mudança significativa. Ela mencionou que, contanto que eu implemente bem tudo que vocês solicitaram no escopo do documento oficial, uma mudança assim seria bem vinda. 
+
 # Ferramentas de IA usadas
 Estou usando Opencode como Harness e usando puramente o DeepSeek V4.1 Flash como modelo. Uso skills de autoração minha para que eu tenha maior controle sobre o que é gerado. Eu conheço melhor os limites do que minha IA consegue e não consegue fazer. Também comecei a usar o agente Pi recentemente, e ele demonstrou resultados similares, com menos variância e com menos tokens, pois usa mais o cache do modelo que eu uso.
+
+Durante o desenvolvimento do projeto, eu passei a usar o DeepSeek V4.1 Flash diretamente pela API da DeepSeek, pois o custo estava acessível e me permite trabalhar sem ser interrompido por limites de uso. Utilizei tanto o harness Pi quanto o DeepSeek Harness, que lançou recentemente. No total, todo o trabalho que eu tive nesse projeto me custou em torno de 20 reais em tokens.
 
 # Sugestões de IA aceitas
 Eu não aceito sugestão arquitetônica de IA, e a decisão dela se limita a escrever o código seguindo todas as minhas regras. O meu agente customizado de Review normalmente recomenda alguns caminhos para seguir em micro partes do sistema, e eu vou mencionar as que, depois da minha pesquisa independente, se mostraram interessantes:

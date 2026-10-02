@@ -1,14 +1,6 @@
+<%@ page pageEncoding="UTF-8" %>
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
-<body data-page="admin-usuarios">
-<div class="drawer lg:drawer-open">
-    <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="drawer-content">
-        <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main id="conteudo-principal" class="page-content">
-            <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
+<ui:shell dataPagina="admin-usuarios">
 
             <%-- Criar e editar no mesmo drawer. "Gerenciar" continua levando ao detalhe,
                  que e onde ficam os vinculos de morador e os tipos do colaborador. --%>
@@ -26,9 +18,7 @@
 
                     <c:choose>
                         <c:when test="${empty usuarios}">
-                            <c:set var="vazioTitulo" value="Nenhum usuario encontrado" />
-                            <c:set var="vazioMensagem" value="Cadastre administradores, colaboradores e moradores para iniciar a operacao." />
-                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                            <ui:vazio titulo="Nenhum usuario encontrado" mensagem="Cadastre administradores, colaboradores e moradores para iniciar a operacao." />
                         </c:when>
                         <c:otherwise>
                             <div class="overflow-x-auto">
@@ -38,7 +28,7 @@
                                         <th>Nome</th>
                                         <th>Email</th>
                                         <th>Perfil</th>
-                                        <th><span class="sr-only">Acoes</span></th>
+                                        <th><span class="sr-only">Ações</span></th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -47,16 +37,16 @@
                                             <td>${usuario.nome}</td>
                                             <td>${usuario.email}</td>
                                             <td><ui:badge variante="neutral">${usuario.tipo}</ui:badge></td>
-                                            <td class="cell-actions app-tabela-acoes">
+                                            <td class="app-tabela-acoes">
                                                 <%-- `tipo` e travado no drawer: o PATCH deriva o perfil do
                                                      papel persistido e recusa a troca. O gatilho manda a
                                                      CHAVE (usuario.tipo e o rotulo), extraida do role. --%>
-                                                <ui:acao-editar drawer="drawer-usuario" titulo="Editar usuario"
+                                                <ui:acao-painel painel="drawer-usuario" titulo="Editar usuario"
                                                                 acao="${ctx}/admin/usuarios/${usuario.id}">
                                                     <input type="hidden" data-campo="nome" value="${fn:escapeXml(usuario.nome)}">
                                                     <input type="hidden" data-campo="email" value="${fn:escapeXml(usuario.email)}">
                                                     <input type="hidden" data-campo="tipo" value="${fn:substringAfter(usuario.role, 'ROLE_')}">
-                                                </ui:acao-editar>
+                                                </ui:acao-painel>
                                                 <ui:acao-link href="${ctx}/admin/usuarios/${usuario.id}"
                                                               icone="ver" rotulo="Gerenciar" />
                                                 <ui:acao-form acao="${ctx}/admin/usuarios/${usuario.id}"
@@ -71,59 +61,38 @@
                         </c:otherwise>
                     </c:choose>
 
-                    <div class="pagination">
-                        <c:if test="${usuariosPage.hasPrevious}">
-                            <a class="btn" href="${ctx}/admin/usuarios?page=${usuariosPage.page - 1}&size=${usuariosPage.size}">Anterior</a>
-                        </c:if>
-                        <span>Pagina ${usuariosPage.page + 1} de ${usuariosPage.totalPages == 0 ? 1 : usuariosPage.totalPages}</span>
-                        <c:if test="${usuariosPage.hasNext}">
-                            <a class="btn" href="${ctx}/admin/usuarios?page=${usuariosPage.page + 1}&size=${usuariosPage.size}">Proxima</a>
-                        </c:if>
-                    </div>
+                    <ui:paginacao pagina="${usuariosPage}" url="${ctx}/admin/usuarios" />
                 </div>
             </section>
-        </main>
-    </div>
-</div>
+</ui:shell>
 
 <%-- `travar="tipo"`: na edicao o perfil fica desabilitado e um espelho escondido envia
      o valor atual — o servidor recusa a troca de tipo de qualquer forma.
-     Fora de `.page-content`: o legado espremeria o backdrop. Ver custom.css > Drawer. --%>
+     Fora de `.app-page`: o legado espremeria o backdrop. Ver custom.css > Drawer. --%>
 <ui:drawer id="drawer-usuario"
            titulo="Novo usuario"
            descricao="Cadastre administradores, colaboradores e moradores."
            acao="${ctx}/admin/usuarios"
            travar="tipo">
-    <label class="field">
-        <span>Nome</span>
+    <ui:campo rotulo="Nome">
         <input class="input w-full" type="text" name="nome" value="${usuarioForm.nome}" maxlength="255" required>
-    </label>
+    </ui:campo>
 
-    <label class="field">
-        <span>Email</span>
+    <ui:campo rotulo="Email">
         <input class="input w-full" type="email" name="email" value="${usuarioForm.email}" maxlength="255" required>
-    </label>
+    </ui:campo>
 
-    <label class="field">
-        <span>Perfil</span>
+    <ui:campo rotulo="Perfil">
         <select class="select w-full" name="tipo" required>
             <option value="">Selecione</option>
             <c:forEach items="${tiposUsuario}" var="tipo">
                 <option value="${tipo.key}" ${usuarioForm.tipo eq tipo.key ? 'selected' : ''}>${tipo.value}</option>
             </c:forEach>
         </select>
-    </label>
+    </ui:campo>
 
-    <label class="field">
-        <span>Senha</span>
-        <div class="password-field">
-            <input class="input w-full" type="password" name="senha" maxlength="255" required data-password-input>
-            <button type="button" class="btn btn-ghost" data-password-toggle>Mostrar</button>
-        </div>
-        <small class="field-hint">A senha e sempre redefinida: obrigatoria tambem ao editar.</small>
-    </label>
+    <ui:campo-senha rotulo="Senha" nome="senha" maxlength="255"
+                    dica="A senha e sempre redefinida: obrigatoria tambem ao editar." />
 </ui:drawer>
 
-<%@ include file="/WEB-INF/jsp/fragments/scripts.jspf" %>
-</body>
-</html>
+<ui:shell-fim />

@@ -37,40 +37,134 @@
     <!-- ============================================================ shell -->
     <section id="shell" class="grid gap-3">
         <h2 class="text-xl font-semibold">Shell — drawer + navbar + menu</h2>
-        <div class="drawer lg:drawer-open rounded-box border border-base-300 bg-base-100">
-            <input id="preview-drawer" type="checkbox" class="drawer-toggle">
-            <div class="drawer-content">
-                <div class="navbar sticky top-0 z-20 bg-base-100/80 backdrop-blur">
-                    <div class="navbar-start">
-                        <label for="preview-drawer" class="btn btn-square btn-ghost lg:hidden" aria-label="Abrir menu">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <p class="text-base-content/60">
+            Espelho de <code>fragments/sidebar.jspf</code> + <code>topbar.jspf</code> +
+            <code>ui:nav-grupo</code>/<code>ui:nav-item</code> + <code>ui:shell</code>.
+            A lateral fica <strong>sobre o fundo da página</strong> (sem <code>bg-base-100</code>,
+            borda ou sombra no <code>&lt;aside&gt;</code>) e a topbar é uma linha única com
+            <code>border-b</code>. Fora do app, <code>.app-sidebar</code>,
+            <code>.app-topbar</code>, <code>.app-card-head</code> e
+            <code>.app-card-filtros</code> não têm as regras de <code>custom.css</code>.
+        </p>
+        <div class="drawer lg:drawer-open">
+            <input id="preview-drawer" type="checkbox" class="drawer-toggle" aria-label="Alternar menu lateral">
+            <div class="drawer-content rounded-box border border-base-300 bg-base-100">
+                <header class="app-topbar navbar">
+                    <div class="navbar-start gap-1">
+                        <label for="preview-drawer" class="btn btn-square btn-sm btn-ghost lg:hidden"
+                               aria-controls="preview-drawer" aria-label="Abrir menu">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-5" aria-hidden="true"><path d="M4 6l16 0" /><path d="M4 12l16 0" /><path d="M4 18l16 0" /></svg>
                         </label>
-                        <span class="px-2 font-serif text-lg">Gerenciador de Chamados</span>
+                        <span class="mx-2 hidden h-4 w-px shrink-0 bg-base-300 lg:block" aria-hidden="true"></span>
+                        <h1 class="font-display truncate text-lg font-semibold">Painel do Administrador</h1>
                     </div>
                     <div class="navbar-end gap-2">
-                        <span class="badge badge-ghost badge-sm">Administrador</span>
-                        <button class="btn btn-sm">Sair</button>
+                        <span class="badge badge-ghost badge-sm gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-3.5 shrink-0" aria-hidden="true"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="3" /></svg>
+                            Administrador
+                        </span>
+                    </div>
+                </header>
+                <div class="p-6">
+                    <!-- ui:card-head (com o subtitulo opcional) + faixa de filtros + paginacao -->
+                    <div class="app-card-head">
+                        <div class="app-card-head__texto">
+                            <p class="eyebrow">Espaços do condomínio</p>
+                            <h2>Áreas cadastradas</h2>
+                            <p class="text-sm opacity-70">O subtítulo opcional do ui:card-head.</p>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm">Nova área</button>
+                    </div>
+
+                    <div class="app-card-filtros app-card-filtros--campos">
+                        <label class="field">
+                            <span>Status</span>
+                            <select class="select"><option>Todos</option></select>
+                        </label>
+                        <div class="button-row">
+                            <button type="button" class="btn btn-primary">Filtrar</button>
+                            <a href="#" class="btn">Limpar</a>
+                        </div>
+                    </div>
+
+                    <div class="pagination">
+                        <a class="btn" href="#">Anterior</a>
+                        <span>Página 1 de 3</span>
+                        <a class="btn" href="#">Próxima</a>
+                    </div>
+
+                    <!-- Coluna de acoes: icone + tooltip, alinhada a direita -->
+                    <div class="cell-actions app-tabela-acoes">
+                        <a href="#" class="btn btn-ghost btn-sm btn-square tooltip" data-tip="Detalhar" aria-label="Detalhar">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-4" aria-hidden="true"><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" /></svg>
+                        </a>
+                        <button type="button" class="btn btn-ghost btn-sm btn-square app-btn-perigo tooltip" data-tip="Remover" aria-label="Remover">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-4" aria-hidden="true"><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /></svg>
+                        </button>
+                    </div>
+
+                    <div class="empty-state compact">
+                        <p>Estado vazio do <code>ui:vazio</code>.</p>
                     </div>
                 </div>
-                <div class="p-6">
-                    <p class="text-base-content/60">Conteúdo da página (page-content: grid + max-width + gap).</p>
-                </div>
             </div>
-            <div class="drawer-side z-30">
+            <div class="drawer-side z-30 p-1.5 lg:p-2">
                 <label for="preview-drawer" class="drawer-overlay" aria-label="Fechar menu"></label>
-                <aside class="min-h-full w-72 bg-base-100 p-4">
-                    <p class="px-4 py-2 text-xs uppercase tracking-widest text-base-content/60">Central de Operações</p>
-                    <ul class="menu menu-lg w-full">
-                        <li><a aria-current="page" class="menu-active">Início</a></li>
-                        <li><a>Blocos</a></li>
-                        <li><a>Áreas</a></li>
-                        <li><a>Reservas</a></li>
-                        <li><a>Agenda</a></li>
-                        <li><a>Usuários</a></li>
-                        <li><a>Chamados</a></li>
-                    </ul>
-                    <div class="divider"></div>
-                    <p class="px-4 text-sm text-base-content/60">Perfil ativo<br><strong>Administrador</strong></p>
+                <aside class="app-sidebar flex h-full w-72 flex-col bg-base-200 lg:bg-transparent">
+                    <div class="flex shrink-0 items-center p-1.5">
+                        <a href="#" class="flex w-full items-center gap-2 rounded-field px-2 py-2 transition-colors hover:bg-base-content/10">
+                            <span class="grid size-8 shrink-0 place-items-center rounded-field bg-primary text-primary-content">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-5" aria-hidden="true"><path d="M8 9l5 5v7h-5v-4m0 4h-5v-7l5 -5m1 1v-6a1 1 0 0 1 1 -1h10a1 1 0 0 1 1 1v17h-8" /></svg>
+                            </span>
+                            <span class="font-display truncate text-base font-semibold">Gerenciador de Chamados</span>
+                        </a>
+                    </div>
+
+                    <nav class="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto px-1.5 pb-1.5" aria-label="Navegacao principal">
+                        <div class="grid gap-0.5">
+                            <p class="px-2 text-xs font-semibold tracking-wider uppercase opacity-60">Operação</p>
+                            <ul class="menu w-full">
+                                <li>
+                                    <a href="#" class="menu-active" aria-current="page">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-4 shrink-0" aria-hidden="true"><path d="M5 4h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1" /><path d="M15 12h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1" /></svg>
+                                        <span class="min-w-0 truncate">Início</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-4 shrink-0" aria-hidden="true"><path d="M15 5l0 2" /><path d="M5 5h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-3a2 2 0 0 0 0 -4v-3a2 2 0 0 1 2 -2" /></svg>
+                                        <span class="min-w-0 truncate">Chamados</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+
+                    <div class="shrink-0 border-t border-base-300 p-1.5">
+                        <div class="dropdown dropdown-top w-full">
+                            <div tabindex="0" role="button"
+                                 class="flex w-full cursor-pointer items-center gap-2 rounded-field p-2 text-left transition-colors hover:bg-base-content/10 focus-visible:bg-base-content/10">
+                                <div class="avatar avatar-placeholder shrink-0">
+                                    <div class="h-8 w-8 bg-neutral text-xs font-semibold text-neutral-content">AD</div>
+                                </div>
+                                <span class="grid min-w-0 flex-1 leading-tight">
+                                    <span class="truncate text-sm font-medium">admin</span>
+                                    <span class="truncate text-xs opacity-60">Administrador</span>
+                                </span>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-4 shrink-0 opacity-60" aria-hidden="true"><circle cx="12" cy="5" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="12" cy="19" r="1" /></svg>
+                            </div>
+                            <ul tabindex="0"
+                                class="dropdown-content menu z-50 w-full rounded-box border border-base-300 bg-base-100 p-2 shadow-lg">
+                                <li class="menu-title"><span class="truncate">admin@condominio.local</span></li>
+                                <li>
+                                    <button type="button" class="text-error">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="size-4 shrink-0" aria-hidden="true"><path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" /><path d="M9 12h12l-3 -3" /><path d="M18 15l3 -3" /></svg>
+                                        <span>Sair</span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </aside>
             </div>
         </div>

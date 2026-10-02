@@ -1,39 +1,25 @@
+<%@ page pageEncoding="UTF-8" %>
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
-<body data-page="admin-bloco-detalhe">
-<div class="drawer lg:drawer-open">
-    <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="drawer-content">
-        <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main id="conteudo-principal" class="page-content">
-            <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
+<ui:shell dataPagina="admin-bloco-detalhe">
 
-            <section class="hero-card">
-                <p class="eyebrow">Estrutura fisica</p>
-                <h2>${bloco.identificacao}</h2>
-                <div class="hero-metrics">
-                    <span><strong>${bloco.quantidadeAndares}</strong> andares</span>
-                    <span><strong>${bloco.apartamentosPorAndar}</strong> apartamentos por andar</span>
+            <section class="relative overflow-hidden rounded-2xl border border-white/70 bg-base-100 p-6 transition duration-200 hover:-translate-y-0.5 hover:border-accent/20 hover:shadow-painel">
+                <p class="mb-2 text-xs tracking-eyebrow text-base-content/60 uppercase">Estrutura fisica</p>
+                <h2 class="font-display text-2xl font-semibold">${bloco.identificacao}</h2>
+                <div class="flex flex-wrap gap-5">
+                    <span class="text-base-content/60"><strong>${bloco.quantidadeAndares}</strong> andares</span>
+                    <span class="text-base-content/60"><strong>${bloco.apartamentosPorAndar}</strong> apartamentos por andar</span>
                 </div>
             </section>
 
             <section class="card">
                 <div class="card-body">
-                <div class="section-header">
-                    <div>
-                        <p class="eyebrow">Geracao automatica</p>
-                        <h2>Unidades do bloco</h2>
-                    </div>
+                <ui:card-head titulo="Unidades do bloco" descricao="Geracao automatica">
                     <a href="${ctx}/admin/blocos" class="btn">Voltar</a>
-                </div>
+                </ui:card-head>
 
                 <c:choose>
                     <c:when test="${empty unidades}">
-                        <c:set var="vazioTitulo" value="Nenhuma unidade encontrada" />
-                        <c:set var="vazioMensagem" value="Verifique se o bloco foi gerado corretamente." />
-                        <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                        <ui:vazio titulo="Nenhuma unidade encontrada" mensagem="Verifique se o bloco foi gerado corretamente." />
                     </c:when>
                     <c:otherwise>
                         <div class="overflow-x-auto">
@@ -53,10 +39,10 @@
                                         <td>
                                             <c:choose>
                                                 <c:when test="${empty unidade.moradores}">
-                                                    <span class="badge badge-neutral">Sem moradores</span>
+                                                    <ui:badge>Sem moradores</ui:badge>
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <div class="stack-list">
+                                                    <div class="grid gap-4">
                                                         <c:forEach items="${unidade.moradores}" var="morador">
                                                             <div>
                                                                 <strong>${morador.nome}</strong>
@@ -75,20 +61,8 @@
                     </c:otherwise>
                 </c:choose>
 
-                <div class="pagination">
-                    <c:if test="${unidadesPage.hasPrevious}">
-                        <a class="btn" href="${ctx}/admin/blocos/${bloco.id}?page=${unidadesPage.page - 1}&size=${unidadesPage.size}">Anterior</a>
-                    </c:if>
-                    <span>Pagina ${unidadesPage.page + 1} de ${unidadesPage.totalPages == 0 ? 1 : unidadesPage.totalPages}</span>
-                    <c:if test="${unidadesPage.hasNext}">
-                        <a class="btn" href="${ctx}/admin/blocos/${bloco.id}?page=${unidadesPage.page + 1}&size=${unidadesPage.size}">Proxima</a>
-                    </c:if>
-                </div>
+                <ui:paginacao pagina="${unidadesPage}" url="${ctx}/admin/blocos/${bloco.id}" />
                             </div>
             </section>
-        </main>
-    </div>
-</div>
-<%@ include file="/WEB-INF/jsp/fragments/scripts.jspf" %>
-</body>
-</html>
+</ui:shell>
+<ui:shell-fim />
