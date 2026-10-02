@@ -9,38 +9,34 @@
                     </ui:card-head>
 
                     <form method="get" action="${ctx}/morador/chamados" class="app-card-filtros app-card-filtros--campos">
-                        <label class="field">
-                            <span>Status</span>
+                        <ui:campo rotulo="Status">
                             <select class="select" name="statusId">
                                 <option value="">Todos</option>
                                 <c:forEach items="${statusDisponiveis}" var="status">
                                     <option value="${status.id}" ${filtroStatusId eq status.id ? 'selected' : ''}>${status.nome}</option>
                                 </c:forEach>
                             </select>
-                        </label>
-                        <label class="field">
-                            <span>Unidade</span>
+                        </ui:campo>
+                        <ui:campo rotulo="Unidade">
                             <select class="select" name="unidadeId">
                                 <option value="">Todas</option>
                                 <c:forEach items="${unidadesDisponiveis}" var="unidade">
                                     <option value="${unidade.id}" ${filtroUnidadeId eq unidade.id ? 'selected' : ''}>${unidade.identificacao}</option>
                                 </c:forEach>
                             </select>
-                        </label>
-                        <label class="field">
-                            <span>Tipo</span>
+                        </ui:campo>
+                        <ui:campo rotulo="Tipo">
                             <select class="select" name="tipoChamadoId">
                                 <option value="">Todos</option>
                                 <c:forEach items="${tiposChamadoDisponiveis}" var="tipo">
                                     <option value="${tipo.id}" ${filtroTipoChamadoId eq tipo.id ? 'selected' : ''}>${tipo.titulo}</option>
                                 </c:forEach>
                             </select>
-                        </label>
-                        <label class="field">
-                            <span>Data de abertura</span>
+                        </ui:campo>
+                        <ui:campo rotulo="Data de abertura">
                             <input class="input" type="date" name="dataAbertura" value="${filtroDataAbertura}">
-                        </label>
-                        <div class="button-row">
+                        </ui:campo>
+                        <div class="flex flex-wrap items-center gap-3">
                             <button type="submit" class="btn btn-primary">Filtrar</button>
                             <a href="${ctx}/morador/chamados" class="btn">Limpar</a>
                         </div>

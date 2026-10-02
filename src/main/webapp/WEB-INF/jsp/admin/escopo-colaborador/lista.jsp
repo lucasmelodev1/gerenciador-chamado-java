@@ -7,13 +7,11 @@
                     <div class="card-body">
                     <ui:card-head titulo="Designar colaborador por tipo" descricao="Operacao" />
 
-                    <form method="get" action="${ctx}/admin/escopo-colaborador" class="stack-form compact-form">
-                        <label class="field">
-                            <span>Buscar por e-mail</span>
+                    <form method="get" action="${ctx}/admin/escopo-colaborador" class="grid gap-4 mt-4">
+                        <ui:campo rotulo="Buscar por e-mail">
                             <input class="input w-full" type="text" name="colaboradorEmail" value="${filtroColaboradorEmail}" placeholder="Ex.: ana" />
-                        </label>
-                        <label class="field">
-                            <span>Colaborador</span>
+                        </ui:campo>
+                        <ui:campo rotulo="Colaborador">
                             <select class="select w-full" name="colaboradorId" data-auto-submit>
                                 <option value="">Escolha um colaborador</option>
                                 <c:forEach items="${colaboradoresDisponiveis}" var="colaborador">
@@ -22,8 +20,8 @@
                                     </option>
                                 </c:forEach>
                             </select>
-                        </label>
-                        <div class="button-row">
+                        </ui:campo>
+                        <div class="flex flex-wrap items-center gap-3">
                             <button type="submit" class="btn btn-primary">Buscar colaborador</button>
                             <a href="${ctx}/admin/escopo-colaborador" class="btn">Limpar</a>
                         </div>
@@ -52,7 +50,7 @@
                                                 <span>Prazo: ${tipoChamado.prazoHoras}h</span>
                                             </div>
                                             <ui:acao-form acao="${ctx}/admin/colaboradores/${colaboradorSelecionado.id}/tipos-chamado/${tipoChamado.id}?dashboard=true"
-                                                          texto="Desvincular" variante="error" classe="inline-form"
+                                                          texto="Desvincular" variante="error" classe="flex flex-wrap items-center gap-3"
                                                           confirmacao="Desvincular este tipo de chamado do colaborador?" />
                                         </div>
                                     </c:forEach>
@@ -62,11 +60,10 @@
 
                         <div class="divider"></div>
 
-                        <form method="post" action="${ctx}/admin/colaboradores/${colaboradorSelecionado.id}/tipos-chamado?dashboard=true" class="stack-form compact-form">
+                        <form method="post" action="${ctx}/admin/colaboradores/${colaboradorSelecionado.id}/tipos-chamado?dashboard=true" class="grid gap-4 mt-4">
                             <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
                             <input type="hidden" name="_method" value="put">
-                            <label class="field">
-                                <span>Selecionar tipo de chamado</span>
+                            <ui:campo rotulo="Selecionar tipo de chamado">
                                 <select class="select w-full" name="tipoChamadoId" required>
                                     <option value="">Escolha um tipo</option>
                                     <c:forEach items="${tiposChamadoDisponiveis}" var="tipoChamado">
@@ -77,7 +74,7 @@
                                         </option>
                                     </c:forEach>
                                 </select>
-                            </label>
+                            </ui:campo>
                             <button type="submit" class="btn btn-primary">Vincular tipo de chamado</button>
                         </form>
                     </c:if>

@@ -15,15 +15,14 @@
     </ui:card-head>
 
     <div class="mb-4 flex flex-wrap items-end justify-between gap-4">
-        <label class="field">
-            <span>Filtrar por área</span>
+        <ui:campo rotulo="Filtrar por área">
             <select class="select w-full" id="filtro-area">
                 <option value="">Todas as áreas</option>
                 <c:forEach items="${areasFiltro}" var="area">
                     <option value="${area.id}">${fn:escapeXml(area.nome)}</option>
                 </c:forEach>
             </select>
-        </label>
+        </ui:campo>
 
         <div class="flex flex-wrap items-center gap-3">
             <c:set var="rotuloAnterior" value="${viewAtual eq 'semana' ? 'Semana anterior' : 'Mês anterior'}" />

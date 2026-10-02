@@ -62,15 +62,13 @@
            titulo="Novo tipo"
            descricao="O prazo define o SLA usado no acompanhamento dos chamados."
            acao="${ctx}/admin/tipos-chamado">
-    <label class="field">
-        <span>Titulo</span>
+    <ui:campo rotulo="Titulo">
         <input class="input w-full" type="text" name="titulo" value="${tipoChamadoForm.titulo}" placeholder="Vazamento" maxlength="255" required>
-    </label>
+    </ui:campo>
 
-    <label class="field">
-        <span>Prazo maximo em horas</span>
+    <ui:campo rotulo="Prazo maximo em horas">
         <input class="input w-full" type="number" min="1" name="prazoHoras" value="${tipoChamadoForm.prazoHoras}" required>
-    </label>
+    </ui:campo>
 </ui:drawer>
 
 <ui:shell-fim />

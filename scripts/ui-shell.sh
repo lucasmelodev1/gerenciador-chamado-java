@@ -126,7 +126,7 @@ for arq in sorted(DIR.glob("*.html")):
     if '<svg' not in tb: bad("topbar sem icone")
     if not re.search(r'<h1 class="font-display truncate text-lg font-semibold">[^<]+</h1>', tb):
         bad("titulo da tela ausente na topbar")
-    for proibido in ("/logout", "Sair", "inline-form"):
+    for proibido in ("/logout", "Sair", "app-logout"):
         if proibido in tb: bad(f"topbar ainda contem {proibido!r} (deveria estar so na lateral)")
 
 print(f"paginas verificadas: {paginas}")

@@ -62,20 +62,17 @@
            titulo="Novo bloco"
            descricao="As unidades do bloco sao geradas automaticamente."
            acao="${ctx}/admin/blocos">
-    <label class="field">
-        <span>Identificacao</span>
+    <ui:campo rotulo="Identificacao">
         <input class="input w-full" type="text" name="identificacao" value="${blocoForm.identificacao}" placeholder="Bloco A" maxlength="255" required>
-    </label>
+    </ui:campo>
 
     <div class="form-grid">
-        <label class="field">
-            <span>Andares</span>
+        <ui:campo rotulo="Andares">
             <input class="input w-full" type="number" name="quantidadeAndares" min="1" value="${blocoForm.quantidadeAndares}" required>
-        </label>
-        <label class="field">
-            <span>Apartamentos por andar</span>
+        </ui:campo>
+        <ui:campo rotulo="Apartamentos por andar">
             <input class="input w-full" type="number" name="apartamentosPorAndar" min="1" value="${blocoForm.apartamentosPorAndar}" required>
-        </label>
+        </ui:campo>
     </div>
 </ui:drawer>
 

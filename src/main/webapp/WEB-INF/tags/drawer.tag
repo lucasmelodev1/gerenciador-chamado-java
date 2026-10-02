@@ -18,10 +18,9 @@
         <ui:drawer id="drawer-area" titulo="Nova area"
                    descricao="Cadastre um espaco do condominio."
                    acao="${ctx}/admin/areas" rotuloSalvar="Cadastrar">
-            <label class="field">
-                <span>Nome</span>
+            <ui:campo rotulo="Nome">
                 <input class="input w-full" name="nome" required>
-            </label>
+            </ui:campo>
         </ui:drawer>
 
     O esqueleto (backdrop, topo, corpo, form com CSRF e rodape) vive em `ui:painel`; este

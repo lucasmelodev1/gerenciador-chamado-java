@@ -15,7 +15,7 @@
         <ui:acao-form acao="${ctx}/morador/reservas/${reserva.id}" texto="Cancelar"
                       variante="link" confirmacao="Cancelar esta reserva?" />
         <ui:acao-form acao="${ctx}/admin/usuarios/${usuario.id}" texto="Remover usuario"
-                      variante="error" classe="inline-form danger-zone"
+                      variante="error" classe="flex flex-wrap items-center gap-3 mt-5"
                       confirmacao="Remover este usuario? A acao nao pode ser desfeita." />
 
     Atributos:

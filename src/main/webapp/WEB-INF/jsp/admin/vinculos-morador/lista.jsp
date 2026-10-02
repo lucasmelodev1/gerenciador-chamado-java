@@ -31,13 +31,11 @@
                     <div class="card-body">
                     <ui:card-head titulo="Vincular morador a unidade" descricao="Operacao" />
 
-                    <form method="get" action="${ctx}/admin/vinculos-morador" class="stack-form compact-form">
-                        <label class="field">
-                            <span>Buscar por e-mail</span>
+                    <form method="get" action="${ctx}/admin/vinculos-morador" class="grid gap-4 mt-4">
+                        <ui:campo rotulo="Buscar por e-mail">
                             <input class="input w-full" type="text" name="moradorEmail" value="${filtroMoradorEmail}" placeholder="Ex.: mar" />
-                        </label>
-                        <label class="field">
-                            <span>Morador</span>
+                        </ui:campo>
+                        <ui:campo rotulo="Morador">
                             <select class="select w-full" name="moradorId" data-auto-submit>
                                 <option value="">Escolha um morador</option>
                                 <c:forEach items="${moradoresDisponiveis}" var="morador">
@@ -46,15 +44,14 @@
                                     </option>
                                 </c:forEach>
                             </select>
-                        </label>
-                        <div class="button-row">
+                        </ui:campo>
+                        <div class="flex flex-wrap items-center gap-3">
                             <button type="submit" class="btn btn-primary">Buscar morador</button>
                             <a href="${ctx}/admin/vinculos-morador" class="btn">Limpar</a>
                         </div>
 
                         <c:if test="${not empty moradorSelecionadoId}">
-                            <label class="field">
-                                <span>Bloco</span>
+                            <ui:campo rotulo="Bloco">
                                 <select class="select w-full" name="blocoId" data-auto-submit>
                                     <option value="">Escolha um bloco</option>
                                     <c:forEach items="${blocosDisponiveis}" var="bloco">
@@ -63,7 +60,7 @@
                                         </option>
                                     </c:forEach>
                                 </select>
-                            </label>
+                            </ui:campo>
                         </c:if>
                     </form>
 
@@ -90,7 +87,7 @@
                                                 <span>${unidade.blocoIdentificacao} - Andar ${unidade.andar}</span>
                                             </div>
                                             <ui:acao-form acao="${ctx}/admin/moradores/${moradorSelecionadoId}/unidades/${unidade.id}?dashboard=true"
-                                                          texto="Desvincular" variante="error" classe="inline-form"
+                                                          texto="Desvincular" variante="error" classe="flex flex-wrap items-center gap-3"
                                                           confirmacao="Desvincular esta unidade do morador?">
                                                 <c:if test="${not empty blocoSelecionadoId}">
                                                     <input type="hidden" name="blocoId" value="${blocoSelecionadoId}">
@@ -104,12 +101,11 @@
 
                         <c:if test="${not empty unidadesBloco}">
                             <div class="divider"></div>
-                            <form method="post" action="${ctx}/admin/moradores/${moradorSelecionadoId}/unidades?dashboard=true" class="stack-form compact-form">
+                            <form method="post" action="${ctx}/admin/moradores/${moradorSelecionadoId}/unidades?dashboard=true" class="grid gap-4 mt-4">
                                 <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
                                 <input type="hidden" name="_method" value="put">
                                 <input type="hidden" name="blocoId" value="${blocoSelecionadoId}">
-                                <label class="field">
-                                    <span>Unidade do bloco selecionado</span>
+                                <ui:campo rotulo="Unidade do bloco selecionado">
                                     <select class="select w-full" name="unidadeId" required>
                                         <option value="">Escolha uma unidade</option>
                                         <c:forEach items="${unidadesBloco}" var="unidade">
@@ -119,7 +115,7 @@
                                             </option>
                                         </c:forEach>
                                     </select>
-                                </label>
+                                </ui:campo>
                                 <button type="submit" class="btn btn-primary">Vincular morador</button>
                             </form>
                         </c:if>
@@ -132,7 +128,7 @@
                         <div class="card-body">
                         <ui:card-head titulo="Moradores cadastrados" descricao="Base cadastrada" />
 
-                        <form method="get" action="${ctx}/admin/vinculos-morador" class="stack-form compact-form">
+                        <form method="get" action="${ctx}/admin/vinculos-morador" class="grid gap-4 mt-4">
                             <c:if test="${not empty moradorSelecionadoId}">
                                 <input type="hidden" name="moradorId" value="${moradorSelecionadoId}" />
                             </c:if>
@@ -145,11 +141,10 @@
                             <c:if test="${not empty filtroSemUnidadeEmail}">
                                 <input type="hidden" name="semUnidadeEmail" value="${filtroSemUnidadeEmail}" />
                             </c:if>
-                            <label class="field">
-                                <span>Buscar moradores por e-mail</span>
+                            <ui:campo rotulo="Buscar moradores por e-mail">
                                 <input class="input w-full" type="text" name="cadastradosEmail" value="${filtroCadastradosEmail}" placeholder="Ex.: mar" />
-                            </label>
-                            <div class="button-row">
+                            </ui:campo>
+                            <div class="flex flex-wrap items-center gap-3">
                                 <button type="submit" class="btn btn-primary">Buscar moradores</button>
                             </div>
                         </form>
@@ -194,7 +189,7 @@
                         <div class="card-body">
                         <ui:card-head titulo="Moradores sem unidade" descricao="Pendencias" />
 
-                        <form method="get" action="${ctx}/admin/vinculos-morador" class="stack-form compact-form">
+                        <form method="get" action="${ctx}/admin/vinculos-morador" class="grid gap-4 mt-4">
                             <c:if test="${not empty moradorSelecionadoId}">
                                 <input type="hidden" name="moradorId" value="${moradorSelecionadoId}" />
                             </c:if>
@@ -207,11 +202,10 @@
                             <c:if test="${not empty filtroCadastradosEmail}">
                                 <input type="hidden" name="cadastradosEmail" value="${filtroCadastradosEmail}" />
                             </c:if>
-                            <label class="field">
-                                <span>Buscar pendentes por e-mail</span>
+                            <ui:campo rotulo="Buscar pendentes por e-mail">
                                 <input class="input w-full" type="text" name="semUnidadeEmail" value="${filtroSemUnidadeEmail}" placeholder="Ex.: mar" />
-                            </label>
-                            <div class="button-row">
+                            </ui:campo>
+                            <div class="flex flex-wrap items-center gap-3">
                                 <button type="submit" class="btn btn-primary">Buscar pendentes</button>
                             </div>
                         </form>

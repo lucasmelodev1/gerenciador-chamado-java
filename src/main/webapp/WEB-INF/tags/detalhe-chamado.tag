@@ -72,25 +72,24 @@
             </div>
 
             <c:if test="${modo eq 'gestao' and not chamado.finalizado}">
-                <form method="post" action="${base}/${chamado.id}/status" class="inline-panel">
+                <form method="post" action="${base}/${chamado.id}/status" class="flex flex-wrap items-end gap-3 mt-5">
                     <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
                     <input type="hidden" name="_method" value="patch">
-                    <label class="field">
-                        <span>Atualizar status</span>
+                    <ui:campo rotulo="Atualizar status" classe="flex-1 basis-60">
                         <select class="select w-full" name="statusId" required>
                             <option value="">Selecione</option>
                             <c:forEach items="${statusDisponiveis}" var="status">
                                 <option value="${status.id}" ${chamado.statusId eq status.id ? 'selected' : ''}>${status.nome}</option>
                             </c:forEach>
                         </select>
-                    </label>
+                    </ui:campo>
                     <button type="submit" class="btn btn-primary">Salvar status</button>
                 </form>
             </c:if>
 
             <c:if test="${modo eq 'morador' and chamado.finalizado}">
                 <ui:acao-form acao="${base}/${chamado.id}/reabrir" metodo="patch" texto="Reabrir chamado"
-                              variante="primary" classe="inline-form"
+                              variante="primary" classe="flex flex-wrap items-center gap-3"
                               confirmacao="Reabrir este chamado?" />
             </c:if>
         </div>
@@ -101,18 +100,16 @@
             <ui:card-head titulo="Comentarios" descricao="${eyebrowComentarios}" />
 
             <c:if test="${not chamado.finalizado}">
-                <form method="post" action="${base}/${chamado.id}/comentarios" enctype="multipart/form-data" class="stack-form">
+                <form method="post" action="${base}/${chamado.id}/comentarios" enctype="multipart/form-data" class="grid gap-4">
                     <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                    <label class="field">
-                        <span>Novo comentario</span>
+                    <ui:campo rotulo="Novo comentario">
                         <textarea class="textarea w-full" name="mensagem" rows="4" maxlength="255" required data-character-count></textarea>
-                        <small class="field-hint" data-character-output>0 caracteres</small>
-                    </label>
-                    <label class="field">
-                        <span>Anexo do comentario</span>
+                        <small class="text-base-content/60" data-character-output>0 caracteres</small>
+                    </ui:campo>
+                    <ui:campo rotulo="Anexo do comentario">
                         <input class="file-input" type="file" name="arquivo">
-                        <small class="field-hint">${dicaAnexo}</small>
-                    </label>
+                        <small class="text-base-content/60">${dicaAnexo}</small>
+                    </ui:campo>
                     <button type="submit" class="btn btn-primary">Adicionar comentario</button>
                 </form>
             </c:if>
@@ -164,13 +161,12 @@
                         <ui:vazio mensagem="Chamados finalizados nao aceitam novos anexos ate serem reabertos." compacto="true" />
                     </c:when>
                     <c:otherwise>
-                        <form method="post" action="${base}/${chamado.id}/anexos" enctype="multipart/form-data" class="stack-form">
+                        <form method="post" action="${base}/${chamado.id}/anexos" enctype="multipart/form-data" class="grid gap-4">
                             <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                            <label class="field">
-                                <span>Adicionar arquivo</span>
+                            <ui:campo rotulo="Adicionar arquivo">
                                 <input class="file-input" type="file" name="arquivo" required>
-                            </label>
-                            <small class="field-hint">Tamanho maximo: 5 MB.</small>
+                            </ui:campo>
+                            <small class="text-base-content/60">Tamanho maximo: 5 MB.</small>
                             <button type="submit" class="btn btn-primary">Enviar anexo</button>
                         </form>
                     </c:otherwise>

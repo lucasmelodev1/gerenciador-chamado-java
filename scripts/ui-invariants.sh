@@ -37,13 +37,13 @@ SNAP="baseline/invariants"
 
 # Hooks owned by the JS/CSS and by calendar.js. Each must never drop below its snapshot count.
 # data-sidebar* is excluded on purpose: S7 replaces the sidebar JS with the daisyUI drawer.
-# Os hooks do painel (`data-drawer*`) NAO estao aqui: eles vivem no componente unico
-# (`tags/painel.tag`) e a contagem mediria duplicacao — a S31 fundiu `drawer.tag` e
-# `dialog.tag` em `painel.tag` e derrubou os totais sem perder hook nenhum. Eles sao
-# conferidos por `check_painel_hooks`, estruturalmente.
+# Os hooks do painel (`data-drawer*`) e do campo de senha (`data-password-*`) NAO estao aqui:
+# eles vivem num componente unico (`tags/painel.tag` e `tags/campo-senha.tag`) e a contagem
+# mediria duplicacao — a S31 fundiu `drawer.tag` e `dialog.tag` em `painel.tag`, e o F3 da
+# S33 levou os tres campos de senha para `campo-senha.tag`, derrubando os totais sem perder
+# hook nenhum. Eles sao conferidos estruturalmente por `check_componente_hooks`.
 FROZEN_HOOKS=(
     data-confirm
-    data-password-toggle data-password-input
     data-character-count data-character-output
     data-auto-submit
     data-filter-input data-filter-target data-filter-table
@@ -55,12 +55,12 @@ FROZEN_HOOKS=(
     data-inicio-formatado data-fim-formatado data-motivo
 )
 
-# Contrato do painel modal: um tag, um lugar. `data-drawer-abrir` fica de fora porque e
-# gatilho da TELA (cada botao "Novo" aponta para o painel que abre), nao do componente.
-FROZEN_PAINEL=(
-    data-drawer data-drawer-fechar data-drawer-aberto data-drawer-backdrop
-    data-drawer-editar data-drawer-form data-drawer-titulo
-    data-drawer-travar data-drawer-espelho
+# Hooks de componentes: o que importa e que o TAG que os emite os defina. `data-drawer-abrir`
+# fica de fora porque e gatilho da TELA (cada botao "Novo" aponta para o painel que abre),
+# nao do componente.
+FROZEN_COMPONENTES=(
+    "painel|src/main/webapp/WEB-INF/tags/painel.tag|data-drawer,data-drawer-fechar,data-drawer-aberto,data-drawer-backdrop,data-drawer-editar,data-drawer-form,data-drawer-titulo,data-drawer-travar,data-drawer-espelho"
+    "campo de senha|src/main/webapp/WEB-INF/tags/campo-senha.tag|data-password-input,data-password-toggle"
 )
 
 # Calendar contract consumed by calendar.js (ids and hooks inside reservas-agenda.jspf,
@@ -245,17 +245,21 @@ check_page_markers() {
 
 # O painel modal (drawer/dialogo) e um componente unico: os hooks do JS precisam existir em
 # `tags/painel.tag`, nao num numero fixo de vezes no markup.
-check_painel_hooks() {
-    local hook faltando=""
-    for hook in "${FROZEN_PAINEL[@]}"; do
-        grep -q "$hook" src/main/webapp/WEB-INF/tags/painel.tag || faltando="$faltando $hook"
-    done
+check_componente_hooks() {
+    local linha rotulo arquivo hooks hook faltando
+    for linha in "${FROZEN_COMPONENTES[@]}"; do
+        IFS='|' read -r rotulo arquivo hooks <<< "$linha"
+        faltando=""
+        for hook in ${hooks//,/ }; do
+            grep -q "$hook" "$arquivo" || faltando="$faltando $hook"
+        done
 
-    if [ -z "$faltando" ]; then
-        ok "hooks do painel definidos em tags/painel.tag (${#FROZEN_PAINEL[@]})"
-    else
-        bad "hook(s) do painel ausente(s) em tags/painel.tag:$faltando"
-    fi
+        if [ -z "$faltando" ]; then
+            ok "hooks do $rotulo definidos em $arquivo"
+        else
+            bad "hook(s) do $rotulo ausente(s) em $arquivo:$faltando"
+        fi
+    done
 }
 
 check_form_contract() {
@@ -319,7 +323,7 @@ check() {
     check_file "form action URLs unchanged" "$SNAP/action-urls.txt" /tmp/ui-inv.actions
     check_form_contract
     check_page_markers
-    check_painel_hooks
+    check_componente_hooks
 
     echo "== contagens congeladas =="
     collect_counts > /tmp/ui-inv.counts

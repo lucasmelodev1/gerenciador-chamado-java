@@ -76,8 +76,8 @@ check('class="app-drawer-topo"' in d, "falta .app-drawer-topo")
 check('class="app-drawer-corpo"' in d, "falta .app-drawer-corpo")
 check('class="app-drawer-rodape"' in d, "falta .app-drawer-rodape")
 
-# slot livre
-check('<label class="field">' in d and 'name="nome"' in d and 'name="status"' in d, "slot livre nao renderizou os campos")
+# slot livre (o `ui:campo` emite o `<label class="grid gap-2">`, ex-`.field`)
+check('<label class="grid gap-2">' in d and 'name="nome"' in d and 'name="status"' in d, "slot livre nao renderizou os campos")
 
 # rodape: SO o botao Salvar, com icone
 rodape = re.search(r'<footer class="app-drawer-rodape">(.*?)</footer>', d, re.S)

@@ -82,10 +82,9 @@
            titulo="Novo status"
            descricao="Um status por etapa do atendimento. O inicial e o que o chamado recebe ao abrir."
            acao="${ctx}/admin/status-chamado">
-    <label class="field">
-        <span>Nome do status</span>
+    <ui:campo rotulo="Nome do status">
         <input class="input w-full" type="text" name="nome" value="${statusChamadoForm.nome}" placeholder="Em atendimento" maxlength="255" required>
-    </label>
+    </ui:campo>
 </ui:drawer>
 
 <ui:shell-fim />

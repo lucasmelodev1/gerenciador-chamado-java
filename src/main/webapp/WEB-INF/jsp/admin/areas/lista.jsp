@@ -79,19 +79,17 @@
            titulo="Nova area"
            descricao="Cadastre um espaco do condominio para uso nas reservas."
            acao="${ctx}/admin/areas">
-    <label class="field">
-        <span>Nome</span>
+    <ui:campo rotulo="Nome">
         <input class="input w-full" type="text" name="nome" placeholder="Piscina" maxlength="255" required>
-    </label>
+    </ui:campo>
 
-    <label class="field">
-        <span>Status</span>
+    <ui:campo rotulo="Status">
         <select class="select w-full" name="status" required>
             <c:forEach items="${statusAreaDisponiveis}" var="statusArea">
                 <option value="${statusArea.valor}">${statusArea.valor}</option>
             </c:forEach>
         </select>
-    </label>
+    </ui:campo>
 </ui:drawer>
 
 <ui:shell-fim />

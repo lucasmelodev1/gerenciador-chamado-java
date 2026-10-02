@@ -5,7 +5,7 @@
             <section class="card">
                 <div class="card-body">
                     <ui:card-head titulo="Minhas reservas" descricao="Areas comuns">
-                        <div class="button-row">
+                        <div class="flex flex-wrap items-center gap-3">
                             <a href="${ctx}/morador/reservas/nova" class="btn btn-primary">Nova reserva</a>
                             <a href="${ctx}/morador/reservas/agenda" class="btn">Ver agenda</a>
                             <a href="${ctx}/morador/reservas/disponibilidade" class="btn">Consultar disponibilidade</a>

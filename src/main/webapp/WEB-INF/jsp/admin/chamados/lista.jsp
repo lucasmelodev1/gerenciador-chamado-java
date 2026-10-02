@@ -10,24 +10,21 @@
                     <ui:card-head titulo="Fila completa de chamados" descricao="Monitoramento" />
 
                     <form method="get" action="${ctx}/admin/chamados" class="app-card-filtros app-card-filtros--campos">
-                        <label class="field">
-                            <span>Status</span>
+                        <ui:campo rotulo="Status">
                             <select class="select" name="statusId">
                                 <option value="">Todos</option>
                                 <c:forEach items="${statusDisponiveis}" var="status">
                                     <option value="${status.id}" ${filtroStatusId eq status.id ? 'selected' : ''}>${status.nome}</option>
                                 </c:forEach>
                             </select>
-                        </label>
-                        <label class="field">
-                            <span>Morador</span>
+                        </ui:campo>
+                        <ui:campo rotulo="Morador">
                             <input class="input" type="text" name="moradorNome" value="${filtroMoradorNome}" placeholder="Ex.: mar">
-                        </label>
-                        <label class="field">
-                            <span>Data de abertura</span>
+                        </ui:campo>
+                        <ui:campo rotulo="Data de abertura">
                             <input class="input" type="date" name="dataAbertura" value="${filtroDataAbertura}">
-                        </label>
-                        <div class="button-row">
+                        </ui:campo>
+                        <div class="flex flex-wrap items-center gap-3">
                             <button type="submit" class="btn btn-primary">Filtrar</button>
                             <a href="${ctx}/admin/chamados" class="btn">Limpar</a>
                         </div>

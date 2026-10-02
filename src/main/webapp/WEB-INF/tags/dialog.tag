@@ -13,10 +13,9 @@
                    acao="${ctx}/admin/reservas" varianteConfirmar="error"
                    iconeConfirmar="negar" rotuloConfirmar="Negar"
                    rotuloCancelar="Voltar">
-            <label class="field">
-                <span>Motivo</span>
+            <ui:campo rotulo="Motivo">
                 <input class="input w-full" type="text" name="motivo" maxlength="255" required>
-            </label>
+            </ui:campo>
         </ui:dialog>
 
     Uso (confirmacao simples, sem campos): so `titulo`, `descricao` e a acao.

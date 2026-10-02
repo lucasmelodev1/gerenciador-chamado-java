@@ -9,37 +9,29 @@
                         <ui:badge>${usuario.tipo}</ui:badge>
                     </ui:card-head>
 
-                    <form method="post" action="${ctx}/admin/usuarios/${usuario.id}" class="stack-form">
+                    <form method="post" action="${ctx}/admin/usuarios/${usuario.id}" class="grid gap-4">
                         <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
                         <input type="hidden" name="_method" value="patch">
-                        <label class="field">
-                            <span>Nome</span>
+                        <ui:campo rotulo="Nome">
                             <input class="input w-full" type="text" name="nome" value="${usuarioForm.nome}" maxlength="255" required>
-                        </label>
-                        <label class="field">
-                            <span>Email</span>
+                        </ui:campo>
+                        <ui:campo rotulo="Email">
                             <input class="input w-full" type="email" name="email" value="${usuarioForm.email}" maxlength="255" required>
-                        </label>
-                        <label class="field">
-                            <span>Perfil</span>
+                        </ui:campo>
+                        <ui:campo rotulo="Perfil">
                             <input class="input w-full" type="text" value="${usuario.tipo}" disabled>
                             <input type="hidden" name="tipo" value="${usuarioForm.tipo}">
-                        </label>
-                        <label class="field">
-                            <span>Nova senha</span>
-                            <div class="password-field">
-                                <input class="input w-full" type="password" name="senha" placeholder="Obrigatorio para salvar" maxlength="255" required data-password-input>
-                                <button type="button" class="btn btn-ghost" data-password-toggle>Mostrar</button>
-                            </div>
-                        </label>
-                        <div class="button-row">
+                        </ui:campo>
+                        <ui:campo-senha rotulo="Nova senha" nome="senha"
+                                        placeholder="Obrigatorio para salvar" maxlength="255" />
+                        <div class="flex flex-wrap items-center gap-3">
                             <button type="submit" class="btn btn-primary">Salvar alteracoes</button>
                             <a href="${ctx}/admin/usuarios" class="btn">Voltar</a>
                         </div>
                     </form>
 
                     <ui:acao-form acao="${ctx}/admin/usuarios/${usuario.id}" texto="Remover usuario"
-                                  variante="error" classe="inline-form danger-zone"
+                                  variante="error" classe="flex flex-wrap items-center gap-3 mt-5"
                                   confirmacao="Remover este usuario? A acao nao pode ser desfeita." />
                                     </div>
                 </article>
@@ -62,7 +54,7 @@
                                                 <span>${unidade.blocoIdentificacao} - Andar ${unidade.andar}</span>
                                             </div>
                                             <ui:acao-form acao="${ctx}/admin/moradores/${usuario.id}/unidades/${unidade.id}"
-                                                          texto="Desvincular" variante="error" classe="inline-form"
+                                                          texto="Desvincular" variante="error" classe="flex flex-wrap items-center gap-3"
                                                           confirmacao="Desvincular esta unidade do morador?">
                                                 <c:if test="${not empty blocoSelecionadoId}">
                                                     <input type="hidden" name="blocoId" value="${blocoSelecionadoId}">
@@ -76,9 +68,8 @@
 
                         <div class="divider"></div>
 
-                        <form method="get" action="${ctx}/admin/usuarios/${usuario.id}" class="stack-form compact-form">
-                            <label class="field">
-                                <span>Selecionar bloco para vincular</span>
+                        <form method="get" action="${ctx}/admin/usuarios/${usuario.id}" class="grid gap-4 mt-4">
+                            <ui:campo rotulo="Selecionar bloco para vincular">
                                 <select class="select w-full" name="blocoId" data-auto-submit>
                                     <option value="">Escolha um bloco</option>
                                     <c:forEach items="${blocosDisponiveis}" var="bloco">
@@ -87,16 +78,15 @@
                                         </option>
                                     </c:forEach>
                                 </select>
-                            </label>
+                            </ui:campo>
                         </form>
 
                         <c:if test="${not empty unidadesBloco}">
-                            <form method="post" action="${ctx}/admin/moradores/${usuario.id}/unidades" class="stack-form compact-form">
+                            <form method="post" action="${ctx}/admin/moradores/${usuario.id}/unidades" class="grid gap-4 mt-4">
                                 <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
                                 <input type="hidden" name="_method" value="put">
                                 <input type="hidden" name="blocoId" value="${blocoSelecionadoId}">
-                                <label class="field">
-                                    <span>Selecionar unidade</span>
+                                <ui:campo rotulo="Selecionar unidade">
                                     <select class="select w-full" name="unidadeId" required>
                                         <option value="">Escolha uma unidade</option>
                                         <c:forEach items="${unidadesBloco}" var="unidade">
@@ -106,7 +96,7 @@
                                             </option>
                                         </c:forEach>
                                     </select>
-                                </label>
+                                </ui:campo>
                                 <button type="submit" class="btn btn-primary">Vincular unidade</button>
                             </form>
 
@@ -155,7 +145,7 @@
                                                 <span>Prazo: ${tipoChamado.prazoHoras}h</span>
                                             </div>
                                             <ui:acao-form acao="${ctx}/admin/colaboradores/${usuario.id}/tipos-chamado/${tipoChamado.id}"
-                                                          texto="Desvincular" variante="error" classe="inline-form"
+                                                          texto="Desvincular" variante="error" classe="flex flex-wrap items-center gap-3"
                                                           confirmacao="Desvincular este tipo de chamado do colaborador?" />
                                         </div>
                                     </c:forEach>
@@ -165,11 +155,10 @@
 
                         <div class="divider"></div>
 
-                        <form method="post" action="${ctx}/admin/colaboradores/${usuario.id}/tipos-chamado" class="stack-form compact-form">
+                        <form method="post" action="${ctx}/admin/colaboradores/${usuario.id}/tipos-chamado" class="grid gap-4 mt-4">
                             <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
                             <input type="hidden" name="_method" value="put">
-                            <label class="field">
-                                <span>Selecionar tipo de chamado</span>
+                            <ui:campo rotulo="Selecionar tipo de chamado">
                                 <select class="select w-full" name="tipoChamadoId" required>
                                     <option value="">Escolha um tipo</option>
                                     <c:forEach items="${tiposChamadoDisponiveis}" var="tipoChamado">
@@ -180,7 +169,7 @@
                                         </option>
                                     </c:forEach>
                                 </select>
-                            </label>
+                            </ui:campo>
                             <button type="submit" class="btn btn-primary">Vincular tipo de chamado</button>
                         </form>
                                             </div>

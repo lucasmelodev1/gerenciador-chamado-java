@@ -8,20 +8,18 @@
                     <a href="${ctx}/morador/reservas" class="btn">Minhas reservas</a>
                 </ui:card-head>
 
-                <form method="get" action="${ctx}/morador/reservas/disponibilidade" class="inline-panel">
-                    <label class="field">
-                        <span>Area</span>
+                <form method="get" action="${ctx}/morador/reservas/disponibilidade" class="flex flex-wrap items-end gap-3 mt-5">
+                    <ui:campo rotulo="Area" classe="flex-1 basis-60">
                         <select class="select w-full" name="areaId" required>
                             <option value="">Selecione uma area</option>
                             <c:forEach items="${areas}" var="area">
                                 <option value="${area.id}" ${areaId eq area.id ? 'selected' : ''}>${area.nome}</option>
                             </c:forEach>
                         </select>
-                    </label>
-                    <label class="field">
-                        <span>Data</span>
+                    </ui:campo>
+                    <ui:campo rotulo="Data" classe="flex-1 basis-60">
                         <input class="input w-full" type="date" name="data" value="${data}" required>
-                    </label>
+                    </ui:campo>
                     <button type="submit" class="btn btn-primary">Consultar</button>
                 </form>
 
@@ -50,7 +48,7 @@
                                         <td>
                                             <ui:reserva-status status="${reserva.status}" />
                                             <c:if test="${reserva.status eq 'Solicitado'}">
-                                                <small class="field-hint">Pendente, nao garante a ocupacao.</small>
+                                                <small class="text-base-content/60">Pendente, nao garante a ocupacao.</small>
                                             </c:if>
                                         </td>
                                     </tr>

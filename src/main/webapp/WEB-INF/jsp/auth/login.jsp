@@ -52,20 +52,13 @@
                 </div>
             </c:if>
 
-            <form method="post" action="${ctx}/login" class="stack-form">
+            <form method="post" action="${ctx}/login" class="grid gap-4">
                 <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                <label class="field">
-                    <span>Email</span>
+                <ui:campo rotulo="Email">
                     <input class="input w-full" type="email" name="username" placeholder="voce@condominio.com" required autofocus>
-                </label>
+                </ui:campo>
 
-                <label class="field">
-                    <span>Senha</span>
-                    <div class="password-field">
-                        <input class="input w-full" type="password" name="password" placeholder="Informe sua senha" required data-password-input>
-                        <button type="button" class="btn btn-ghost" data-password-toggle>Mostrar</button>
-                    </div>
-                </label>
+                <ui:campo-senha rotulo="Senha" nome="password" placeholder="Informe sua senha" />
 
                 <button type="submit" class="btn btn-primary btn-block">Entrar</button>
             </form>

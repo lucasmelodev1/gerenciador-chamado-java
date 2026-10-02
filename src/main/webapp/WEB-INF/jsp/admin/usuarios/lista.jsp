@@ -74,34 +74,25 @@
            descricao="Cadastre administradores, colaboradores e moradores."
            acao="${ctx}/admin/usuarios"
            travar="tipo">
-    <label class="field">
-        <span>Nome</span>
+    <ui:campo rotulo="Nome">
         <input class="input w-full" type="text" name="nome" value="${usuarioForm.nome}" maxlength="255" required>
-    </label>
+    </ui:campo>
 
-    <label class="field">
-        <span>Email</span>
+    <ui:campo rotulo="Email">
         <input class="input w-full" type="email" name="email" value="${usuarioForm.email}" maxlength="255" required>
-    </label>
+    </ui:campo>
 
-    <label class="field">
-        <span>Perfil</span>
+    <ui:campo rotulo="Perfil">
         <select class="select w-full" name="tipo" required>
             <option value="">Selecione</option>
             <c:forEach items="${tiposUsuario}" var="tipo">
                 <option value="${tipo.key}" ${usuarioForm.tipo eq tipo.key ? 'selected' : ''}>${tipo.value}</option>
             </c:forEach>
         </select>
-    </label>
+    </ui:campo>
 
-    <label class="field">
-        <span>Senha</span>
-        <div class="password-field">
-            <input class="input w-full" type="password" name="senha" maxlength="255" required data-password-input>
-            <button type="button" class="btn btn-ghost" data-password-toggle>Mostrar</button>
-        </div>
-        <small class="field-hint">A senha e sempre redefinida: obrigatoria tambem ao editar.</small>
-    </label>
+    <ui:campo-senha rotulo="Senha" nome="senha" maxlength="255"
+                    dica="A senha e sempre redefinida: obrigatoria tambem ao editar." />
 </ui:drawer>
 
 <ui:shell-fim />
