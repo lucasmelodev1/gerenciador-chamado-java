@@ -53,10 +53,10 @@
                                             </td>
                                             <td class="cell-actions app-tabela-acoes">
                                                 <c:if test="${status.editavel}">
-                                                    <ui:acao-editar drawer="drawer-status" titulo="Editar status"
+                                                    <ui:acao-painel painel="drawer-status" titulo="Editar status"
                                                                     acao="${ctx}/admin/status-chamado/${status.id}">
                                                         <input type="hidden" data-campo="nome" value="${fn:escapeXml(status.nome)}">
-                                                    </ui:acao-editar>
+                                                    </ui:acao-painel>
                                                 </c:if>
                                                 <c:if test="${not status.inicialPadrao}">
                                                     <ui:acao-form acao="${ctx}/admin/status-chamado/${status.id}/inicial-padrao"

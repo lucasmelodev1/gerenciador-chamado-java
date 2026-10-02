@@ -6,7 +6,7 @@
                  dialogo CENTRAL, e negar pede o motivo.
 
                  Os dois dialogos sao unicos e reaproveitados: o gatilho de cada linha
-                 (`ui:acao-editar`) leva a acao daquela reserva, e o drawer.js limpa o
+                 (`ui:acao-painel`) leva a acao daquela reserva, e o drawer.js limpa o
                  motivo digitado entre uma linha e outra. Antes o motivo era um `<input>`
                  solto dentro da celula de acoes, que estourava a coluna. --%>
             <section class="card">
@@ -48,12 +48,12 @@
                                                 <c:if test="${reserva.status eq 'Solicitado'}">
                                                     <ui:acao-form acao="${ctx}/admin/reservas/${reserva.id}/aprovacao"
                                                                   metodo="patch" icone="aprovar" rotulo="Aprovar" />
-                                                    <ui:acao-editar drawer="dialog-negacao" titulo="Negar reserva"
+                                                    <ui:acao-painel painel="dialog-negacao" titulo="Negar reserva"
                                                                     acao="${ctx}/admin/reservas/${reserva.id}/negacao"
                                                                     icone="negar" rotulo="Negar" />
                                                 </c:if>
                                                 <c:if test="${reserva.status eq 'Solicitado' or reserva.status eq 'Aprovado'}">
-                                                    <ui:acao-editar drawer="dialog-cancelamento" titulo="Cancelar reserva"
+                                                    <ui:acao-painel painel="dialog-cancelamento" titulo="Cancelar reserva"
                                                                     acao="${ctx}/admin/reservas/${reserva.id}"
                                                                     metodo="delete" icone="fechar" rotulo="Cancelar" />
                                                 </c:if>

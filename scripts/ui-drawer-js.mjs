@@ -219,7 +219,7 @@ function montarCenario({ aberto = false } = {}) {
 
 // ---------------------------------------------------------------- cenario (S26)
 // Campos do gatilho como INPUTS ESCONDIDOS dentro do botao (formato do tag
-// `ui:acao-editar`) + um campo travado, que a edicao nao pode mudar.
+// `ui:acao-painel`) + um campo travado, que a edicao nao pode mudar.
 
 function montarCenarioTravado() {
     const painel = new El("aside", { id: "drawer-usuario", "data-drawer": "" });

@@ -3,7 +3,7 @@
 <ui:shell dataPagina="admin-areas">
 
             <%-- Criar e editar usam o MESMO `ui:drawer`, sem ida ao servidor para abrir.
-                 O drawer e sempre renderizado no modo de criacao; `ui:acao-editar` carrega
+                 O drawer e sempre renderizado no modo de criacao; `ui:acao-painel` carrega
                  a acao e os valores da linha, que o drawer.js aplica antes de abrir.
                  Antes isso dependia de `?areaId=`, e o reload era justamente o que deixava
                  o drawer fechado depois de salvar e exigia um segundo clique. --%>
@@ -50,11 +50,11 @@
                                                 <ui:badge variante="${area.status eq 'Ativo' ? 'success' : 'neutral'}">${area.status}</ui:badge>
                                             </td>
                                             <td class="cell-actions app-tabela-acoes">
-                                                <ui:acao-editar drawer="drawer-area" titulo="Editar area"
+                                                <ui:acao-painel painel="drawer-area" titulo="Editar area"
                                                                 acao="${ctx}/admin/areas/${area.id}">
                                                     <input type="hidden" data-campo="nome" value="${fn:escapeXml(area.nome)}">
                                                     <input type="hidden" data-campo="status" value="${fn:escapeXml(area.status)}">
-                                                </ui:acao-editar>
+                                                </ui:acao-painel>
                                                 <ui:acao-form acao="${ctx}/admin/areas/${area.id}"
                                                               icone="remover" rotulo="Remover" perigo="true"
                                                               confirmacao="Remover esta area? As reservas existentes serao preservadas." />

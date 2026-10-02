@@ -71,8 +71,13 @@ FROZEN_PAINEL=(
 # `.reserva-titulo|meta|motivo`, `id="form-aprovar|negar|cancelar"` e `id="reserva-fechar"`,
 # e entraram o drawer (com a lista `data-detalhe`, que esta em FROZEN_HOOKS) e o gatilho que
 # aponta o dialogo para a reserva clicada.
+#
+# S32 tirou do `calendar.js` os ids dos paineis: o fragmento declara qual painel de detalhe o
+# calendario abre (`data-painel-detalhe`) e o gatilho do cancelamento e achado DENTRO do
+# painel (`[data-drawer-editar]`). Os ids continuam congelados porque o markup os usa.
 FROZEN_CALENDAR=(
     'id="calendar"' 'id="reservas-data"' 'reserva-data' 'id="filtro-area"'
+    'data-painel-detalhe="drawer-reserva"'
     'id="drawer-reserva"' 'painelAcao="dialog-cancelamento"' 'data-drawer-editar="${painelAcao}"'
 )
 
@@ -94,9 +99,31 @@ collect_view_names() {
 # `ui:tabela-chamados`). Os tres entram: o contrato e o CONJUNTO de destinos de mutacao
 # referenciados pelo markup, nao a forma como ele e escrito. O `[[:space:]]` antes do nome
 # evita casar o `acao=` que vive dentro de `confirmacao=`.
+#
+# Comentarios JSP/HTML saem antes da leitura: os tags documentam o uso com exemplos de
+# `acao="..."`, e um exemplo no comentario nao e um endpoint referenciado pela tela (foi o
+# que a S32 pegou ao documentar o `ui:acao-painel`).
 collect_action_urls() {
-    grep -rhoE '[[:space:]](action|acao|base)="[^"]*"' "${MARKUP[@]}" "$WEBAPP" \
-        | sed -E 's/^[[:space:]]+//; s/^(action|acao|base)="//; s/"$//' | sort | uniq -c | sed -E 's/^ +//'
+    python3 - "$WEBAPP" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+raiz = Path(sys.argv[1])
+arquivos = sorted(p for ext in ("*.jsp", "*.jspf", "*.tag") for p in raiz.rglob(ext))
+comentario = re.compile(r"<%--.*?--%>|<!--.*?-->", re.S)
+atributo = re.compile(r'[ \t](?:action|acao|base)="([^"]*)"')
+
+contagem = {}
+for arq in arquivos:
+    texto = comentario.sub("", arq.read_text(encoding="utf-8"))
+    for encontrado in atributo.finditer(texto):
+        url = encontrado.group(1)
+        contagem[url] = contagem.get(url, 0) + 1
+
+for url in sorted(contagem):
+    print(f"{contagem[url]} {url}")
+PY
 }
 
 collect_counts() {

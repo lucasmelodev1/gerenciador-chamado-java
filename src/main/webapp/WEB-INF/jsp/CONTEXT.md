@@ -30,8 +30,10 @@ Views JSP/JSTL dos controllers web; prefixo/sufixo em `application.properties`.
   Por isso os hovers do cabeçalho e do cartão usam `bg-base-content/10` (e não `bg-base-200`, que seria
   invisível sobre o próprio fundo). `scripts/ui-shell.sh` falha se o `<aside>` voltar a ser uma ilha.
   O inset do conteúdo é `.drawer-side` com `p-1.5 lg:p-2` + margem/raio no `.drawer-content` (custom.css).
-  Estado ativo resolvido **no servidor** (`jakarta.servlet.forward.request_uri` + `aria-current`), por prefixo
-  mais longo; a navegação vive em `navGroups` (`Grupo@href|Rótulo|ícone#...`).
+  Estado ativo resolvido **no servidor** (`jakarta.servlet.forward.request_uri` + `aria-current`): o
+  primeiro item que casa vence, e cada grupo lista os caminhos do mais específico para o mais genérico.
+  A navegação é markup (`ui:nav-grupo`/`ui:nav-item`) desde a S32 — antes era a string `navGroups`
+  (`Grupo@href|Rótulo|ícone#...`), que corrompia o menu se um rótulo tivesse um dos separadores.
 - `fragments/topbar.jspf`: `navbar` no formato do `SiteHeader` — linha única com `border-b`, gatilho do drawer,
   separador e título da tela. Perfil e logout **não** ficam aqui (migraram para a lateral).
 - `fragments/icone.jspf` **não existe mais** (S31): os ícones Tabler (outline, 3.31.0) são o
@@ -55,7 +57,7 @@ escrever uma tela.
   `dataPagina` (+ `classeMain` no formulário estreito). O login tem shell próprio.
 - **Listagens**: `ui:card-head` (com `subtitulo`), `ui:busca`, `ui:badge`, `ui:paginacao`
   (`pagina`/`url`/`parametros`, este último escapado) e as ações `ui:acao-link`
-  (`texto` opcional), `ui:acao-editar`, `ui:acao-form` (mesmo `texto` opcional, `variante` e
+  (`texto` opcional), `ui:acao-painel`, `ui:acao-form` (mesmo `texto` opcional, `variante` e
   `classe` — é o dono do trio form + CSRF + `_method`).
 - **Chamados**: `ui:tabela-chamados` (as 5 tabelas: 3 listas + 2 paineis) e
   `ui:detalhe-chamado` (as 3 telas de detalhe, por `base`/`modo`/flags).
@@ -83,9 +85,9 @@ valores de cada linha.
 - **Filtros**: a busca local (`ui:busca`) em areas, blocos, status-chamado, tipos-chamado e usuarios;
   chamados usa um `<form method="get">` na própria faixa (classe `app-card-filtros--campos`),
   porque seus três filtros vão ao servidor. Reservas é a única sem faixa de filtros.
-- **Ações**: `ui:acao-form` (remover/desativar/definir padrão), `ui:acao-editar` (abre o
-  drawer) e `ui:acao-link` (Detalhar / Gerenciar / Ver unidades). Tipos de chamado só tem
-  `ui:acao-editar` e blocos só tem `ui:acao-link` — são as telas sem endpoint de remoção.
+- **Ações**: `ui:acao-form` (remover/desativar/definir padrão), `ui:acao-painel` (abre o
+  painel) e `ui:acao-link` (Detalhar / Gerenciar / Ver unidades). Tipos de chamado só tem
+  `ui:acao-painel` e blocos só tem `ui:acao-link` — são as telas sem endpoint de remoção.
 - **status-chamado** era um `stack-list` de `.list-row` e virou tabela, para compartilhar a
   mesma coluna de ações.
 - **reservas** decide no `ui:dialog` (centrado), não no `ui:drawer`: aprovar é direto
@@ -123,10 +125,11 @@ valores de cada linha.
   não escrevem mais `<div class="section-header">` — todas passam pelo `ui:card-head`.
 
 ## Contrato com o JS (não renomear)
-`calendar.js`: `#calendar`, `#reservas-data`, `.reserva-data` (com os `data-*` do evento),
-`#filtro-area`, `#drawer-reserva` (o detalhe) e o `dd[data-detalhe]` de cada linha; o
+`calendar.js`: `#calendar` (com `data-painel-detalhe`, que diz qual painel de detalhe o
+calendário abre — o JS não conhece o id `drawer-reserva`), `#reservas-data`, `.reserva-data`
+(com os `data-*` do evento), `#filtro-area` e o `dd[data-detalhe]` de cada linha; o
 cancelamento é o botão que o `ui:drawer` gera a partir de `painelAcao="dialog-cancelamento"`
-(`data-drawer-editar`), com `_method=delete`. Mais os hooks `data-*` de
+(`data-drawer-editar`), achado DENTRO do painel, com `_method=delete`. Mais os hooks `data-*` de
 `forms.js`/`tables.js`/`alerts.js`/`drawer.js`.
 `scripts/ui-invariants.sh` verifica todos eles.
 

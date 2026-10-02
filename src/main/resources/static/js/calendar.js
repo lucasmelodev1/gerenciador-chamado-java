@@ -7,24 +7,38 @@
  *   #calendar        container do FullCalendar + configuracao por `data-*`
  *   #reservas-data   os `.reserva-data` que viram eventos (cada `data-*` e um dado)
  *   #filtro-area     filtro local por area (nao vai ao servidor)
- *   #drawer-reserva  ui:drawer com a lista de detalhes (`data-detalhe`)
- *   [data-drawer-editar="dialog-cancelamento"]  botao Cancelar do rodape do drawer
+ *   data-painel-detalhe  no #calendar: id do painel de detalhe (o fragmento declara; o JS
+ *                        nao conhece o id `drawer-reserva`)
+ *   [data-drawer-editar] dentro do painel: botao Cancelar do rodape (o JS acha pelo painel,
+ *                        nao pelo id `dialog-cancelamento`)
  *
  * O detalhe deixou de ser um painel no fim da pagina (S30) e o cancelamento deixou de ser
  * um form escondido nele: o detalhe e um `ui:drawer` e o cancelamento e um `ui:dialog`
  * centrado. O protocolo com o `drawer.js` e o mesmo das telas de tabela — o gatilho leva a
  * acao daquela reserva (`data-drawer-acao`) e o painel e reaproveitado por todos os eventos.
+ *
+ * A paleta dos eventos vive em `css/calendar.css` (tokens `--reserva-*`), lida por
+ * `token()`; os literais abaixo sao o fallback de quando nao ha CSS (o harness em Node, por
+ * exemplo). Sem isso a cor de cada status era um hex duplicado aqui e no tema.
  */
 (function () {
+    function token(nome, padrao) {
+        if (typeof window.getComputedStyle !== "function" || !document.documentElement) {
+            return padrao;
+        }
+        var valor = window.getComputedStyle(document.documentElement).getPropertyValue(nome);
+        return valor && valor.trim() ? valor.trim() : padrao;
+    }
+
     var CORES_AREAS = [
-        "#0d5c63",
-        "#dba24a",
-        "#167c5b",
-        "#b64134",
-        "#5f6c80",
-        "#7c3aed",
-        "#0ea5e9",
-        "#c2410c"
+        token("--reserva-cor-1", "#0d5c63"),
+        token("--reserva-cor-2", "#dba24a"),
+        token("--reserva-cor-3", "#167c5b"),
+        token("--reserva-cor-4", "#b64134"),
+        token("--reserva-cor-5", "#5f6c80"),
+        token("--reserva-cor-6", "#7c3aed"),
+        token("--reserva-cor-7", "#0ea5e9"),
+        token("--reserva-cor-8", "#c2410c")
     ];
 
     function corDaArea(areaId) {
@@ -38,15 +52,32 @@
 
     function estiloDoStatus(status, cor) {
         if (status === "Aprovado") {
-            return { backgroundColor: cor, borderColor: cor, textColor: "#ffffff" };
+            return {
+                backgroundColor: cor,
+                borderColor: cor,
+                textColor: token("--reserva-cor-texto", "#ffffff")
+            };
         }
         if (status === "Negado") {
-            return { backgroundColor: "#ffffff", borderColor: "#b64134", textColor: "#b64134" };
+            var corNegado = token("--reserva-negado-cor", "#b64134");
+            return {
+                backgroundColor: token("--reserva-negado-fundo", "#ffffff"),
+                borderColor: corNegado,
+                textColor: corNegado
+            };
         }
         if (status === "Cancelado") {
-            return { backgroundColor: "#e9edf2", borderColor: "#9aa4b2", textColor: "#5f6c80" };
+            return {
+                backgroundColor: token("--reserva-cancelado-fundo", "#e9edf2"),
+                borderColor: token("--reserva-cancelado-borda", "#9aa4b2"),
+                textColor: token("--reserva-cancelado-texto", "#5f6c80")
+            };
         }
-        return { backgroundColor: "#ffffff", borderColor: cor, textColor: cor };
+        return {
+            backgroundColor: token("--reserva-pendente-fundo", "#ffffff"),
+            borderColor: cor,
+            textColor: cor
+        };
     }
 
     function montarEvento(elemento) {
@@ -128,8 +159,12 @@
         var base = container.getAttribute("data-base-url");
         var initialView = container.getAttribute("data-view") === "semana" ? "timeGridWeek" : "dayGridMonth";
         var eventos = window.AppDom.bySelector("#reservas-data .reserva-data").map(montarEvento);
-        var painel = document.getElementById("drawer-reserva");
-        var gatilhoCancelar = document.querySelector('[data-drawer-editar="dialog-cancelamento"]');
+        // O painel de detalhe e declarado pelo fragmento (`data-painel-detalhe`), nao pelo id:
+        // renomear `drawer-reserva` deixa de ser um contrato implicito com este arquivo.
+        var painel = document.getElementById(container.getAttribute("data-painel-detalhe"));
+        // O gatilho do cancelamento e o botao do rodape DESTE painel (o `painelAcao` do
+        // `ui:drawer`), entao o id do dialogo nao aparece aqui.
+        var gatilhoCancelar = painel ? painel.querySelector("[data-drawer-editar]") : null;
 
         var calendario = new FullCalendar.Calendar(container, {
             initialView: initialView,
@@ -147,7 +182,9 @@
                 var dados = info.event.extendedProps;
                 mostrarDetalhe(painel, dados);
                 apontarCancelamento(gatilhoCancelar, base, dados);
-                window.AppDrawer.abrir("drawer-reserva");
+                if (painel) {
+                    window.AppDrawer.abrir(painel.id);
+                }
             }
         });
         calendario.render();

@@ -23,6 +23,26 @@
     --fc-classic-muted-foreground: color-mix(in oklab, var(--color-base-content, var(--ink)) 60%, transparent);
     --fc-classic-border: var(--color-base-300, var(--line));
     --fc-classic-strong-border: var(--color-base-300, var(--line-strong));
+
+    /* Paleta dos EVENTOS de reserva — fonte unica (S32). O `calendar.js` le estes tokens por
+       `getComputedStyle` e usa os mesmos valores como fallback, porque o harness em Node
+       (`scripts/ui-calendar-js.mjs`) roda sem CSS. Antes os hex viviam soltos no JS, longe
+       dos tokens do tema. */
+    --reserva-cor-1: #0d5c63;
+    --reserva-cor-2: #dba24a;
+    --reserva-cor-3: #167c5b;
+    --reserva-cor-4: #b64134;
+    --reserva-cor-5: #5f6c80;
+    --reserva-cor-6: #7c3aed;
+    --reserva-cor-7: #0ea5e9;
+    --reserva-cor-8: #c2410c;
+    --reserva-cor-texto: #ffffff;
+    --reserva-pendente-fundo: #ffffff;
+    --reserva-negado-fundo: #ffffff;
+    --reserva-negado-cor: #b64134;
+    --reserva-cancelado-fundo: #e9edf2;
+    --reserva-cancelado-borda: #9aa4b2;
+    --reserva-cancelado-texto: #5f6c80;
 }
 
 .calendar-mes {

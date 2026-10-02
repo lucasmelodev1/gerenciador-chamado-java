@@ -246,6 +246,7 @@ function montarCenario({ view = "mes", reservas = [] } = {}) {
         "data-referencia": "2026-03-01",
         "data-base-url": "/admin/reservas",
         "data-modo": "admin",
+        "data-painel-detalhe": "drawer-reserva",
     });
 
     const dados = new El("div", { id: "reservas-data", class: "reservas-data" });

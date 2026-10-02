@@ -9,12 +9,13 @@ páginas, e por isso ficam fora do diretório que os resolvers de view varrem.
 | Tag | Para |
 |---|---|
 | `ui:shell` / `ui:shell-fim` | casca da página: doctype, `<head>` (com o token CSRF), drawer, lateral, topbar, `<main>` e flash; o par fecha com os scripts |
+| `ui:nav-grupo` / `ui:nav-item` | navegação lateral: grupo com rótulo + item (ícone, rótulo e estado ativo no servidor) |
 | `ui:card-head` | cabeçalho de card (título, descrição, `subtitulo` opcional; corpo = ação) |
 | `ui:busca` | campo de busca local da faixa de filtros |
 | `ui:paginacao` | Anterior/Próxima + "Página X de Y", preservando os filtros (`parametros`) |
 | `ui:badge` | `<span class="badge badge-<variante>">` |
 | `ui:acao-link` | ação de linha que navega: ícone + tooltip, ou `texto` visível |
-| `ui:acao-editar` | ação de linha que abre um painel já preenchido (`data-drawer-editar`) |
+| `ui:acao-painel` | ação de linha que abre um painel já preenchido (`data-drawer-editar`) |
 | `ui:acao-form` | ação que envia formulário — dono do par CSRF + `_method`; ícone ou `texto` |
 | `ui:tabela-chamados` | as 5 tabelas de chamados (colunas por flag, ação por texto ou ícone) |
 | `ui:detalhe-chamado` | as 3 telas de detalhe do chamado |
@@ -141,16 +142,18 @@ coluna é `<td class="cell-actions app-tabela-acoes">`, que alinha à direita e 
 | Tag | Para | Atributos |
 |---|---|---|
 | `ui:acao-link` | navegar (detalhe, unidades) | `href`, `rotulo`, `icone` |
-| `ui:acao-editar` | abrir o drawer preenchido | `drawer`, `titulo`, `acao`; opcionais `metodo` (padrão `patch`), `rotulo`, `icone` |
+| `ui:acao-painel` | abrir um painel preenchido | `painel`, `titulo`, `acao`; opcionais `metodo` (padrão `patch`), `rotulo`, `icone` |
 | `ui:acao-form` | enviar um formulário | `acao`, `rotulo`, `icone`; opcionais `metodo` (padrão `delete`), `confirmacao`, `perigo` |
 
-`ui:acao-editar` recebe os campos do drawer no **corpo**, como inputs escondidos:
+`ui:acao-painel` recebe os campos do painel no **corpo**, como inputs escondidos (chamava-se
+`ui:acao-editar` até a S32: em reservas ele abre o diálogo de negação e o de cancelamento, que
+não são edição de registro nenhum):
 
 ```jsp
-<ui:acao-editar drawer="drawer-area" titulo="Editar area" acao="${ctx}/admin/areas/${area.id}">
+<ui:acao-painel painel="drawer-area" titulo="Editar area" acao="${ctx}/admin/areas/${area.id}">
     <input type="hidden" data-campo="nome" value="${fn:escapeXml(area.nome)}">
     <input type="hidden" data-campo="status" value="${fn:escapeXml(area.status)}">
-</ui:acao-editar>
+</ui:acao-painel>
 ```
 
 Isso substituiu o formato `data-campo-<name>="<valor>"` direto no botão. O motivo é dado de

@@ -52,7 +52,10 @@
          data-view="${viewAtual}"
          data-referencia="${periodoReferencia}"
          data-base-url="${agendaBase}"
-         data-modo="${agendaModo}"></div>
+         data-modo="${agendaModo}"
+         <%-- O JS nao conhece o id do painel de detalhe: ele o le daqui (o
+              `#drawer-reserva` e declarado pelo `reservas-agenda-paineis.jspf`). --%>
+         data-painel-detalhe="drawer-reserva"></div>
 
     <div id="reservas-data" class="reservas-data">
         <c:forEach items="${reservas}" var="r">

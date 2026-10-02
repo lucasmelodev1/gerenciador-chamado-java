@@ -36,11 +36,11 @@
                                             <td>${tipo.titulo}</td>
                                             <td>${tipo.prazoHoras} horas</td>
                                             <td class="cell-actions app-tabela-acoes">
-                                                <ui:acao-editar drawer="drawer-tipo" titulo="Editar tipo"
+                                                <ui:acao-painel painel="drawer-tipo" titulo="Editar tipo"
                                                                 acao="${ctx}/admin/tipos-chamado/${tipo.id}">
                                                     <input type="hidden" data-campo="titulo" value="${fn:escapeXml(tipo.titulo)}">
                                                     <input type="hidden" data-campo="prazoHoras" value="${tipo.prazoHoras}">
-                                                </ui:acao-editar>
+                                                </ui:acao-painel>
                                             </td>
                                         </tr>
                                     </c:forEach>

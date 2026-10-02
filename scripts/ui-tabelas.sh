@@ -12,7 +12,7 @@
 #
 # Substitui o antigo `ui-tabelas.sh`: o contrato deixou de ser "da tela de areas" e
 # passou a ser o das telas de tabela, que compartilham os tags `ui:card-head`,
-# `ui:busca`, `ui:badge`, `ui:acao-link`, `ui:acao-editar` e `ui:acao-form`.
+# `ui:busca`, `ui:badge`, `ui:acao-link`, `ui:acao-painel` e `ui:acao-form`.
 #
 # Cobre quatro camadas:
 #   A. markup renderizado pelo servidor das 5 telas (contrato comum + o que e de cada uma)

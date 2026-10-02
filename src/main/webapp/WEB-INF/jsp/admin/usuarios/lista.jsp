@@ -41,12 +41,12 @@
                                                 <%-- `tipo` e travado no drawer: o PATCH deriva o perfil do
                                                      papel persistido e recusa a troca. O gatilho manda a
                                                      CHAVE (usuario.tipo e o rotulo), extraida do role. --%>
-                                                <ui:acao-editar drawer="drawer-usuario" titulo="Editar usuario"
+                                                <ui:acao-painel painel="drawer-usuario" titulo="Editar usuario"
                                                                 acao="${ctx}/admin/usuarios/${usuario.id}">
                                                     <input type="hidden" data-campo="nome" value="${fn:escapeXml(usuario.nome)}">
                                                     <input type="hidden" data-campo="email" value="${fn:escapeXml(usuario.email)}">
                                                     <input type="hidden" data-campo="tipo" value="${fn:substringAfter(usuario.role, 'ROLE_')}">
-                                                </ui:acao-editar>
+                                                </ui:acao-painel>
                                                 <ui:acao-link href="${ctx}/admin/usuarios/${usuario.id}"
                                                               icone="ver" rotulo="Gerenciar" />
                                                 <ui:acao-form acao="${ctx}/admin/usuarios/${usuario.id}"

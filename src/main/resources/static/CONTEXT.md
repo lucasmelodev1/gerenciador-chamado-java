@@ -61,12 +61,16 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
 - `core` (`window.AppDom`), `alerts`, `forms` (`data-confirm`, `data-password-*`, `data-character-*`,
   `data-auto-submit`) e `tables` (`data-filter-*`).
 - `calendar.js` (agendas mês/semana do admin e do morador): monta os eventos a partir dos
-  `.reserva-data`, filtra por área **no cliente** e, no clique do evento, abre o `ui:drawer` de detalhe
-  (`#drawer-reserva`) preenchendo cada `dd[data-detalhe]`. A ação de cancelar é um `ui:dialog`: o botão do
-  rodapé do drawer nasce com `data-drawer-editar="dialog-cancelamento"` e o `calendar.js` só reescreve o
-  `data-drawer-acao` da reserva clicada (o `drawer.js` lê no clique) — o mesmo diálogo serve todas as
-  reservas. O botão é escondido quando o servidor recusaria a ação (status que não seja Solicitado/Aprovado,
-  ou início já alcançado).
+  `.reserva-data`, filtra por área **no cliente** e, no clique do evento, abre o painel de detalhe
+  declarado em `data-painel-detalhe` no `#calendar` (o JS não conhece o id `drawer-reserva`)
+  preenchendo cada `dd[data-detalhe]`. A ação de cancelar é um `ui:dialog`: o botão do rodapé do
+  drawer nasce com `data-drawer-editar` e o `calendar.js` o acha **dentro do painel** (não pelo id
+  `dialog-cancelamento`), reescrevendo só o `data-drawer-acao` da reserva clicada (o `drawer.js` lê
+  no clique) — o mesmo diálogo serve todas as reservas. O botão é escondido quando o servidor
+  recusaria a ação (status que não seja Solicitado/Aprovado, ou início já alcançado).
+  A **paleta dos eventos** tem fonte única em `calendar.css` (`--reserva-cor-1..8`,
+  `--reserva-negado-*`, `--reserva-cancelado-*`): o JS lê por `getComputedStyle` e usa os mesmos
+  valores como fallback, porque o harness em Node roda sem CSS.
 - `drawer.js` (`window.AppDrawer`): abre/fecha o `ui:drawer` e reemite o fechamento como evento
   `drawer:fechado` (`detail = { id, valor }`, borbulha). Hooks: `data-drawer`, `data-drawer-form`,
   `data-drawer-titulo`, `data-drawer-abrir`, `data-drawer-editar`, `data-drawer-fechar`,
@@ -76,7 +80,7 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
   `data-drawer-acao`/`data-drawer-titulo` e os campos do gatilho; `data-drawer-abrir` devolve tudo ao
   estado que o servidor renderizou (`reset()`), de modo que criar e editar usam o mesmo drawer sem
   reload. Os campos vêm de duas formas: `data-campo-<name>` no botão (formato da S23) ou
-  `<input data-campo="<name>">` dentro do botão (S26, a que `ui:acao-editar` usa — `value` de input
+  `<input data-campo="<name>">` dentro do botão (S26, a que `ui:acao-painel` usa — `value` de input
   aceita qualquer dado de usuário sem codificação em string). Com `data-drawer-travar` no formulário,
   os campos listados ficam desabilitados na edição e um espelho escondido com o mesmo `name` assume o
   envio (`disabled` não é submetido); a criação desfaz. Uma pilha (`abertos`) guarda a ordem de abertura:
@@ -89,3 +93,7 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
 
 ## Build
 - `npm run build:css` / `watch:css`. O bundle não é versionado; o estágio 0 do `Dockerfile` o gera.
+- `ui-preview.html` é a galeria de componentes e a **safelist explícita** do Tailwind (`@source` em
+  `app.css`): precisa listar toda classe montada por variável (as variantes de `ui:badge`). O bloco
+  `#shell` espelha a lateral/topbar reais desde a S32 (antes mostrava a lateral antiga, com `bg-base-100`
+  e `.divider`).

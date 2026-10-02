@@ -12,7 +12,7 @@
     antes de virarem componente.
 
     Para acoes que ENVIAM algo, use `ui:acao-form`; para abrir o drawer de edicao,
-    `ui:acao-editar`. As tres saem com a mesma moldura no modo icone (`btn btn-ghost btn-sm
+    `ui:acao-painel`. As tres saem com a mesma moldura no modo icone (`btn btn-ghost btn-sm
     btn-square tooltip`), e o estilo da coluna esta em `custom.css` > `.app-tabela-acoes`.
 --%>
 <%@ tag pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
