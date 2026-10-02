@@ -30,34 +30,32 @@
             <section class="two-column-grid">
                 <article class="card">
                     <div class="card-body">
-                    <div class="section-header">
-                        <div>
-                            <p class="eyebrow">Acesso vinculado</p>
-                            <h2>Minhas unidades</h2>
-                        </div>
-                    </div>
-                    <div class="stack-list">
-                        <c:forEach items="${minhasUnidades}" var="unidade">
-                            <div class="list-row">
-                                <div>
-                                    <strong>${unidade.identificacao}</strong>
-                                    <span>${unidade.blocoIdentificacao} - Andar ${unidade.andar}</span>
-                                </div>
+                    <ui:card-head titulo="Minhas unidades" descricao="Acesso vinculado" />
+                    <c:choose>
+                        <c:when test="${empty minhasUnidades}">
+                            <ui:vazio mensagem="Nenhuma unidade vinculada ao seu acesso." compacto="true" />
+                        </c:when>
+                        <c:otherwise>
+                            <div class="stack-list">
+                                <c:forEach items="${minhasUnidades}" var="unidade">
+                                    <div class="list-row">
+                                        <div>
+                                            <strong>${unidade.identificacao}</strong>
+                                            <span>${unidade.blocoIdentificacao} - Andar ${unidade.andar}</span>
+                                        </div>
+                                    </div>
+                                </c:forEach>
                             </div>
-                        </c:forEach>
-                    </div>
+                        </c:otherwise>
+                    </c:choose>
                                     </div>
                 </article>
 
                 <article class="card">
                     <div class="card-body">
-                    <div class="section-header">
-                        <div>
-                            <p class="eyebrow">Acompanhamento</p>
-                            <h2>Chamados recentes</h2>
-                        </div>
+                    <ui:card-head titulo="Chamados recentes" descricao="Acompanhamento">
                         <a href="${ctx}/morador/chamados" class="btn">Ver todos</a>
-                    </div>
+                    </ui:card-head>
                     <c:choose>
                         <c:when test="${empty meusChamados}">
                             <ui:vazio mensagem="Voce ainda nao abriu chamados." compacto="true" />
@@ -70,7 +68,7 @@
                                             <strong>${chamado.tipoChamadoTitulo}</strong>
                                             <span>${chamado.unidadeIdentificacao} - ${chamado.dataAberturaFormatada}</span>
                                         </div>
-                                        <span class="badge badge-ghost">${chamado.statusNome}</span>
+                                        <ui:badge variante="ghost">${chamado.statusNome}</ui:badge>
                                     </a>
                                 </c:forEach>
                             </div>

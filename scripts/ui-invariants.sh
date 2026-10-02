@@ -77,9 +77,15 @@ collect_view_names() {
         | sed -E 's/^return "//; s/"$//' | sort -u
 }
 
+# O action do formulario pode estar no `<form action="...">` (form escrito na pagina), no
+# `acao="..."` de um tag (`ui:acao-form`, `ui:drawer`, `ui:dialog`) ou no `base="..."` dos
+# componentes que montam a URL a partir de uma base (`ui:detalhe-chamado`,
+# `ui:tabela-chamados`). Os tres entram: o contrato e o CONJUNTO de destinos de mutacao
+# referenciados pelo markup, nao a forma como ele e escrito. O `[[:space:]]` antes do nome
+# evita casar o `acao=` que vive dentro de `confirmacao=`.
 collect_action_urls() {
-    grep -rhoE 'action="[^"]*"' "${MARKUP[@]}" "$WEBAPP" | sed -E 's/^action="//; s/"$//' | sort | uniq -c \
-        | sed -E 's/^ +//'
+    grep -rhoE '[[:space:]](action|acao|base)="[^"]*"' "${MARKUP[@]}" "$WEBAPP" \
+        | sed -E 's/^[[:space:]]+//; s/^(action|acao|base)="//; s/"$//' | sort | uniq -c | sed -E 's/^ +//'
 }
 
 collect_counts() {
@@ -90,9 +96,17 @@ collect_counts() {
 }
 
 collect_hooks() {
-    local hook
+    local hook total
     for hook in "${FROZEN_HOOKS[@]}"; do
-        printf '%s\t%s\n' "$(grep -rho "$hook" "${MARKUP[@]}" "$WEBAPP" | wc -l | tr -d ' ')" "$hook"
+        total="$(grep -rho "$hook" "${MARKUP[@]}" "$WEBAPP" | wc -l | tr -d ' ')"
+        # Confirmacao de envio: no form escrito a mao o hook e `data-confirm`, e nos tags
+        # (`ui:acao-form`, `ui:drawer`, `ui:dialog`) ele e o atributo `confirmacao`, que so
+        # vira `data-confirm` no HTML emitido. Contar os dois mantem o piso com o mesmo
+        # significado depois de extrair os forms para componentes.
+        if [ "$hook" = "data-confirm" ]; then
+            total=$(( total + $(grep -rho 'confirmacao="' "${MARKUP[@]}" "$WEBAPP" | wc -l | tr -d ' ') ))
+        fi
+        printf '%s\t%s\n' "$total" "$hook"
     done
 }
 
@@ -132,7 +146,7 @@ form = re.compile(r"<form\b[^>]*>.*?</form>", re.S)
 
 violacoes = []
 nao_get = get = methods = 0
-data_confirm = data_confirm_fora = 0
+data_confirm = data_confirm_fora = confirmacoes_tag = 0
 
 for arq in arquivos:
     bruto = comentario_html.sub("", comentario_jsp.sub("", arq.read_text(encoding="utf-8")))
@@ -157,6 +171,7 @@ for arq in arquivos:
         violacoes.append(f"{arq}: name=\"_method\" fora de <form>")
 
     data_confirm += sem_diretiva.count("data-confirm")
+    confirmacoes_tag += sem_diretiva.count('confirmacao="')
     fora = sem_form.count("data-confirm")
     data_confirm_fora += fora
     if fora:
@@ -168,6 +183,7 @@ print(f"forms_nao_get={nao_get}")
 print(f"forms_get={get}")
 print(f"method_inputs_em_form={methods}")
 print(f"data_confirm_em_form={data_confirm - data_confirm_fora}")
+print(f"confirmacoes_via_tag={confirmacoes_tag}")
 PY
 }
 
@@ -197,13 +213,14 @@ check_form_contract() {
         return
     fi
 
-    local nao_get get methods confirms
+    local nao_get get methods confirms via_tag
     nao_get="$(grep '^forms_nao_get=' /tmp/ui-inv.form | cut -d= -f2)"
     get="$(grep '^forms_get=' /tmp/ui-inv.form | cut -d= -f2)"
     methods="$(grep '^method_inputs_em_form=' /tmp/ui-inv.form | cut -d= -f2)"
     confirms="$(grep '^data_confirm_em_form=' /tmp/ui-inv.form | cut -d= -f2)"
+    via_tag="$(grep '^confirmacoes_via_tag=' /tmp/ui-inv.form | cut -d= -f2)"
     ok "todo form nao-GET tem csrf ($nao_get nao-GET, $get GET)"
-    ok "todo _method dentro de form ($methods) e todo data-confirm em form ($confirms)"
+    ok "todo _method dentro de form ($methods); confirmacao: $confirms data-confirm em form + $via_tag via atributo de tag"
 }
 
 # ---------------------------------------------------------------- modes

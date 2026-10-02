@@ -47,35 +47,8 @@
                             <ui:vazio titulo="Nenhum chamado encontrado" mensagem="Altere os filtros ou aguarde novas aberturas." />
                         </c:when>
                         <c:otherwise>
-                            <div class="overflow-x-auto">
-                                <table class="table table-zebra">
-                                    <thead>
-                                    <tr>
-                                        <th>Unidade</th>
-                                        <th>Morador</th>
-                                        <th>Tipo</th>
-                                        <th>Status</th>
-                                        <th>Abertura</th>
-                                        <th><span class="sr-only">Ações</span></th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <c:forEach items="${chamados}" var="chamado">
-                                        <tr>
-                                            <td>${chamado.unidadeIdentificacao}</td>
-                                            <td>${chamado.moradorNome}</td>
-                                            <td>${chamado.tipoChamadoTitulo}</td>
-                                            <td><ui:badge variante="ghost">${chamado.statusNome}</ui:badge></td>
-                                            <td>${chamado.dataAberturaFormatada}</td>
-                                            <td class="cell-actions app-tabela-acoes">
-                                                <ui:acao-link href="${ctx}/admin/chamados/${chamado.id}"
-                                                              icone="ver" rotulo="Detalhar" />
-                                            </td>
-                                        </tr>
-                                    </c:forEach>
-                                    </tbody>
-                                </table>
-                            </div>
+                            <ui:tabela-chamados itens="${chamados}" base="${ctx}/admin/chamados"
+                                                mostrarMorador="true" acaoIcone="ver" acaoRotulo="Detalhar" />
                         </c:otherwise>
                     </c:choose>
 

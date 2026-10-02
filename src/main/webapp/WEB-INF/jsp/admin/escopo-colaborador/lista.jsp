@@ -14,12 +14,7 @@
             <section class="two-column-grid">
                 <article class="card">
                     <div class="card-body">
-                    <div class="section-header">
-                        <div>
-                            <p class="eyebrow">Operacao</p>
-                            <h2>Designar colaborador por tipo</h2>
-                        </div>
-                    </div>
+                    <ui:card-head titulo="Designar colaborador por tipo" descricao="Operacao" />
 
                     <form method="get" action="${ctx}/admin/escopo-colaborador" class="stack-form compact-form">
                         <label class="field">
@@ -65,11 +60,9 @@
                                                 <strong>${tipoChamado.titulo}</strong>
                                                 <span>Prazo: ${tipoChamado.prazoHoras}h</span>
                                             </div>
-                                            <form method="post" action="${ctx}/admin/colaboradores/${colaboradorSelecionado.id}/tipos-chamado/${tipoChamado.id}?dashboard=true" data-confirm="Desvincular este tipo de chamado do colaborador?" class="inline-form">
-                                                <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                                                <input type="hidden" name="_method" value="delete">
-                                                <button type="submit" class="btn btn-error">Desvincular</button>
-                                            </form>
+                                            <ui:acao-form acao="${ctx}/admin/colaboradores/${colaboradorSelecionado.id}/tipos-chamado/${tipoChamado.id}?dashboard=true"
+                                                          texto="Desvincular" variante="error" classe="inline-form"
+                                                          confirmacao="Desvincular este tipo de chamado do colaborador?" />
                                         </div>
                                     </c:forEach>
                                 </div>
@@ -102,12 +95,7 @@
 
                 <article class="card">
                     <div class="card-body">
-                    <div class="section-header">
-                        <div>
-                            <p class="eyebrow">Consulta</p>
-                            <h2>Colaboradores encontrados</h2>
-                        </div>
-                    </div>
+                    <ui:card-head titulo="Colaboradores encontrados" descricao="Consulta" />
 
                     <c:choose>
                         <c:when test="${empty colaboradoresDisponiveis}">
@@ -120,7 +108,7 @@
                                     <tr>
                                         <th>Nome</th>
                                         <th>Email</th>
-                                        <th></th>
+                                        <th><span class="sr-only">Ações</span></th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -135,7 +123,7 @@
                                             <td>${colaborador.nome}</td>
                                             <td>${colaborador.email}</td>
                                             <td class="cell-actions">
-                                                <a href="${selecionarColaboradorUrl}" class="btn btn-link">Selecionar</a>
+                                                <ui:acao-link href="${selecionarColaboradorUrl}" texto="Selecionar" />
                                             </td>
                                         </tr>
                                     </c:forEach>

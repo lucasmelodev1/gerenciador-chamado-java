@@ -41,48 +41,20 @@
 
             <section class="card">
                 <div class="card-body">
-                <div class="section-header">
-                    <div>
-                        <p class="eyebrow">Visao operacional</p>
-                        <h2>Chamados recentes</h2>
-                    </div>
-                    <a href="${ctx}/admin/chamados" class="btn btn-primary">Ver todos</a>
-                </div>
+                    <ui:card-head titulo="Chamados recentes" descricao="Visao operacional">
+                        <a href="${ctx}/admin/chamados" class="btn btn-primary">Ver todos</a>
+                    </ui:card-head>
 
-                <c:choose>
-                    <c:when test="${empty chamadosRecentes}">
-                        <ui:vazio titulo="Nenhum chamado registrado" mensagem="Assim que moradores abrirem chamados eles aparecerao aqui." />
-                    </c:when>
-                    <c:otherwise>
-                        <div class="overflow-x-auto">
-                            <table class="table table-zebra">
-                                <thead>
-                                <tr>
-                                    <th>Unidade</th>
-                                    <th>Tipo</th>
-                                    <th>Status</th>
-                                    <th>Abertura</th>
-                                    <th></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <c:forEach items="${chamadosRecentes}" var="chamado">
-                                    <tr>
-                                        <td>${chamado.unidadeIdentificacao}</td>
-                                        <td>${chamado.tipoChamadoTitulo}</td>
-                                        <td><span class="badge badge-ghost">${chamado.statusNome}</span></td>
-                                        <td>${chamado.dataAberturaFormatada}</td>
-                                        <td class="cell-actions">
-                                            <a href="${ctx}/admin/chamados/${chamado.id}" class="btn btn-link">Detalhar</a>
-                                        </td>
-                                    </tr>
-                                </c:forEach>
-                                </tbody>
-                            </table>
-                        </div>
-                    </c:otherwise>
-                </c:choose>
-                            </div>
+                    <c:choose>
+                        <c:when test="${empty chamadosRecentes}">
+                            <ui:vazio titulo="Nenhum chamado registrado" mensagem="Assim que moradores abrirem chamados eles aparecerao aqui." />
+                        </c:when>
+                        <c:otherwise>
+                            <ui:tabela-chamados itens="${chamadosRecentes}" base="${ctx}/admin/chamados"
+                                                acaoTexto="Detalhar" acaoRotulo="Detalhar" />
+                        </c:otherwise>
+                    </c:choose>
+                </div>
             </section>
         </main>
     </div>

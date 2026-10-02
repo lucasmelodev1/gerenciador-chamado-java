@@ -10,13 +10,9 @@
 --%>
 <section class="card">
     <div class="card-body">
-    <div class="section-header">
-        <div>
-            <p class="eyebrow">${agendaEyebrow}</p>
-            <h2>${agendaTitulo}</h2>
-        </div>
+    <ui:card-head titulo="${agendaTitulo}" descricao="${agendaEyebrow}">
         <a href="${agendaBase}" class="btn">Ver lista</a>
-    </div>
+    </ui:card-head>
 
     <div class="mb-4 flex flex-wrap items-end justify-between gap-4">
         <label class="field">

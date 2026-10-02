@@ -13,12 +13,7 @@
 
             <section class="card">
                 <div class="card-body">
-                <div class="section-header">
-                    <div>
-                        <p class="eyebrow">Registro de ocorrencia</p>
-                        <h2>Abrir chamado</h2>
-                    </div>
-                </div>
+                <ui:card-head titulo="Abrir chamado" descricao="Registro de ocorrencia" />
 
                 <form method="post" action="${ctx}/morador/chamados" enctype="multipart/form-data" class="stack-form">
                     <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>

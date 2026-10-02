@@ -13,12 +13,7 @@
 
             <section class="card">
                 <div class="card-body">
-                <div class="section-header">
-                    <div>
-                        <p class="eyebrow">Areas comuns</p>
-                        <h2>Solicitar reserva</h2>
-                    </div>
-                </div>
+                <ui:card-head titulo="Solicitar reserva" descricao="Areas comuns" />
 
                 <form method="post" action="${ctx}/morador/reservas" class="stack-form">
                     <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>

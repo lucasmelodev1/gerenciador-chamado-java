@@ -54,7 +54,7 @@
                                             <td>${area.nome}</td>
                                             <%-- Status e um conjunto FECHADO de dois valores (CHECK na
                                                  migration V19), entao o mapeamento pode ser literal.
-                                                 Mesma ideia de `fragments/reserva-status.jspf`. --%>
+                                                 Mesma ideia do `ui:reserva-status`. --%>
                                             <td>
                                                 <ui:badge variante="${area.status eq 'Ativo' ? 'success' : 'neutral'}">${area.status}</ui:badge>
                                             </td>

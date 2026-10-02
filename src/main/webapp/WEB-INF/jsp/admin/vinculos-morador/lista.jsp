@@ -38,12 +38,7 @@
             <section class="two-column-grid">
                 <article class="card">
                     <div class="card-body">
-                    <div class="section-header">
-                        <div>
-                            <p class="eyebrow">Operacao</p>
-                            <h2>Vincular morador a unidade</h2>
-                        </div>
-                    </div>
+                    <ui:card-head titulo="Vincular morador a unidade" descricao="Operacao" />
 
                     <form method="get" action="${ctx}/admin/vinculos-morador" class="stack-form compact-form">
                         <label class="field">
@@ -103,14 +98,13 @@
                                                 <strong>${unidade.identificacao}</strong>
                                                 <span>${unidade.blocoIdentificacao} - Andar ${unidade.andar}</span>
                                             </div>
-                                            <form method="post" action="${ctx}/admin/moradores/${moradorSelecionadoId}/unidades/${unidade.id}?dashboard=true" data-confirm="Desvincular esta unidade do morador?" class="inline-form">
-                                                <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                                                <input type="hidden" name="_method" value="delete">
+                                            <ui:acao-form acao="${ctx}/admin/moradores/${moradorSelecionadoId}/unidades/${unidade.id}?dashboard=true"
+                                                          texto="Desvincular" variante="error" classe="inline-form"
+                                                          confirmacao="Desvincular esta unidade do morador?">
                                                 <c:if test="${not empty blocoSelecionadoId}">
                                                     <input type="hidden" name="blocoId" value="${blocoSelecionadoId}">
                                                 </c:if>
-                                                <button type="submit" class="btn btn-error">Desvincular</button>
-                                            </form>
+                                            </ui:acao-form>
                                         </div>
                                     </c:forEach>
                                 </div>
@@ -145,12 +139,7 @@
                 <div class="stack-list">
                     <article class="card">
                         <div class="card-body">
-                        <div class="section-header">
-                            <div>
-                                <p class="eyebrow">Base cadastrada</p>
-                                <h2>Moradores cadastrados</h2>
-                            </div>
-                        </div>
+                        <ui:card-head titulo="Moradores cadastrados" descricao="Base cadastrada" />
 
                         <form method="get" action="${ctx}/admin/vinculos-morador" class="stack-form compact-form">
                             <c:if test="${not empty moradorSelecionadoId}">
@@ -185,7 +174,7 @@
                                         <tr>
                                             <th>Nome</th>
                                             <th>Email</th>
-                                            <th></th>
+                                            <th><span class="sr-only">Ações</span></th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -194,7 +183,7 @@
                                                 <td>${morador.nome}</td>
                                                 <td>${morador.email}</td>
                                                 <td class="cell-actions">
-                                                    <a href="${ctx}/admin/vinculos-morador?moradorId=${morador.id}${fn:escapeXml(vinculosFiltros)}" class="btn btn-link">Selecionar</a>
+                                                    <ui:acao-link href="${ctx}/admin/vinculos-morador?moradorId=${morador.id}${fn:escapeXml(vinculosFiltros)}" texto="Selecionar" />
                                                 </td>
                                             </tr>
                                         </c:forEach>
@@ -212,12 +201,7 @@
 
                     <article class="card">
                         <div class="card-body">
-                        <div class="section-header">
-                            <div>
-                                <p class="eyebrow">Pendencias</p>
-                                <h2>Moradores sem unidade</h2>
-                            </div>
-                        </div>
+                        <ui:card-head titulo="Moradores sem unidade" descricao="Pendencias" />
 
                         <form method="get" action="${ctx}/admin/vinculos-morador" class="stack-form compact-form">
                             <c:if test="${not empty moradorSelecionadoId}">
@@ -252,7 +236,7 @@
                                         <tr>
                                             <th>Nome</th>
                                             <th>Email</th>
-                                            <th></th>
+                                            <th><span class="sr-only">Ações</span></th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -261,7 +245,7 @@
                                                 <td>${morador.nome}</td>
                                                 <td>${morador.email}</td>
                                                 <td class="cell-actions">
-                                                    <a href="${ctx}/admin/vinculos-morador?moradorId=${morador.id}${fn:escapeXml(vinculosFiltros)}" class="btn btn-link">Selecionar</a>
+                                                    <ui:acao-link href="${ctx}/admin/vinculos-morador?moradorId=${morador.id}${fn:escapeXml(vinculosFiltros)}" texto="Selecionar" />
                                                 </td>
                                             </tr>
                                         </c:forEach>

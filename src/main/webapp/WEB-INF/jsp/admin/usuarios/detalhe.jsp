@@ -14,13 +14,9 @@
             <section class="two-column-grid">
                 <article class="card">
                     <div class="card-body">
-                    <div class="section-header">
-                        <div>
-                            <p class="eyebrow">Edicao</p>
-                            <h2>${usuario.nome}</h2>
-                        </div>
-                        <span class="badge badge-neutral">${usuario.tipo}</span>
-                    </div>
+                    <ui:card-head titulo="${usuario.nome}" descricao="Edicao">
+                        <ui:badge>${usuario.tipo}</ui:badge>
+                    </ui:card-head>
 
                     <form method="post" action="${ctx}/admin/usuarios/${usuario.id}" class="stack-form">
                         <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
@@ -51,23 +47,16 @@
                         </div>
                     </form>
 
-                    <form method="post" action="${ctx}/admin/usuarios/${usuario.id}" data-confirm="Remover este usuario? A acao nao pode ser desfeita." class="inline-form danger-zone">
-                        <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                        <input type="hidden" name="_method" value="delete">
-                        <button type="submit" class="btn btn-error">Remover usuario</button>
-                    </form>
+                    <ui:acao-form acao="${ctx}/admin/usuarios/${usuario.id}" texto="Remover usuario"
+                                  variante="error" classe="inline-form danger-zone"
+                                  confirmacao="Remover este usuario? A acao nao pode ser desfeita." />
                                     </div>
                 </article>
 
                 <c:if test="${usuario.role eq 'ROLE_MORADOR'}">
                     <article class="card">
                         <div class="card-body">
-                        <div class="section-header">
-                            <div>
-                                <p class="eyebrow">Vinculos</p>
-                                <h2>Unidades do morador</h2>
-                            </div>
-                        </div>
+                        <ui:card-head titulo="Unidades do morador" descricao="Vinculos" />
 
                         <c:choose>
                             <c:when test="${empty unidadesMorador}">
@@ -81,14 +70,13 @@
                                                 <strong>${unidade.identificacao}</strong>
                                                 <span>${unidade.blocoIdentificacao} - Andar ${unidade.andar}</span>
                                             </div>
-                                            <form method="post" action="${ctx}/admin/moradores/${usuario.id}/unidades/${unidade.id}" data-confirm="Desvincular esta unidade do morador?" class="inline-form">
-                                                <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                                                <input type="hidden" name="_method" value="delete">
+                                            <ui:acao-form acao="${ctx}/admin/moradores/${usuario.id}/unidades/${unidade.id}"
+                                                          texto="Desvincular" variante="error" classe="inline-form"
+                                                          confirmacao="Desvincular esta unidade do morador?">
                                                 <c:if test="${not empty blocoSelecionadoId}">
                                                     <input type="hidden" name="blocoId" value="${blocoSelecionadoId}">
                                                 </c:if>
-                                                <button type="submit" class="btn btn-error">Desvincular</button>
-                                            </form>
+                                            </ui:acao-form>
                                         </div>
                                     </c:forEach>
                                 </div>
@@ -146,9 +134,7 @@
                                             <td>${unidade.identificacao}</td>
                                             <td>${unidade.andar}</td>
                                             <td>
-                                                <span class="badge ${unidade.vinculadaAoMorador ? 'badge-success' : 'badge-neutral'}">
-                                                    ${unidade.vinculadaAoMorador ? 'Vinculada' : 'Disponivel'}
-                                                </span>
+                                                <ui:badge variante="${unidade.vinculadaAoMorador ? 'success' : 'neutral'}">${unidade.vinculadaAoMorador ? 'Vinculada' : 'Disponivel'}</ui:badge>
                                             </td>
                                         </tr>
                                     </c:forEach>
@@ -163,12 +149,7 @@
                 <c:if test="${usuario.role eq 'ROLE_COLABORADOR'}">
                     <article class="card">
                         <div class="card-body">
-                        <div class="section-header">
-                            <div>
-                                <p class="eyebrow">Escopo</p>
-                                <h2>Tipos de chamado do colaborador</h2>
-                            </div>
-                        </div>
+                        <ui:card-head titulo="Tipos de chamado do colaborador" descricao="Escopo" />
 
                         <c:choose>
                             <c:when test="${empty tiposChamadoColaborador}">
@@ -182,11 +163,9 @@
                                                 <strong>${tipoChamado.titulo}</strong>
                                                 <span>Prazo: ${tipoChamado.prazoHoras}h</span>
                                             </div>
-                                            <form method="post" action="${ctx}/admin/colaboradores/${usuario.id}/tipos-chamado/${tipoChamado.id}" data-confirm="Desvincular este tipo de chamado do colaborador?" class="inline-form">
-                                                <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                                                <input type="hidden" name="_method" value="delete">
-                                                <button type="submit" class="btn btn-error">Desvincular</button>
-                                            </form>
+                                            <ui:acao-form acao="${ctx}/admin/colaboradores/${usuario.id}/tipos-chamado/${tipoChamado.id}"
+                                                          texto="Desvincular" variante="error" classe="inline-form"
+                                                          confirmacao="Desvincular este tipo de chamado do colaborador?" />
                                         </div>
                                     </c:forEach>
                                 </div>

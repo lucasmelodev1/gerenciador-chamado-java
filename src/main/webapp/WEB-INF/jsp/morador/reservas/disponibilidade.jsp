@@ -13,13 +13,9 @@
 
             <section class="card">
                 <div class="card-body">
-                <div class="section-header">
-                    <div>
-                        <p class="eyebrow">Areas comuns</p>
-                        <h2>Disponibilidade</h2>
-                    </div>
+                <ui:card-head titulo="Disponibilidade" descricao="Areas comuns">
                     <a href="${ctx}/morador/reservas" class="btn">Minhas reservas</a>
-                </div>
+                </ui:card-head>
 
                 <form method="get" action="${ctx}/morador/reservas/disponibilidade" class="inline-panel">
                     <label class="field">
@@ -61,8 +57,7 @@
                                         <td>${reserva.inicioFormatado}</td>
                                         <td>${reserva.fimFormatado}</td>
                                         <td>
-                                            <c:set var="reservaStatus" value="${reserva.status}" />
-                                            <%@ include file="/WEB-INF/jsp/fragments/reserva-status.jspf" %>
+                                            <ui:reserva-status status="${reserva.status}" />
                                             <c:if test="${reserva.status eq 'Solicitado'}">
                                                 <small class="field-hint">Pendente, nao garante a ocupacao.</small>
                                             </c:if>

@@ -51,8 +51,7 @@
                                             <td>${reserva.unidadeIdentificacao}</td>
                                             <td>${reserva.inicioFormatado}</td>
                                             <td>${reserva.fimFormatado}</td>
-                                            <td><c:set var="reservaStatus" value="${reserva.status}" />
-<%@ include file="/WEB-INF/jsp/fragments/reserva-status.jspf" %></td>
+                                            <td><ui:reserva-status status="${reserva.status}" /></td>
                                             <td><c:out value="${empty reserva.motivoNegacao ? '-' : reserva.motivoNegacao}" /></td>
                                             <td class="cell-actions app-tabela-acoes">
                                                 <c:if test="${reserva.status eq 'Solicitado'}">

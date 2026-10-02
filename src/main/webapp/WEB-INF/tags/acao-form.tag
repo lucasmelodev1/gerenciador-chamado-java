@@ -1,8 +1,7 @@
 <%--
-    Componente: acao de linha que ENVIA um formulario, so com icone + tooltip
-    (S25, tag em S26).
+    Componente: acao que ENVIA um formulario (S25, tag em S26; modo texto em S31).
 
-    Uso (remocao, o caso comum):
+    Uso (acao de linha, so icone + tooltip — o formato das tabelas):
         <ui:acao-form acao="${ctx}/admin/areas/${area.id}" icone="remover" rotulo="Remover"
                       perigo="true"
                       confirmacao="Remover esta area? As reservas existentes serao preservadas." />
@@ -12,10 +11,20 @@
                       metodo="patch" icone="padrao" rotulo="Tornar padrao"
                       confirmacao="Definir este status como inicial padrao?" />
 
+    Uso (botao com texto visivel, o formato que as telas escreviam a mao):
+        <ui:acao-form acao="${ctx}/morador/reservas/${reserva.id}" texto="Cancelar"
+                      variante="link" confirmacao="Cancelar esta reserva?" />
+        <ui:acao-form acao="${ctx}/admin/usuarios/${usuario.id}" texto="Remover usuario"
+                      variante="error" classe="inline-form danger-zone"
+                      confirmacao="Remover este usuario? A acao nao pode ser desfeita." />
+
     Atributos:
         acao        action do form
-        rotulo      texto do tooltip e nome acessivel
-        icone       alias de ui:icone
+        texto       rotulo visivel; ativa o modo texto (sem ele, sai o icone + tooltip)
+        variante    classe do botao no modo texto: link (padrao), error ou primary
+        classe      classe extra do <form> (ex.: `inline-form`, `danger-zone`)
+        rotulo      texto do tooltip e nome acessivel (modo icone)
+        icone       alias de ui:icone (modo icone)
         metodo      valor de `_method` (padrao: delete)
         confirmacao texto do `data-confirm`; sem ela o envio nao pede confirmacao
         perigo      `true` pinta o icone com a cor de erro (padrao: false)
@@ -31,20 +40,31 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="ui" tagdir="/WEB-INF/tags" %>
 <%@ attribute name="acao" required="true" %>
-<%@ attribute name="rotulo" required="true" description="texto do tooltip e nome acessivel" %>
-<%@ attribute name="icone" required="true" description="alias de ui:icone" %>
+<%@ attribute name="texto" required="false" description="rotulo visivel; ativa o modo texto" %>
+<%@ attribute name="variante" required="false" description="link (padrao), error ou primary — so no modo texto" %>
+<%@ attribute name="classe" required="false" description="classe extra do form" %>
+<%@ attribute name="rotulo" required="false" description="texto do tooltip e nome acessivel (modo icone)" %>
+<%@ attribute name="icone" required="false" description="alias de ui:icone (modo icone)" %>
 <%@ attribute name="metodo" required="false" description="valor de _method (padrao: delete)" %>
 <%@ attribute name="confirmacao" required="false" description="texto do data-confirm; sem ela nao ha confirmacao" %>
 <%@ attribute name="perigo" required="false" description="true pinta o icone com a cor de erro" %>
 
 <c:set var="acaoFormMetodo" value="${empty metodo ? 'delete' : metodo}" />
 <c:set var="acaoFormClasse" value="btn btn-ghost btn-sm btn-square${perigo eq 'true' ? ' app-btn-perigo' : ''} tooltip" />
+<c:set var="acaoFormTextoClasse" value="btn ${variante eq 'error' ? 'btn-error' : variante eq 'primary' ? 'btn-primary' : 'btn-link'}" />
 
-<form method="post" action="${acao}"<c:if test="${not empty confirmacao}"> data-confirm="${confirmacao}"</c:if>>
+<form method="post" action="${acao}"<c:if test="${not empty classe}"> class="${classe}"</c:if><c:if test="${not empty confirmacao}"> data-confirm="${confirmacao}"</c:if>>
     <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
     <input type="hidden" name="_method" value="${acaoFormMetodo}">
     <jsp:doBody />
-    <button type="submit" class="${acaoFormClasse}" data-tip="${rotulo}" aria-label="${rotulo}">
-        <ui:icone nome="${icone}" />
-    </button>
+    <c:choose>
+        <c:when test="${not empty texto}">
+            <button type="submit" class="${acaoFormTextoClasse}">${texto}</button>
+        </c:when>
+        <c:otherwise>
+            <button type="submit" class="${acaoFormClasse}" data-tip="${rotulo}" aria-label="${rotulo}">
+                <ui:icone nome="${icone}" />
+            </button>
+        </c:otherwise>
+    </c:choose>
 </form>

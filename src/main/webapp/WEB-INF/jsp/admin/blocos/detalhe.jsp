@@ -22,13 +22,9 @@
 
             <section class="card">
                 <div class="card-body">
-                <div class="section-header">
-                    <div>
-                        <p class="eyebrow">Geracao automatica</p>
-                        <h2>Unidades do bloco</h2>
-                    </div>
+                <ui:card-head titulo="Unidades do bloco" descricao="Geracao automatica">
                     <a href="${ctx}/admin/blocos" class="btn">Voltar</a>
-                </div>
+                </ui:card-head>
 
                 <c:choose>
                     <c:when test="${empty unidades}">
@@ -52,7 +48,7 @@
                                         <td>
                                             <c:choose>
                                                 <c:when test="${empty unidade.moradores}">
-                                                    <span class="badge badge-neutral">Sem moradores</span>
+                                                    <ui:badge>Sem moradores</ui:badge>
                                                 </c:when>
                                                 <c:otherwise>
                                                     <div class="stack-list">

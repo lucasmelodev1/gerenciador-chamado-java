@@ -25,45 +25,18 @@
 
             <section class="card">
                 <div class="card-body">
-                <div class="section-header">
-                    <div>
-                        <p class="eyebrow">Fila imediata</p>
-                        <h2>Chamados recentes</h2>
-                    </div>
-                </div>
+                    <ui:card-head titulo="Chamados recentes" descricao="Fila imediata" />
 
-                <c:choose>
-                    <c:when test="${empty chamados}">
-                        <ui:vazio titulo="Nenhum chamado disponivel no seu escopo" mensagem="Quando surgirem novos atendimentos eles aparecerao aqui." />
-                    </c:when>
-                    <c:otherwise>
-                        <div class="overflow-x-auto">
-                            <table class="table table-zebra">
-                                <thead>
-                                <tr>
-                                    <th>Unidade</th>
-                                    <th>Tipo</th>
-                                    <th>Status</th>
-                                    <th></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <c:forEach items="${chamados}" var="chamado">
-                                    <tr>
-                                        <td>${chamado.unidadeIdentificacao}</td>
-                                        <td>${chamado.tipoChamadoTitulo}</td>
-                                        <td><span class="badge badge-ghost">${chamado.statusNome}</span></td>
-                                        <td class="cell-actions">
-                                            <a href="${ctx}/colaborador/chamados/${chamado.id}" class="btn btn-link">Atender</a>
-                                        </td>
-                                    </tr>
-                                </c:forEach>
-                                </tbody>
-                            </table>
-                        </div>
-                    </c:otherwise>
-                </c:choose>
-                            </div>
+                    <c:choose>
+                        <c:when test="${empty chamados}">
+                            <ui:vazio titulo="Nenhum chamado disponivel no seu escopo" mensagem="Quando surgirem novos atendimentos eles aparecerao aqui." />
+                        </c:when>
+                        <c:otherwise>
+                            <ui:tabela-chamados itens="${chamados}" base="${ctx}/colaborador/chamados"
+                                                mostrarAbertura="false" acaoTexto="Atender" acaoRotulo="Atender" />
+                        </c:otherwise>
+                    </c:choose>
+                </div>
             </section>
         </main>
     </div>
