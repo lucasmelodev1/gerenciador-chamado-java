@@ -431,6 +431,10 @@ def verificar(custom, build):
                   f".app-dialog deveria ter `{prop}: {valor}` (e assim que centraliza)")
         check(re.search(r'max-height\s*:', dialogo) is not None,
               ".app-dialog deveria limitar a altura (senao estoura a viewport)")
+        # Sem `height: fit-content` o `inset: 0` estica o painel entre top e bottom e o
+        # dialogo vira uma coluna da altura da tela, com o corpo vazio no meio.
+        check(re.search(r'height\s*:\s*fit-content', dialogo) is not None,
+              ".app-dialog deveria ter `height: fit-content` (com `inset: 0` a altura automatica estica)")
         check(re.search(r'visibility\s*:\s*hidden', dialogo) is not None,
               ".app-dialog deveria nascer escondido")
     check(bloco(custom, ".app-dialog[data-drawer-aberto]") is not None,
@@ -503,6 +507,8 @@ SABOTAGENS = [
      lambda c: re.sub(r'\.app-card-filtros--campos \{[^}]*\}', '', c, count=1)),
     ("dialogo deixa de ser centralizado",
      lambda c: c.replace("    margin: auto;\n    border-radius: var(--radius-box);", "    border-radius: var(--radius-box);", 1)),
+    ("dialogo deixa de ter altura de conteudo",
+     lambda c: c.replace("    height: fit-content;\n", "", 1)),
     ("dialogo nasce visivel",
      lambda c: c.replace("    visibility: hidden;\n    opacity: 0;\n    scale: 0.96;", "    opacity: 0;\n    scale: 0.96;", 1)),
 ]

@@ -176,6 +176,13 @@
  * Centralizar com `inset: 0` + `margin: auto` (e nao com `translate`) para o painel
  * nunca sair da tela quando o conteudo for mais alto que a viewport: quem manda e o
  * `max-height`, e o corpo rola.
+ *
+ * `height: fit-content` NAO e redundante. Com `inset: 0` e `height: auto`, um elemento
+ * `position: fixed` ESTICA entre top e bottom (o `height` automatico preenche o espaco
+ * que sobra), e o dialogo virava uma coluna da altura da tela com o corpo vazio no meio.
+ * Com altura de conteudo sobram as duas folgas que o `margin: auto` divide — e o dialogo
+ * fica centrado e JUSTO: cresce com o formulario e para no `max-height`, quando entao o
+ * corpo rola.
  * ------------------------------------------------------------------------ */
 
 .app-dialog {
@@ -186,6 +193,7 @@
     flex-direction: column;
     width: calc(100% - 2rem);
     max-width: 28rem; /* md, o padrao */
+    height: fit-content;
     max-height: calc(100dvh - 2rem);
     margin: auto;
     border-radius: var(--radius-box);

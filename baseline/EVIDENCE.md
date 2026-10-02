@@ -1214,6 +1214,22 @@ A checagem nova "a celula de acoes nao pode conter campo de formulario" reprovou
 dentro da celula por natureza. O que nao pode ali e campo **visivel** — era o caso do motivo.
 A checagem passou a olhar so `input` sem `type="hidden"`, `select` e `textarea`.
 
+### Correcao: a altura do dialogo
+
+A primeira versao saiu com o painel **esticado na altura da tela**, com o corpo vazio no
+meio — a captura do usuario mostrou. Causa: `inset: 0` define `top` e `bottom` como zero e,
+com `height: auto`, um elemento `position: fixed` **preenche** o espaco entre os dois. Nao
+sobrava folga para o `margin: auto` dividir, entao o dialogo nao "centralizava": ele ocupava
+tudo.
+
+Correcao: `height: fit-content`. Com altura de conteudo sobram as duas folgas, o `margin:
+auto` centraliza, e o `max-height: calc(100dvh - 2rem)` continua sendo o teto — quando o
+conteudo passa dele, o teto manda e o corpo rola. O dialogo agora cresce com o formulario e
+para.
+
+`ui-tabelas.sh` ganhou a checagem (com sabotagem propria) porque e um erro silencioso: o
+dialogo continua abrindo e funcionando, so com a altura errada.
+
 ### Verificacao
 
 | # | Check | Result |
@@ -1223,7 +1239,7 @@ A checagem passou a olhar so `input` sem `type="hidden"`, `select` e `textarea`.
 | 3 | reservas: as tres acoes com `data-tip`, o campo `motivo` no dialogo de negacao, `btn-error` no confirmar e nenhum `data-confirm` | OK |
 | 4 | reservas: nenhuma celula de acoes com campo **visivel** (o defeito original) | OK |
 | 5 | CSS: `.app-dialog` com `position: fixed` + `inset: 0` + `margin: auto` + `max-height` e o estado aberto | OK |
-| 6 | self-test negativo: **13/13** markup (duas sabotagens novas: dialogo virando drawer lateral e o motivo desaparecendo) e **12/12** CSS (duas novas: dialogo deixando de centralizar e nascendo visivel) | OK |
+| 6 | self-test negativo: **13/13** markup (dialogo virando drawer lateral e o motivo desaparecendo) e **13/13** CSS (o dialogo deixando de centralizar, nascendo visivel e perdendo a altura de conteudo) | OK |
 | 7 | `ui-drawer-js.mjs` continua 21/21 — o dialogo e coberto pelo mesmo harness | OK |
 | 8 | `ui-routes.sh shell` · `ui-shell.sh` · `ui-drawer.sh` · `ui-invariants.sh` | 26/26 · OK · OK · `INVARIANTS OK` |
 | 9 | `docker compose run --rm test` | **153 testes, 0 falhas** |

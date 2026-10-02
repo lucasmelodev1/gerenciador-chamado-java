@@ -243,6 +243,10 @@ reaproveitado por varias linhas: o gatilho de cada linha leva a acao daquele reg
 Em reservas isso resolve o motivo da negacao, que antes era um `<input>` solto dentro da
 celula de acoes e estourava a coluna.
 
+O painel tem **altura de conteudo** (`height: fit-content` + `max-height` de viewport): cresce
+com o formulario, para num teto e so entao o corpo rola. Sem o `fit-content` o `inset: 0` do
+`position: fixed` estica o painel entre top e bottom e o dialogo ocupa a tela inteira.
+
 ---
 
 ## Ícones
