@@ -46,12 +46,12 @@
                                 <ui:vazio mensagem="Nenhuma unidade vinculada." compacto="true" />
                             </c:when>
                             <c:otherwise>
-                                <div class="stack-list">
+                                <div class="grid gap-4">
                                     <c:forEach items="${unidadesMorador}" var="unidade">
-                                        <div class="list-row">
+                                        <div class="flex items-center justify-between gap-3 rounded-xl border border-base-content/10 bg-base-100 px-4.5 py-4 transition duration-200">
                                             <div>
                                                 <strong>${unidade.identificacao}</strong>
-                                                <span>${unidade.blocoIdentificacao} - Andar ${unidade.andar}</span>
+                                                <span class="text-base-content/60">${unidade.blocoIdentificacao} - Andar ${unidade.andar}</span>
                                             </div>
                                             <ui:acao-form acao="${ctx}/admin/moradores/${usuario.id}/unidades/${unidade.id}"
                                                           texto="Desvincular" variante="error" classe="flex flex-wrap items-center gap-3"
@@ -137,12 +137,12 @@
                                 <ui:vazio mensagem="Nenhum tipo de chamado vinculado." compacto="true" />
                             </c:when>
                             <c:otherwise>
-                                <div class="stack-list">
+                                <div class="grid gap-4">
                                     <c:forEach items="${tiposChamadoColaborador}" var="tipoChamado">
-                                        <div class="list-row">
+                                        <div class="flex items-center justify-between gap-3 rounded-xl border border-base-content/10 bg-base-100 px-4.5 py-4 transition duration-200">
                                             <div>
                                                 <strong>${tipoChamado.titulo}</strong>
-                                                <span>Prazo: ${tipoChamado.prazoHoras}h</span>
+                                                <span class="text-base-content/60">Prazo: ${tipoChamado.prazoHoras}h</span>
                                             </div>
                                             <ui:acao-form acao="${ctx}/admin/colaboradores/${usuario.id}/tipos-chamado/${tipoChamado.id}"
                                                           texto="Desvincular" variante="error" classe="flex flex-wrap items-center gap-3"

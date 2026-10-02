@@ -3,7 +3,7 @@
 <ui:shell dataPagina="admin-bloco-detalhe">
 
             <section class="hero-card">
-                <p class="eyebrow">Estrutura fisica</p>
+                <p class="mb-2 text-xs tracking-eyebrow text-base-content/60 uppercase">Estrutura fisica</p>
                 <h2>${bloco.identificacao}</h2>
                 <div class="hero-metrics">
                     <span><strong>${bloco.quantidadeAndares}</strong> andares</span>
@@ -42,7 +42,7 @@
                                                     <ui:badge>Sem moradores</ui:badge>
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <div class="stack-list">
+                                                    <div class="grid gap-4">
                                                         <c:forEach items="${unidade.moradores}" var="morador">
                                                             <div>
                                                                 <strong>${morador.nome}</strong>

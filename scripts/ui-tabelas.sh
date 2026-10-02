@@ -88,8 +88,8 @@ for tela, cfg in TELAS.items():
     if i_head != -1:
         fim_head = i_filt if i_filt != -1 else h.find('<div class="overflow-x-auto"')
         head = h[i_head:fim_head]
-        if not re.search(r'<div class="app-card-head__texto">\s*(<p class="eyebrow">[^<]*</p>\s*)?<h2>[^<]+</h2>', head):
-            bad(tela, "cabecalho sem descricao/.eyebrow e <h2> no agrupamento")
+        if not re.search(r'<div class="app-card-head__texto">\s*(<p class="[^"]*tracking-eyebrow[^"]*">[^<]*</p>\s*)?<h2>[^<]+</h2>', head):
+            bad(tela, "cabecalho sem descricao (utilitarios do eyebrow) e <h2> no agrupamento")
         if head.count('<div class="app-card-head__texto">') != 1:
             bad(tela, "mais de um agrupamento de titulo no cabecalho")
 
@@ -110,17 +110,18 @@ for tela, cfg in TELAS.items():
     if FALLBACK in h:
         bad(tela, "icone de fallback emitido (alias desconhecido em icone.jspf)")
 
-    # --- coluna de acoes: rotulo acessivel, todas as linhas migradas ---
+    # --- coluna de acoes: rotulo acessivel e todas as celulas migradas ---
+    # Toda celula que contem um botao de acao (icone `btn-square` ou texto `btn-link`) tem de
+    # ser exatamente `.app-tabela-acoes`: a checagem antiga comparava as classes
+    # `cell-actions`/`app-tabela-acoes` e so existia enquanto as duas conviviam (F4 da S33).
     if '<th><span class="sr-only">Ações</span></th>' not in h:
         bad(tela, "coluna de acoes sem <span class=\"sr-only\">Ações</span> no <th>")
-    acoes = h.count('<td class="cell-actions app-tabela-acoes">')
-    todas = len(re.findall(r'<td class="cell-actions[^"]*">', h))
-    if acoes == 0:
-        bad(tela, "nenhuma celula de acoes com .app-tabela-acoes")
-    if todas != acoes:
-        bad(tela, f"{todas} celulas .cell-actions, mas so {acoes} com .app-tabela-acoes")
-    if 'cell-actions' in h and acoes != todas:
-        bad(tela, "sobrou celula de acoes sem o alinhamento a direita")
+    celulas = re.findall(r'<td class="([^"]*)">(?:(?!</td>).)*?(?:btn-square|btn-link)', h, re.S)
+    if not celulas:
+        bad(tela, "nenhuma celula de acoes (botao com icone ou texto) encontrada")
+    for classe in celulas:
+        if classe != "app-tabela-acoes":
+            bad(tela, f"celula de acoes com classe inesperada: {classe!r}")
 
     # --- todo botao de acao e icone + tooltip ---
     for botao in re.findall(r'<button[^>]*class="[^"]*app-btn[^"]*"[^>]*>', h) + \
@@ -206,7 +207,7 @@ for rotulo in ("Aprovar", "Negar", "Cancelar"):
         bad("reservas", f"falta a acao {rotulo!r}")
 # A celula de acoes TEM inputs escondidos por natureza (csrf e _method, do
 # ui:acao-form); o que nao pode e campo VISIVEL — era o caso do motivo da negacao.
-for celula in re.findall(r'<td class="cell-actions app-tabela-acoes">(.*?)</td>', h, re.S):
+for celula in re.findall(r'<td class="app-tabela-acoes">(.*?)</td>', h, re.S):
     if re.search(r'<(input(?![^>]*type="hidden")|select|textarea)[^>]*>', celula):
         bad("reservas", "a celula de acoes nao pode conter campo visivel (o motivo vive no dialogo)")
 
@@ -263,7 +264,7 @@ if h.count('<span class="badge badge-ghost">Reservado</span>') != 3:
     bad("status-chamado", "os 3 status reservados deveriam ser marcados como Reservado")
 # Todo status NAO reservado tem de oferecer o gatilho de edicao — e nenhum reservado
 # pode oferecer. Como isso depende dos dados, a checagem e a relacao entre as contagens.
-linhas = h.count('<td class="cell-actions app-tabela-acoes">')
+linhas = h.count('<td class="app-tabela-acoes">')
 reservados = h.count('<span class="badge badge-ghost">Reservado</span>')
 editaveis = h.count('data-drawer-editar="drawer-status"')
 if editaveis != linhas - reservados:
@@ -279,7 +280,7 @@ h = html["tipos-chamado"]
 corpo = re.search(r'<tbody>(.*?)</tbody>', h, re.S)
 if corpo and re.search(r'<span class="badge ', corpo.group(1)):
     bad("tipos-chamado", "tipo de chamado nao tem coluna de status")
-linhas = h.count('<td class="cell-actions app-tabela-acoes">')
+linhas = h.count('<td class="app-tabela-acoes">')
 if h.count('data-drawer-editar="drawer-tipo"') != linhas:
     bad("tipos-chamado", f"{linhas} linhas, mas nao ha um gatilho de editar por linha")
 if 'app-btn-perigo' in h or 'data-tip="Remover"' in h:
@@ -320,7 +321,7 @@ import pathlib, shutil, subprocess, sys, os
 WORK, SAB = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2])
 
 CASOS = [
-    ("areas", 'class="cell-actions app-tabela-acoes"', 'class="cell-actions"',
+    ("areas", 'class="app-tabela-acoes"', 'class="app-tabela-acoes-sem-alinhamento"',
      "celula de acoes fora do padrao"),
     ("areas", '<span class="sr-only">Ações</span>', '',
      "coluna de acoes sem rotulo acessivel"),
@@ -430,8 +431,11 @@ def verificar(custom, build):
         gap = re.search(r'gap\s*:\s*([0-9.]+)rem', texto)
         check(gap is not None and float(gap.group(1)) <= 0.25,
               "descricao e titulo deveriam ficar colados (gap <= 0.25rem)")
-    check(bloco(custom, ".app-card-head__texto .eyebrow") is not None,
-          "falta o reset do respiro do `.eyebrow`")
+    # O respiro da descricao vem do `gap` acima desde o F4 da S33: ela e utilitario
+    # (`tracking-eyebrow`), sem `margin-bottom` para zerar — a regra antiga saiu do
+    # custom.css junto com o `.eyebrow` do legado.
+    check(bloco(custom, ".app-card-head__texto .eyebrow") is None,
+          "o reset de `.eyebrow` nao deveria mais existir no custom.css")
     titulo = bloco(custom, ".app-card-head h2")
     check(titulo is not None and re.search(r'font-size\s*:\s*1\.5rem', titulo or "") is not None,
           ".app-card-head h2 deveria repor a tipografia do titulo")

@@ -45,7 +45,7 @@
 <c:set var="linkAnterior" value="${url}?${paginaParam}=${pagina.page - 1}&${tamanhoParam}=${pagina.size}${parametros}" />
 <c:set var="linkSeguinte" value="${url}?${paginaParam}=${pagina.page + 1}&${tamanhoParam}=${pagina.size}${parametros}" />
 
-<div class="pagination">
+<div class="mt-4.5 flex flex-wrap items-center justify-between gap-4 border-t border-base-content/10 pt-4.5">
     <c:if test="${pagina.hasPrevious}">
         <a class="btn" href="${fn:escapeXml(linkAnterior)}">Anterior</a>
     </c:if>

@@ -66,10 +66,10 @@
 
                     <c:if test="${not empty moradorSelecionado}">
                         <div class="divider"></div>
-                        <div class="list-row">
+                        <div class="flex items-center justify-between gap-3 rounded-xl border border-base-content/10 bg-base-100 px-4.5 py-4 transition duration-200">
                             <div>
                                 <strong>${moradorSelecionado.nome}</strong>
-                                <span>${moradorSelecionado.email}</span>
+                                <span class="text-base-content/60">${moradorSelecionado.email}</span>
                             </div>
                             <a href="${ctx}/admin/usuarios/${moradorSelecionado.id}" class="btn">Abrir cadastro</a>
                         </div>
@@ -79,12 +79,12 @@
                                 <ui:vazio mensagem="Este morador ainda nao possui unidades vinculadas." compacto="true" />
                             </c:when>
                             <c:otherwise>
-                                <div class="stack-list">
+                                <div class="grid gap-4">
                                     <c:forEach items="${unidadesMorador}" var="unidade">
-                                        <div class="list-row">
+                                        <div class="flex items-center justify-between gap-3 rounded-xl border border-base-content/10 bg-base-100 px-4.5 py-4 transition duration-200">
                                             <div>
                                                 <strong>${unidade.identificacao}</strong>
-                                                <span>${unidade.blocoIdentificacao} - Andar ${unidade.andar}</span>
+                                                <span class="text-base-content/60">${unidade.blocoIdentificacao} - Andar ${unidade.andar}</span>
                                             </div>
                                             <ui:acao-form acao="${ctx}/admin/moradores/${moradorSelecionadoId}/unidades/${unidade.id}?dashboard=true"
                                                           texto="Desvincular" variante="error" classe="flex flex-wrap items-center gap-3"
@@ -123,7 +123,7 @@
                                     </div>
                 </article>
 
-                <div class="stack-list">
+                <div class="grid gap-4">
                     <article class="card">
                         <div class="card-body">
                         <ui:card-head titulo="Moradores cadastrados" descricao="Base cadastrada" />
@@ -168,7 +168,7 @@
                                             <tr>
                                                 <td>${morador.nome}</td>
                                                 <td>${morador.email}</td>
-                                                <td class="cell-actions">
+                                                <td class="app-tabela-acoes">
                                                     <ui:acao-link href="${ctx}/admin/vinculos-morador?moradorId=${morador.id}${fn:escapeXml(vinculosFiltros)}" texto="Selecionar" />
                                                 </td>
                                             </tr>
@@ -229,7 +229,7 @@
                                             <tr>
                                                 <td>${morador.nome}</td>
                                                 <td>${morador.email}</td>
-                                                <td class="cell-actions">
+                                                <td class="app-tabela-acoes">
                                                     <ui:acao-link href="${ctx}/admin/vinculos-morador?moradorId=${morador.id}${fn:escapeXml(vinculosFiltros)}" texto="Selecionar" />
                                                 </td>
                                             </tr>

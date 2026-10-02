@@ -51,7 +51,7 @@
                                                     </c:if>
                                                 </span>
                                             </td>
-                                            <td class="cell-actions app-tabela-acoes">
+                                            <td class="app-tabela-acoes">
                                                 <c:if test="${status.editavel}">
                                                     <ui:acao-painel painel="drawer-status" titulo="Editar status"
                                                                     acao="${ctx}/admin/status-chamado/${status.id}">

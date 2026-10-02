@@ -27,12 +27,12 @@
                             <ui:vazio mensagem="Nenhuma unidade vinculada ao seu acesso." compacto="true" />
                         </c:when>
                         <c:otherwise>
-                            <div class="stack-list">
+                            <div class="grid gap-4">
                                 <c:forEach items="${minhasUnidades}" var="unidade">
-                                    <div class="list-row">
+                                    <div class="flex items-center justify-between gap-3 rounded-xl border border-base-content/10 bg-base-100 px-4.5 py-4 transition duration-200">
                                         <div>
                                             <strong>${unidade.identificacao}</strong>
-                                            <span>${unidade.blocoIdentificacao} - Andar ${unidade.andar}</span>
+                                            <span class="text-base-content/60">${unidade.blocoIdentificacao} - Andar ${unidade.andar}</span>
                                         </div>
                                     </div>
                                 </c:forEach>
@@ -52,9 +52,9 @@
                             <ui:vazio mensagem="Voce ainda nao abriu chamados." compacto="true" />
                         </c:when>
                         <c:otherwise>
-                            <div class="stack-list">
+                            <div class="grid gap-4">
                                 <c:forEach items="${meusChamados}" var="chamado">
-                                    <a href="${ctx}/morador/chamados/${chamado.id}" class="list-row link-row">
+                                    <a href="${ctx}/morador/chamados/${chamado.id}" class="flex items-center justify-between gap-3 rounded-xl border border-base-content/10 bg-base-100 px-4.5 py-4 transition duration-200 hover:border-primary/30 hover:translate-x-0.5 hover:shadow-soft">
                                         <div>
                                             <strong>${chamado.tipoChamadoTitulo}</strong>
                                             <span>${chamado.unidadeIdentificacao} - ${chamado.dataAberturaFormatada}</span>

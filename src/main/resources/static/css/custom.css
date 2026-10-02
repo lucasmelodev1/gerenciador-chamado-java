@@ -192,16 +192,10 @@ body[data-page]:not([data-page="login"]) .app-page > *:nth-child(4) {
 
 .app-card-head__texto {
     display: grid;
-    /* 2px: a descricao e o titulo viram um bloco unico. O respiro extra que existia
-       (8px de margin-bottom do `.eyebrow`) empurrava o titulo para longe. */
+    /* 2px: a descricao e o titulo viram um bloco unico. Desde o F4 da S33 a descricao e
+       utilitario (nao tem `margin-bottom`), entao o espaco vem so daqui. */
     gap: 0.125rem;
     min-width: 0;
-}
-
-/* O espaco entre a descricao e o titulo passa a vir do `gap` acima. A regra do
-   `.eyebrow` (legado, sem layer) tem especificidade menor que esta, entao perde. */
-.app-card-head__texto .eyebrow {
-    margin-bottom: 0;
 }
 
 /* Mesma receita de `.section-header h2` (components.css), que este cabecalho nao usa.
@@ -354,9 +348,14 @@ body[data-page]:not([data-page="login"]) .app-page > *:nth-child(4) {
  * styles"). Ou seja, `daisyui.l1` vence `daisyui.l1.l2`, que vence `daisyui.l1.l2.l3`.
  * ------------------------------------------------------------------------ */
 
-/* `.cell-actions` (legado) ja e um flex; aqui entram o alinhamento a direita, o
-   espacamento curto entre os dois icones e o padding zerado da ultima celula. */
+/* `.cell-actions` (legado) dava o `display:flex` e o `align-items:center`; desde o F4 da
+   S33 a coluna e auto-suficiente. O `gap: 12px` do `.cell-actions` (carregado DEPOIS deste
+   arquivo, por isso vencia) era maior que os 4px pretendidos aqui — com a classe fora do
+   markup, o espacamento curto entre os icones passa a valer. */
 .app-tabela-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     justify-content: flex-end;
     gap: 0.25rem;
     padding-inline-end: 0;
@@ -549,6 +548,60 @@ body.app-drawer-trava-scroll {
     margin: 0;
     font-weight: 700;
     text-align: end;
+}
+
+/* ---------------------------------------------------------------------------
+ * Linha do tempo do chamado (S33/F4) — era `.timeline`/`.timeline-item` no legado.
+ *
+ * A geometria (o filete vertical e o ponto de cada item) usa pseudo-elementos, entao nao
+ * cabe em utilitario: vira classe do projeto, com os mesmos numeros. As regras de
+ * `header`/`p` que o legado tinha junto vieram no mesmo bloco.
+ * ------------------------------------------------------------------------ */
+
+.app-linha-tempo {
+    position: relative;
+    display: grid;
+    gap: 16px;
+    padding-left: 20px;
+}
+
+.app-linha-tempo::before {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 4px;
+    bottom: 4px;
+    width: 2px;
+    background: var(--color-base-300);
+}
+
+.app-linha-tempo-item {
+    position: relative;
+    padding: 0 0 0 20px;
+}
+
+.app-linha-tempo-item::before {
+    content: "";
+    position: absolute;
+    left: -1px;
+    top: 8px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-accent) 18%, transparent);
+}
+
+.app-linha-tempo-item header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.app-linha-tempo-item p {
+    margin: 0;
+    white-space: pre-wrap;
 }
 
 /* ---------------------------------------------------------------------------

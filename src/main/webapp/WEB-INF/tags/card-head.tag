@@ -33,7 +33,7 @@
 <div class="app-card-head">
     <div class="app-card-head__texto">
         <c:if test="${not empty descricao}">
-            <p class="eyebrow">${descricao}</p>
+            <p class="text-xs tracking-eyebrow text-base-content/60 uppercase">${descricao}</p>
         </c:if>
         <h2>${titulo}</h2>
         <c:if test="${not empty subtitulo}">

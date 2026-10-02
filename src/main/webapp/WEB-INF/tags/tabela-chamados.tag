@@ -22,8 +22,9 @@
         acaoRotulo       obrigatorio no modo icone — tooltip e nome acessivel
         acaoIcone        opcional — alias de ui:icone no modo icone (padrao: ver)
 
-    A celula de acao preserva a classe que cada tela ja usava: `cell-actions` no modo texto e
-    `cell-actions app-tabela-acoes` no modo icone. O cabecalho usa `<span class="sr-only">Acoes</span>`
+    A celula de acao sai com `app-tabela-acoes` nos dois modos (texto e icone) desde o F4 da
+    S33: antes o modo texto usava o `cell-actions` do legado, alinhado a esquerda. O cabecalho
+    usa `<span class="sr-only">Acoes</span>`
     em todas — sem efeito visual e o que faltava nas listas que tinham a coluna vazia.
 --%>
 <%@ tag pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
@@ -39,7 +40,6 @@
 
 <c:set var="acaoComTexto" value="${not empty acaoTexto}" />
 <c:set var="mostrarAberturaColuna" value="${mostrarAbertura ne 'false'}" />
-<c:set var="celulaAcaoClasse" value="cell-actions${acaoComTexto ? '' : ' app-tabela-acoes'}" />
 
 <div class="overflow-x-auto">
     <table class="table table-zebra">
@@ -69,7 +69,7 @@
                 <c:if test="${mostrarAberturaColuna}">
                     <td>${chamado.dataAberturaFormatada}</td>
                 </c:if>
-                <td class="${celulaAcaoClasse}">
+                <td class="app-tabela-acoes">
                     <ui:acao-link href="${base}/${chamado.id}"
                                   texto="${acaoTexto}"
                                   icone="${empty acaoIcone ? 'ver' : acaoIcone}"

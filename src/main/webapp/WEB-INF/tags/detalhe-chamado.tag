@@ -56,19 +56,19 @@
                 <ui:badge variante="ghost">${chamado.statusNome}</ui:badge>
             </ui:card-head>
 
-            <div class="detail-list">
+            <div class="mb-4.5 grid grid-cols-2 gap-4">
                 <c:if test="${mostrarMorador eq 'true'}">
-                    <div><span>Morador</span><strong>${chamado.moradorNome}</strong></div>
+                    <div class="grid gap-1 rounded-[10px] border border-primary/5 bg-white/75 p-3.5"><span class="text-base-content/60">Morador</span><strong>${chamado.moradorNome}</strong></div>
                 </c:if>
-                <div><span>Unidade</span><strong>${chamado.unidadeIdentificacao}</strong></div>
-                <div><span>Bloco</span><strong>${chamado.blocoIdentificacao}</strong></div>
-                <div><span>Abertura</span><strong>${chamado.dataAberturaFormatada}</strong></div>
-                <div><span>Finalizacao</span><strong><c:out value="${empty chamado.dataFinalizacaoFormatada ? avisoFinal : chamado.dataFinalizacaoFormatada}" /></strong></div>
+                <div class="grid gap-1 rounded-[10px] border border-primary/5 bg-white/75 p-3.5"><span class="text-base-content/60">Unidade</span><strong>${chamado.unidadeIdentificacao}</strong></div>
+                <div class="grid gap-1 rounded-[10px] border border-primary/5 bg-white/75 p-3.5"><span class="text-base-content/60">Bloco</span><strong>${chamado.blocoIdentificacao}</strong></div>
+                <div class="grid gap-1 rounded-[10px] border border-primary/5 bg-white/75 p-3.5"><span class="text-base-content/60">Abertura</span><strong>${chamado.dataAberturaFormatada}</strong></div>
+                <div class="grid gap-1 rounded-[10px] border border-primary/5 bg-white/75 p-3.5"><span class="text-base-content/60">Finalizacao</span><strong><c:out value="${empty chamado.dataFinalizacaoFormatada ? avisoFinal : chamado.dataFinalizacaoFormatada}" /></strong></div>
             </div>
 
-            <div class="description-box">
+            <div class="grid gap-2 rounded-xl border border-accent/15 bg-accent/15 p-4.5">
                 <span>Descricao</span>
-                <p>${chamado.descricao}</p>
+                <p class="whitespace-pre-wrap">${chamado.descricao}</p>
             </div>
 
             <c:if test="${modo eq 'gestao' and not chamado.finalizado}">
@@ -122,21 +122,21 @@
                     <ui:vazio mensagem="Nenhum comentario registrado." compacto="true" />
                 </c:when>
                 <c:otherwise>
-                    <div class="timeline">
+                    <div class="app-linha-tempo">
                         <c:forEach items="${comentarios}" var="comentario">
-                            <article class="timeline-item">
+                            <article class="app-linha-tempo-item">
                                 <header>
                                     <strong>${comentario.autorNome}</strong>
                                     <span>${comentario.autorRole} • ${comentario.dataCriacaoFormatada}</span>
                                 </header>
                                 <p>${comentario.mensagem}</p>
                                 <c:if test="${not empty comentario.anexos}">
-                                    <div class="stack-list">
+                                    <div class="grid gap-4">
                                         <c:forEach items="${comentario.anexos}" var="anexoComentario">
-                                            <div class="list-row">
+                                            <div class="flex items-center justify-between gap-3 rounded-xl border border-base-content/10 bg-base-100 px-4.5 py-4 transition duration-200">
                                                 <div>
                                                     <strong>${anexoComentario.nomeArquivo}</strong>
-                                                    <span>${anexoComentario.contentType} • ${anexoComentario.tamanhoFormatado}</span>
+                                                    <span class="text-base-content/60">${anexoComentario.contentType} • ${anexoComentario.tamanhoFormatado}</span>
                                                 </div>
                                                 <a href="${base}/${chamado.id}/comentarios/${comentario.id}/anexos/${anexoComentario.id}" class="btn">Baixar anexo</a>
                                             </div>
@@ -178,12 +178,12 @@
                     <ui:vazio mensagem="Nenhum anexo registrado." compacto="true" />
                 </c:when>
                 <c:otherwise>
-                    <div class="stack-list">
+                    <div class="grid gap-4">
                         <c:forEach items="${anexos}" var="anexo">
-                            <div class="list-row">
+                            <div class="flex items-center justify-between gap-3 rounded-xl border border-base-content/10 bg-base-100 px-4.5 py-4 transition duration-200">
                                 <div>
                                     <strong>${anexo.nomeArquivo}</strong>
-                                    <span>${anexo.contentType} • ${anexo.tamanhoFormatado}</span>
+                                    <span class="text-base-content/60">${anexo.contentType} • ${anexo.tamanhoFormatado}</span>
                                 </div>
                                 <a href="${base}/${chamado.id}/anexos/${anexo.id}" class="btn">Baixar</a>
                             </div>

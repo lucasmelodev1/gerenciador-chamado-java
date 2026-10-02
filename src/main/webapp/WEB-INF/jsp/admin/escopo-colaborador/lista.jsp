@@ -29,10 +29,10 @@
 
                     <c:if test="${not empty colaboradorSelecionado}">
                         <div class="divider"></div>
-                        <div class="list-row">
+                        <div class="flex items-center justify-between gap-3 rounded-xl border border-base-content/10 bg-base-100 px-4.5 py-4 transition duration-200">
                             <div>
                                 <strong>${colaboradorSelecionado.nome}</strong>
-                                <span>${colaboradorSelecionado.email}</span>
+                                <span class="text-base-content/60">${colaboradorSelecionado.email}</span>
                             </div>
                             <a href="${ctx}/admin/usuarios/${colaboradorSelecionado.id}" class="btn">Abrir cadastro</a>
                         </div>
@@ -42,12 +42,12 @@
                                 <ui:vazio mensagem="Este colaborador ainda nao possui tipos de chamado vinculados." compacto="true" />
                             </c:when>
                             <c:otherwise>
-                                <div class="stack-list">
+                                <div class="grid gap-4">
                                     <c:forEach items="${tiposChamadoColaborador}" var="tipoChamado">
-                                        <div class="list-row">
+                                        <div class="flex items-center justify-between gap-3 rounded-xl border border-base-content/10 bg-base-100 px-4.5 py-4 transition duration-200">
                                             <div>
                                                 <strong>${tipoChamado.titulo}</strong>
-                                                <span>Prazo: ${tipoChamado.prazoHoras}h</span>
+                                                <span class="text-base-content/60">Prazo: ${tipoChamado.prazoHoras}h</span>
                                             </div>
                                             <ui:acao-form acao="${ctx}/admin/colaboradores/${colaboradorSelecionado.id}/tipos-chamado/${tipoChamado.id}?dashboard=true"
                                                           texto="Desvincular" variante="error" classe="flex flex-wrap items-center gap-3"
@@ -110,7 +110,7 @@
                                         <tr>
                                             <td>${colaborador.nome}</td>
                                             <td>${colaborador.email}</td>
-                                            <td class="cell-actions">
+                                            <td class="app-tabela-acoes">
                                                 <ui:acao-link href="${selecionarColaboradorUrl}" texto="Selecionar" />
                                             </td>
                                         </tr>

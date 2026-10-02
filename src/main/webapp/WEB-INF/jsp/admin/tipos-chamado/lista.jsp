@@ -35,7 +35,7 @@
                                         <tr>
                                             <td>${tipo.titulo}</td>
                                             <td>${tipo.prazoHoras} horas</td>
-                                            <td class="cell-actions app-tabela-acoes">
+                                            <td class="app-tabela-acoes">
                                                 <ui:acao-painel painel="drawer-tipo" titulo="Editar tipo"
                                                                 acao="${ctx}/admin/tipos-chamado/${tipo.id}">
                                                     <input type="hidden" data-campo="titulo" value="${fn:escapeXml(tipo.titulo)}">

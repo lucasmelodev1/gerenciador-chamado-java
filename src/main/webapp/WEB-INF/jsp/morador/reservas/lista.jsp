@@ -37,7 +37,7 @@
                                             <td>${reserva.fimFormatado}</td>
                                             <td><ui:reserva-status status="${reserva.status}" /></td>
                                             <td><c:out value="${empty reserva.motivoNegacao ? '-' : reserva.motivoNegacao}" /></td>
-                                            <td class="cell-actions">
+                                            <td class="app-tabela-acoes">
                                                 <c:if test="${reserva.status eq 'Solicitado' or reserva.status eq 'Aprovado'}">
                                                     <ui:acao-form acao="${ctx}/morador/reservas/${reserva.id}"
                                                                   texto="Cancelar" variante="link"

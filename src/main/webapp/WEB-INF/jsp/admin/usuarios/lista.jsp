@@ -37,7 +37,7 @@
                                             <td>${usuario.nome}</td>
                                             <td>${usuario.email}</td>
                                             <td><ui:badge variante="neutral">${usuario.tipo}</ui:badge></td>
-                                            <td class="cell-actions app-tabela-acoes">
+                                            <td class="app-tabela-acoes">
                                                 <%-- `tipo` e travado no drawer: o PATCH deriva o perfil do
                                                      papel persistido e recusa a troca. O gatilho manda a
                                                      CHAVE (usuario.tipo e o rotulo), extraida do role. --%>

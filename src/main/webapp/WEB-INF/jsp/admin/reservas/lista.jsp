@@ -44,7 +44,7 @@
                                             <td>${reserva.fimFormatado}</td>
                                             <td><ui:reserva-status status="${reserva.status}" /></td>
                                             <td><c:out value="${empty reserva.motivoNegacao ? '-' : reserva.motivoNegacao}" /></td>
-                                            <td class="cell-actions app-tabela-acoes">
+                                            <td class="app-tabela-acoes">
                                                 <c:if test="${reserva.status eq 'Solicitado'}">
                                                     <ui:acao-form acao="${ctx}/admin/reservas/${reserva.id}/aprovacao"
                                                                   metodo="patch" icone="aprovar" rotulo="Aprovar" />

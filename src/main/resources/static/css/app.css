@@ -94,6 +94,7 @@
        `tracking-[0.12em]` o extrator do Tailwind nao emite a classe. */
     --color-primary-strong: #093f44;
     --shadow-painel: 0 22px 40px rgb(18 32 51 / 0.08);
+    --shadow-soft: 0 14px 32px rgb(18 32 51 / 0.08);
     --tracking-eyebrow: 0.12em;
 }
 

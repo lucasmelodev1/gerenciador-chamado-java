@@ -49,7 +49,7 @@
                                             <td>
                                                 <ui:badge variante="${area.status eq 'Ativo' ? 'success' : 'neutral'}">${area.status}</ui:badge>
                                             </td>
-                                            <td class="cell-actions app-tabela-acoes">
+                                            <td class="app-tabela-acoes">
                                                 <ui:acao-painel painel="drawer-area" titulo="Editar area"
                                                                 acao="${ctx}/admin/areas/${area.id}">
                                                     <input type="hidden" data-campo="nome" value="${fn:escapeXml(area.nome)}">

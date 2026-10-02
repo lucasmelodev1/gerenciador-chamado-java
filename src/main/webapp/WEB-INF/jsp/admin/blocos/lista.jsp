@@ -38,7 +38,7 @@
                                             <td>${bloco.identificacao}</td>
                                             <td>${bloco.quantidadeAndares}</td>
                                             <td>${bloco.apartamentosPorAndar}</td>
-                                            <td class="cell-actions app-tabela-acoes">
+                                            <td class="app-tabela-acoes">
                                                 <ui:acao-link href="${ctx}/admin/blocos/${bloco.id}"
                                                               icone="ver" rotulo="Ver unidades" />
                                             </td>
