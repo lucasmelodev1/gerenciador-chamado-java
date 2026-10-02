@@ -166,9 +166,9 @@ if [ "$USOS_JSPF" = "$ESPERADO_JSPF" ]; then
 else
     bad "uso inesperado em fragmentos: '$USOS_JSPF' (esperado '$ESPERADO_JSPF')"
 fi
-grep -q 'data-drawer' src/main/webapp/WEB-INF/tags/drawer.tag \
-    && ok "a definicao vive em WEB-INF/tags/drawer.tag" \
-    || bad "drawer.tag nao define os hooks data-drawer"
+grep -q 'data-drawer' src/main/webapp/WEB-INF/tags/painel.tag \
+    && ok "a definicao vive em WEB-INF/tags/painel.tag (drawer.tag e casca fina)" \
+    || bad "painel.tag nao define os hooks data-drawer"
 [ -e src/main/webapp/WEB-INF/tags/modal.tag ] && bad "modal.tag ainda existe" || ok "modal.tag removido"
 # A tela nao pode mais depender do estado de edicao vindo do servidor (era o `?areaId=`).
 # O grep olha o USO (`areaEdicao`/`areaForm`), nao a palavra no comentario explicativo.

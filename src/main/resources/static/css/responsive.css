@@ -19,7 +19,6 @@
     .two-column-grid,
     .detail-grid,
     .form-grid,
-    .filter-grid,
     .stats-grid,
     .detail-list {
         grid-template-columns: 1fr;
@@ -29,8 +28,7 @@
         grid-column: auto;
     }
 
-    .timeline-item header,
-    .section-header {
+    .timeline-item header {
         flex-direction: column;
         align-items: flex-start;
     }

@@ -57,17 +57,6 @@
     color: rgba(239, 248, 247, 0.72);
 }
 
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--line);
-}
-
-.section-header h2,
 .hero-card h2 {
     margin: 0;
     font-size: 1.5rem;   /* text-2xl */

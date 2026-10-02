@@ -4,6 +4,31 @@ Componentes JSP reutilizáveis (tag files), servidos pelo prefixo `ui` declarado
 `../jsp/fragments/taglibs.jspf`. Ficam fora de `jsp/` de propósito: são componentes, não
 páginas, e por isso ficam fora do diretório que os resolvers de view varrem.
 
+## Índice (S31)
+
+| Tag | Para |
+|---|---|
+| `ui:shell` / `ui:shell-fim` | casca da página: doctype, `<head>` (com o token CSRF), drawer, lateral, topbar, `<main>` e flash; o par fecha com os scripts |
+| `ui:card-head` | cabeçalho de card (título, descrição, `subtitulo` opcional; corpo = ação) |
+| `ui:busca` | campo de busca local da faixa de filtros |
+| `ui:paginacao` | Anterior/Próxima + "Página X de Y", preservando os filtros (`parametros`) |
+| `ui:badge` | `<span class="badge badge-<variante>">` |
+| `ui:acao-link` | ação de linha que navega: ícone + tooltip, ou `texto` visível |
+| `ui:acao-editar` | ação de linha que abre um painel já preenchido (`data-drawer-editar`) |
+| `ui:acao-form` | ação que envia formulário — dono do par CSRF + `_method`; ícone ou `texto` |
+| `ui:tabela-chamados` | as 5 tabelas de chamados (colunas por flag, ação por texto ou ícone) |
+| `ui:detalhe-chamado` | as 3 telas de detalhe do chamado |
+| `ui:painel` | implementação única do drawer/diálogo (backdrop, topo, corpo, form, rodapé) |
+| `ui:drawer` / `ui:dialog` | cascas finas sobre `ui:painel` (lateral / centralizado) |
+| `ui:detalhe-linha` | linha "rótulo à esquerda, valor à direita" |
+| `ui:icone` | glifo Tabler por alias (`nome` + `classe`) |
+| `ui:vazio` | estado vazio (`.empty-state`) |
+| `ui:reserva-status` | badge de status de reserva com cor semântica |
+| `ui:flash` | mensagens de redirect (`successMessage`/`errorMessage`) |
+
+Os fragmentos `vazio.jspf`, `icone.jspf`, `reserva-status.jspf` e `alerts.jspf` foram
+substituídos por esses tags na S31 — não os recrie.
+
 ---
 
 # Padrão de tela de tabela (S26)
@@ -140,6 +165,10 @@ esse trio. O corpo dele é opcional e recebe campos escondidos extras. `perigo="
 
 ## `ui:drawer` (`drawer.tag`)
 
+**Casca fina sobre `ui:painel` (S31)**: o esqueleto é um só; o `drawer.tag` existe para manter
+o nome e os atributos que as telas já usavam. Toda a regra de posicionamento/CSRF/travados
+está em `painel.tag`.
+
 Painel lateral que desliza da borda, em três faixas:
 
 | Faixa | Conteúdo |
@@ -253,6 +282,8 @@ recuo de 40px do `<dd>`) e `min-width: 0` para um valor longo não estourar o pa
 ---
 
 ## `ui:dialog` (`dialog.tag`)
+
+**Casca fina sobre `ui:painel` (S31)**, pelo mesmo motivo do `ui:drawer`.
 
 Mesmo componente do `ui:drawer`, outra forma: em vez de deslizar da borda, aparece
 **centrado** na tela (fade + escala). Serve para confirmar uma decisao — negar uma reserva

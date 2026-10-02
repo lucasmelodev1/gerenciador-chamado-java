@@ -1,5 +1,5 @@
 <%--
-    Componente: dialogo central (S28).
+    Componente: dialogo central (S28; casca fina sobre `ui:painel` desde S31).
 
     Mesmo componente do `ui:drawer`, com a outra forma: em vez de deslizar da borda,
     aparece CENTRADO na tela, com leve fade e escala. As tres faixas sao as mesmas
@@ -21,29 +21,14 @@
 
     Uso (confirmacao simples, sem campos): so `titulo`, `descricao` e a acao.
 
-    Atributos: `id` e `titulo` (obrigatorios); `descricao`, `acao`, `metodo` (padrao
-    `post`), `tamanho` (`sm`, `md` padrao, `lg`), `rotuloConfirmar` (padrao
-    "Confirmar"), `varianteConfirmar` (`primary` padrao, `error` pinta de vermelho),
-    `iconeConfirmar` (alias opcional), `rotuloCancelar` (sem ela o rodape so tem o
-    botao de confirmar), `aberto`.
-
-    POR BAIXO E O MESMO PROTOCOLO DO `ui:drawer`: os atributos `data-drawer*` e o
-    `drawer.js`. Backdrop, Esc, foco preso, trava de scroll, devolucao do foco e o
-    conteudo dinamico (`data-drawer-editar` com `data-drawer-acao`) sao o mesmo
-    codigo — a forma e so CSS (`.app-dialog`). Um dialogo e um drawer centralizado;
-    duplicar o comportamento seria duplicar os bugs.
-
-    Como no drawer, PRECISA ser renderizado fora de `.page-content` (filho direto do
-    <body>): la o legado aplica um `width` que espremeria o backdrop.
-
-    Um dialogo so e reaproveitado por varias linhas: o gatilho de cada linha traz a
-    acao daquela reserva (`data-drawer-editar` + `data-drawer-acao`), e o
-    `reporInicial` limpa o motivo digitado entre uma linha e outra.
+    O esqueleto (backdrop, topo, corpo, form com CSRF e rodape) vive em `ui:painel`; este
+    tag so encaminha os atributos para manter o nome e o contrato das telas. Backdrop, Esc,
+    foco preso, trava de scroll e o conteudo dinamico (`data-drawer-editar`) sao o mesmo
+    codigo do drawer — um dialogo e um drawer centralizado.
 --%>
 <%@ tag pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="ui" tagdir="/WEB-INF/tags" %>
-<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ attribute name="id" required="true" description="id do dialogo; tambem nomeia o form interno" %>
 <%@ attribute name="titulo" required="true" %>
 <%@ attribute name="descricao" required="false" %>
@@ -56,71 +41,8 @@
 <%@ attribute name="rotuloCancelar" required="false" description="botao esmaecido que fecha; sem ele o rodape so confirma" %>
 <%@ attribute name="aberto" required="false" description="true abre o dialogo no carregamento" %>
 
-<c:set var="dialogMetodo" value="${empty metodo ? 'post' : metodo}" />
-<c:set var="dialogTamanho" value="${empty tamanho ? 'md' : tamanho}" />
-<c:set var="dialogConfirmar" value="${empty rotuloConfirmar ? 'Confirmar' : rotuloConfirmar}" />
-<c:set var="dialogVariante" value="${varianteConfirmar eq 'error' ? 'btn-error' : 'btn-primary'}" />
-<c:set var="dialogFormId" value="${id}-form" />
-<c:set var="dialogAberto" value="${aberto eq 'true' ? 'data-drawer-aberto' : ''}" />
-
-<%-- Backdrop IRMAO do painel, nunca filho: o painel cria containing block e um backdrop
-     `fixed` dentro dele se posicionaria pelo painel. --%>
-<div id="${id}-backdrop" class="app-drawer-backdrop" data-drawer-backdrop="${id}" ${dialogAberto}></div>
-
-<aside id="${id}"
-       class="app-dialog app-dialog--${dialogTamanho}"
-       role="dialog" aria-modal="true" aria-labelledby="${id}-titulo"
-       data-drawer ${dialogAberto}>
-    <header class="app-dialog-topo">
-        <div class="grid gap-1">
-            <h2 id="${id}-titulo" data-drawer-titulo class="font-display text-lg font-semibold">${titulo}</h2>
-            <c:if test="${not empty descricao}">
-                <p class="text-sm opacity-70">${descricao}</p>
-            </c:if>
-        </div>
-
-        <button type="button" class="btn btn-sm btn-circle btn-ghost -mt-1 -mr-1"
-                aria-label="Fechar" data-drawer-fechar>
-            <ui:icone nome="fechar" />
-        </button>
-    </header>
-
-    <%-- O corpo e capturado (em vez de emitido direto) para saber se ha conteudo: um
-         dialogo de confirmacao pura nao pode renderizar a faixa do corpo vazia. --%>
-    <jsp:doBody var="dialogCorpo" />
-    <c:set var="dialogTemCorpo" value="${not empty fn:trim(dialogCorpo)}" />
-    <c:set var="dialogCorpoClasse" value="app-dialog-corpo${dialogTemCorpo ? '' : ' app-dialog-corpo--vazio'}" />
-
-    <c:choose>
-        <c:when test="${not empty acao}">
-            <form id="${dialogFormId}" data-drawer-form method="${dialogMetodo}" action="${acao}" class="${dialogCorpoClasse}">
-                <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                <%-- Vazio = POST. O gatilho da linha troca por `patch`/`delete` conforme
-                     a acao (negar e cancelar mandam `_method`). --%>
-                <input type="hidden" name="_method" value="">
-                ${dialogCorpo}
-            </form>
-        </c:when>
-        <c:otherwise>
-            <c:if test="${dialogTemCorpo}">
-                <div class="app-dialog-corpo">${dialogCorpo}</div>
-            </c:if>
-        </c:otherwise>
-    </c:choose>
-
-    <%-- Rodape de confirmacao. Fechar sem decidir e o botao esmaecido, o X do topo, o Esc
-         ou o clique fora — a decisao e sempre o botao da direita. --%>
-    <c:if test="${not empty acao}">
-        <footer class="app-dialog-rodape">
-            <c:if test="${not empty rotuloCancelar}">
-                <button type="button" class="btn btn-ghost" data-drawer-fechar>${rotuloCancelar}</button>
-            </c:if>
-            <button type="submit" form="${dialogFormId}" class="btn ${dialogVariante}">
-                <c:if test="${not empty iconeConfirmar}">
-                    <ui:icone nome="${iconeConfirmar}" />
-                </c:if>
-                ${dialogConfirmar}
-            </button>
-        </footer>
-    </c:if>
-</aside>
+<ui:painel forma="dialog"
+           id="${id}" titulo="${titulo}" descricao="${descricao}"
+           acao="${acao}" metodo="${metodo}" tamanho="${tamanho}" aberto="${aberto}"
+           rotuloConfirmar="${rotuloConfirmar}" varianteConfirmar="${varianteConfirmar}"
+           iconeConfirmar="${iconeConfirmar}" rotuloCancelar="${rotuloCancelar}"><jsp:doBody /></ui:painel>

@@ -48,6 +48,14 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
   `SecurityConfig` só libera `/css/**` sem autenticação — `/fonts/**` exigiria sessão e quebraria o login.
 - `css/base.css`, `css/layout.css`, `css/components.css`, `css/responsive.css`: **legado transitório**
   (não está em cascade layer, por isso vence a daisyUI). Remoção em S17/S18.
+  A S31 removeu o que ficou sem referência no markup: `.sidebar`, `.topbar`, `.toolbar-inline`,
+  `.topbar-actions`, `.brand-block`, `.sidebar-footer`, `.profile-chip`, `.section-header`,
+  `.filter-grid` e `.align-end`. Continuam em uso — e por isso continuam no arquivo — o grid
+  do legado (`.page-content`, `.two-column-grid`, `.detail-grid`, `.form-grid`, `.stats-grid`,
+  `.form-grid`), os conjuntos de controle (`.button-row`, `.cell-actions`, `.inline-panel`,
+  `.inline-form`, `.field`, `.password-field`), as listas (`.stack-list`, `.list-row`,
+  `.timeline`, `.detail-list`, `.description-box`) e os paineis das telas antigas
+  (`.card`/`.stat-card`/`.hero-card`/`.auth-*`). `.is-hidden` é hook do `tables.js`.
 
 ## JS
 - `core` (`window.AppDom`), `alerts`, `forms` (`data-confirm`, `data-password-*`, `data-character-*`,

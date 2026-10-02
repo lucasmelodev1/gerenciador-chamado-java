@@ -507,12 +507,13 @@ else
     ok "nenhum markup do painel antigo de detalhe"
 fi
 # O rodape informativo e do componente, nao da tela: a tela so declara o rotulo e a acao.
-grep -q 'data-drawer-fechar>${drawerFechar}</button>' src/main/webapp/WEB-INF/tags/drawer.tag \
-    && ok "o rodape do drawer informativo vive em tags/drawer.tag" \
-    || bad "drawer.tag nao renderiza o botao Fechar do drawer informativo"
-grep -q 'data-drawer-editar="${painelAcao}"' src/main/webapp/WEB-INF/tags/drawer.tag \
+# S31: a implementacao e unica (`tags/painel.tag`); `drawer.tag` ficou casca fina.
+grep -q 'data-drawer-fechar>${painelFechar}</button>' src/main/webapp/WEB-INF/tags/painel.tag \
+    && ok "o rodape do drawer informativo vive em tags/painel.tag" \
+    || bad "painel.tag nao renderiza o botao Fechar do drawer informativo"
+grep -q 'data-drawer-editar="${painelAcao}"' src/main/webapp/WEB-INF/tags/painel.tag \
     && ok "o botao da acao usa o protocolo data-drawer-editar do gatilho" \
-    || bad "drawer.tag nao liga painelAcao ao data-drawer-editar"
+    || bad "painel.tag nao liga painelAcao ao data-drawer-editar"
 grep -q 'app-detalhe-valor' src/main/webapp/WEB-INF/tags/detalhe-linha.tag \
     && ok "a linha de detalhe vive em tags/detalhe-linha.tag" \
     || bad "tags/detalhe-linha.tag nao renderiza a linha de detalhe"

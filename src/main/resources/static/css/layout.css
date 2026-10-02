@@ -61,15 +61,10 @@
     grid-template-columns: minmax(360px, 500px) 1fr;
 }
 
-.form-grid,
-.filter-grid {
+.form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
-}
-
-.filter-grid {
-    align-items: end;
 }
 
 .button-row,
@@ -80,10 +75,6 @@
     gap: 12px;
     flex-wrap: wrap;
     align-items: center;
-}
-
-.align-end {
-    align-items: end;
 }
 
 .inline-panel {

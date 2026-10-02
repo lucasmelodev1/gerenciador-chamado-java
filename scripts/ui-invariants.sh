@@ -37,19 +37,30 @@ SNAP="baseline/invariants"
 
 # Hooks owned by the JS/CSS and by calendar.js. Each must never drop below its snapshot count.
 # data-sidebar* is excluded on purpose: S7 replaces the sidebar JS with the daisyUI drawer.
+# Os hooks do painel (`data-drawer*`) NAO estao aqui: eles vivem no componente unico
+# (`tags/painel.tag`) e a contagem mediria duplicacao — a S31 fundiu `drawer.tag` e
+# `dialog.tag` em `painel.tag` e derrubou os totais sem perder hook nenhum. Eles sao
+# conferidos por `check_painel_hooks`, estruturalmente.
 FROZEN_HOOKS=(
     data-confirm
     data-password-toggle data-password-input
     data-character-count data-character-output
     data-auto-submit
     data-filter-input data-filter-target data-filter-table
-    data-drawer data-drawer-abrir data-drawer-fechar data-drawer-aberto data-drawer-backdrop
-    data-drawer-editar data-drawer-form data-drawer-titulo
+    data-drawer-abrir
     data-detalhe
     data-alert data-dismiss-alert
     data-view data-referencia data-base-url data-modo
     data-id data-area-id data-start data-end data-area data-morador data-unidade data-status
     data-inicio-formatado data-fim-formatado data-motivo
+)
+
+# Contrato do painel modal: um tag, um lugar. `data-drawer-abrir` fica de fora porque e
+# gatilho da TELA (cada botao "Novo" aponta para o painel que abre), nao do componente.
+FROZEN_PAINEL=(
+    data-drawer data-drawer-fechar data-drawer-aberto data-drawer-backdrop
+    data-drawer-editar data-drawer-form data-drawer-titulo
+    data-drawer-travar data-drawer-espelho
 )
 
 # Calendar contract consumed by calendar.js (ids and hooks inside reservas-agenda.jspf,
@@ -205,6 +216,21 @@ check_page_markers() {
     fi
 }
 
+# O painel modal (drawer/dialogo) e um componente unico: os hooks do JS precisam existir em
+# `tags/painel.tag`, nao num numero fixo de vezes no markup.
+check_painel_hooks() {
+    local hook faltando=""
+    for hook in "${FROZEN_PAINEL[@]}"; do
+        grep -q "$hook" src/main/webapp/WEB-INF/tags/painel.tag || faltando="$faltando $hook"
+    done
+
+    if [ -z "$faltando" ]; then
+        ok "hooks do painel definidos em tags/painel.tag (${#FROZEN_PAINEL[@]})"
+    else
+        bad "hook(s) do painel ausente(s) em tags/painel.tag:$faltando"
+    fi
+}
+
 check_form_contract() {
     collect_form_contract > /tmp/ui-inv.form
     if grep -q '^VIOLACAO' /tmp/ui-inv.form; then
@@ -266,6 +292,7 @@ check() {
     check_file "form action URLs unchanged" "$SNAP/action-urls.txt" /tmp/ui-inv.actions
     check_form_contract
     check_page_markers
+    check_painel_hooks
 
     echo "== contagens congeladas =="
     collect_counts > /tmp/ui-inv.counts

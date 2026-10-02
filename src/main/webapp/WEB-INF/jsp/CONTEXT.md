@@ -34,25 +34,38 @@ Views JSP/JSTL dos controllers web; prefixo/sufixo em `application.properties`.
   mais longo; a navegação vive em `navGroups` (`Grupo@href|Rótulo|ícone#...`).
 - `fragments/topbar.jspf`: `navbar` no formato do `SiteHeader` — linha única com `border-b`, gatilho do drawer,
   separador e título da tela. Perfil e logout **não** ficam aqui (migraram para a lateral).
-- `fragments/icone.jspf`: ícones Tabler (outline, 3.31.0) como markup. Contrato: quem inclui define `icone`
-  (alias) e `iconeClasse` (ex.: `size-4`); `currentColor` faz o item ativo recolorear o ícone.
-  Alias desconhecido não quebra o build: cai num círculo de fallback (que `ui-shell.sh`/`ui-tabelas.sh` reprovam).
-- `fragments/alerts.jspf`: flash pós-redirect (`alert alert-success|alert-error`).
-- `fragments/scripts.jspf`: `layout.js` não é mais carregado.
+- `fragments/icone.jspf` **não existe mais** (S31): os ícones Tabler (outline, 3.31.0) são o
+  tag `ui:icone` (`nome` + `classe`). `currentColor` faz o item ativo recolorear o ícone; alias
+  desconhecido cai num círculo de fallback, que `ui-shell.sh`/`ui-tabelas.sh` reprovam.
+- `fragments/alerts.jspf` **não existe mais** (S31): as mensagens de redirect são o tag
+  `ui:flash` (`alert alert-success|alert-error`), chamado pelo `ui:shell`.
+- `fragments/scripts.jspf`: `layout.js` não é mais carregado; é incluído pelo `ui:shell-fim`.
+- `head.jspf`, `sidebar.jspf` e `topbar.jspf` são incluídos pelo `ui:shell` (S31), não pelas
+  páginas: por isso o `ui:shell` define `${ctx}` antes de incluí-los.
 - `scripts/ui-shell.sh` verifica o shell (estrutura, ícones, grupos, item ativo, cartão do usuário) sobre o
   HTML de `baseline/html-shell/`; roda depois de `scripts/ui-routes.sh shell`.
 
 ## Componentes próprios (`WEB-INF/tags`, prefixo `ui`)
-- Seis tags montam as telas de tabela: `ui:card-head`, `ui:busca`, `ui:badge`,
-  `ui:acao-link`, `ui:acao-editar`, `ui:acao-form` e `ui:drawer`. Atributos, protocolo de
-  criar/editar e esqueleto de uma tela nova estão em **`WEB-INF/tags/CONTEXT.md`** — leia
-  antes de escrever uma listagem.
-- `ui:drawer` — painel lateral que desliza da borda (topo com título/descrição/X, slot livre
-  no meio e rodapé só com Salvar). **Precisa ser incluído fora de `.page-content`**, como
-  filho direto do `<body>`. A tela não guarda estado de edição do servidor: o drawer vem
-  sempre fechado e no modo de criação, e os gatilhos `data-drawer-abrir`/`data-drawer-editar`
-  é que preenchem e abrem. Comportamento em `static/js/drawer.js` (`AppDrawer`,
-  evento `drawer:fechado`).
+Índice completo, atributos e exemplos em **`WEB-INF/tags/CONTEXT.md`** — leia antes de
+escrever uma tela.
+
+- **Casca (S31)**: `ui:shell` (abre doctype/`head`/drawer/lateral/topbar/`<main>`/flash e
+  recebe o conteúdo) + `ui:shell-fim` (scripts e fecha o documento). São dois tags porque os
+  paineis precisam nascer entre `</main>` e o fim do `<body>`; cada página declara
+  `dataPagina` (+ `classeMain` no formulário estreito). O login tem shell próprio.
+- **Listagens**: `ui:card-head` (com `subtitulo`), `ui:busca`, `ui:badge`, `ui:paginacao`
+  (`pagina`/`url`/`parametros`, este último escapado) e as ações `ui:acao-link`
+  (`texto` opcional), `ui:acao-editar`, `ui:acao-form` (mesmo `texto` opcional, `variante` e
+  `classe` — é o dono do trio form + CSRF + `_method`).
+- **Chamados**: `ui:tabela-chamados` (as 5 tabelas: 3 listas + 2 paineis) e
+  `ui:detalhe-chamado` (as 3 telas de detalhe, por `base`/`modo`/flags).
+- **Paineis**: `ui:painel` é a implementação única; `ui:drawer` (lateral) e `ui:dialog`
+  (central) são cascas finas que encaminham atributos. **Precisam ficar fora de
+  `.page-content`**, como filho direto do `<body>`; as telas não guardam estado de edição do
+  servidor (os gatilhos `data-drawer-abrir`/`data-drawer-editar` preenchem e abrem).
+  Comportamento em `static/js/drawer.js` (`AppDrawer`, evento `drawer:fechado`).
+- **Utilitários**: `ui:icone` (alias + `classe`), `ui:vazio`, `ui:reserva-status` e
+  `ui:flash` (mensagens de redirect).
 
 ## Telas de tabela (S24/S25, extraídas para tags em S26)
 
@@ -84,14 +97,30 @@ valores de cada linha.
 - Contrato com o JS inalterado: `data-filter-input` + `data-filter-target`, filtro local do
   `tables.js`. Nenhuma listagem de cadastro ganhou parâmetro de busca no servidor.
 
+## S31 — o resto das telas entrou no mesmo desenho
+- As três listas de chamados (admin/morador/colaborador) e os dois paineis usam
+  `ui:tabela-chamados`; o formulário de filtro é `app-card-filtros--campos` e a paginação é
+  `ui:paginacao` com `parametros` (que passa por `fn:escapeXml` — antes os filtros entravam
+  crus no `href`).
+- As três telas de detalhe do chamado são `ui:detalhe-chamado`, parametrizado por `base`,
+  `eyebrow`, `avisoFinal`, `modo` (`gestao`/`morador`) e flags.
+- **Não existe mais `<div class="section-header">`**: todas as telas passam pelo
+  `ui:card-head` (que ganhou `subtitulo`). `ui:card-head`/`ui:card-head__texto` vivem em
+  `custom.css`; o `responsive.css` não empilha mais esse bloco.
+- Forms mutantes escritos à mão (csrf + `_method` + `data-confirm`) viraram `ui:acao-form`
+  com `texto`/`variante`/`classe` — inclusive os "Desvincular" de usuarios e vinculos.
+- Textos que divergiam por cópia foram unificados no componente: estados vazios do detalhe do
+  chamado e rótulos do formulário de comentário.
+
 ## Fragmentos de conteúdo
-- `vazio.jspf`: estado vazio — `vazioTitulo` (opcional), `vazioMensagem`, `vazioCompacto`.
-- `reserva-status.jspf`: badge de status de reserva com cor semântica — `reservaStatus`.
 - `reservas-agenda.jspf`: calendário compartilhado (admin/morador); toolbar em `join` + `tabs`.
   Traz o `#calendar` + os `.reserva-data`; **nada de painel de detalhe** (ver o próximo).
 - `reservas-agenda-paineis.jspf`: os painéis da agenda (S30) — o `ui:drawer` informativo com a
   lista `ui:detalhe-linha` e o `ui:dialog` de cancelamento. Cada agenda inclui este fragmento
   **depois de `</main>`**, senão o `.page-content` espremeria o backdrop.
+- Desde a S31 não há mais `vazio.jspf`, `icone.jspf`, `reserva-status.jspf` nem
+  `alerts.jspf`: viraram `ui:vazio`, `ui:icone`, `ui:reserva-status` e `ui:flash`. As telas
+  não escrevem mais `<div class="section-header">` — todas passam pelo `ui:card-head`.
 
 ## Contrato com o JS (não renomear)
 `calendar.js`: `#calendar`, `#reservas-data`, `.reserva-data` (com os `data-*` do evento),
