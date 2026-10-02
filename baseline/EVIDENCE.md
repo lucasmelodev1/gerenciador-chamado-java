@@ -1104,12 +1104,63 @@ com o drawer aberto, e remove (com limpeza do residuo).
    faz parte do que foi pedido aqui.
 3. **Os `GET` com `?areaId=`, `?statusId=` e `?tipoId=` continuam nos controllers** e agora sao
    codigo morto: nenhuma tela aponta para eles. Sao `src/main/java`, congelado pelo guard.
-4. **`tipos-chamado` e as telas de reservas/vinculos/escopo nao foram migradas** — ficaram de
-   fora do escopo combinado (area, bloco, chamado, status, usuario), embora `tipos-chamado` seja
-   quase identica a `areas`.
+4. **`tipos-chamado` saiu desta lista na S27** (era a mais parecida com `areas`). Continuam
+   fora as telas de reservas, vinculos-morador e escopo-colaborador.
 5. **O admin de chamados perdeu o subtitulo** "Os chamados mais antigos aparecem primeiro na
    lista.": o `ui:card-head` tem uma linha de descricao, que ficou com o eyebrow
    ("Monitoramento"). A frase tambem prometia uma ordenacao que a consulta nao garante.
+
+## S27 — Tipos de chamado no mesmo padrao
+
+Ultima tela de tabela do admin a sair do formato antigo. Ela era a mais parecida com `areas`
+— cartao de criacao a esquerda, listagem a direita, edicao por `?tipoId=` — e virou a sexta
+tela do padrao, com uma diferenca: **nao tem remocao**.
+
+`TipoChamadoApiController` so expoe `POST` e `PATCH /{tipoId}`; nao existe `@DeleteMapping`.
+Entao a coluna de acoes tem **uma** acao, `ui:acao-editar`, e a tabela perdeu o
+"Editar" que era um link para a mesma tela com o parametro de query.
+
+O que saiu:
+
+| Antes | Depois |
+|---|---|
+| `c:set tipoChamadoAction` (POST ou PATCH conforme `?tipoId=`) | `acao="${ctx}/admin/tipos-chamado"` no drawer + `data-drawer-acao` por linha |
+| `<form method="post">` no cartao esquerdo, com `csrf.jspf` e `_method=patch` condicional | `ui:drawer` (ja traz os dois) |
+| `<input type="search" placeholder="Filtrar localmente" ...>` a mao | `ui:busca alvo="tipos-table"` |
+| `<a href="...?tipoId=" class="btn btn-link">Editar</a>` | `ui:acao-editar` (icone + tooltip) |
+| dois cartoes em `two-column-grid` | um cartao, como as outras cinco telas |
+
+O `PATCH` continua devolvendo `?tipoId=<id>` para a listagem. O parametro nao e mais lido por
+ninguem — o `GET` tambem aceita e preenche `tipoChamadoForm`, mas nenhuma tela aponta para ele
+— entao salvar cai na lista com o drawer fechado, que e o comportamento das outras telas.
+Mexer nisso e mexer em `src/main/java`, que o `ui-invariants.sh` congela.
+
+### Verificacao
+
+| # | Check | Result |
+|---|---|---|
+| 1 | `ui-tabelas.sh` cobre as **6** telas (a nova entra com alvo `tipos-table` e drawer `drawer-tipo`) | OK |
+| 2 | check por tela: sem coluna de status, um gatilho de editar por linha, nenhuma acao de remocao, e o gatilho levando `titulo` e `prazoHoras` | OK |
+| 3 | self-test negativo do markup: **11/11** (a nova sabotagem aponta o gatilho de tipos para outro drawer) | OK |
+| 4 | secao D tambem trava `listarTiposChamado`: nenhum parametro de busca no servidor | OK |
+| 5 | `ui-drawer.sh`: o escopo passou de 4 para **5** telas de cadastro | OK |
+| 6 | `ui-routes.sh shell` · `ui-shell.sh` · `ui-tabelas.sh` · `ui-invariants.sh` | 26/26 · OK · OK · `INVARIANTS OK` |
+| 7 | `docker compose run --rm test` | **153 testes, 0 falhas** |
+
+### Deriva do snapshot, revisada
+
+| Item | Antes | Depois | Por que |
+|---|---|---|---|
+| `action-urls` | 30 entradas | 29 | `-1 ${tipoChamadoAction}`: o form inline virou `acao=` do drawer. Nada mais mudou |
+| `method_inputs` | 23 | 22 | o `_method=patch` condicional do form inline saiu |
+| `csrf_includes` | 31 | 30 | o `csrf.jspf` do form inline saiu (o drawer ja tem o dele) |
+| `data-filter-input` / `-target` | 3 | 2 | a busca a mao de `tipos-chamado` virou `ui:busca`; sobra a ocorrencia dentro do `busca.tag` |
+| `data-drawer` | 18 | **19** | subiu: a tela nova acrescenta o drawer |
+| `data-drawer-abrir` | 6 | **7** | subiu: idem |
+
+A revisao de `action-urls` foi de uma linha so (`-1 ${tipoChamadoAction}`), o que confirma que
+a migracao nao tocou nenhum formulario de outra tela. Como na S26, a queda e consolidacao —
+o `_method` e o `csrf` da tela reapareceram dentro do `ui:drawer`.
 
 ## Known limitations (carried to the end)
 

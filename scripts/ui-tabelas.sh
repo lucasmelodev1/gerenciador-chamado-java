@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# S26 — Verificacao das telas de tabela do admin: areas, blocos, chamados,
-# status-chamado e usuarios.
+# S26/S27 — Verificacao das telas de tabela do admin: areas, blocos, chamados,
+# status-chamado, tipos-chamado e usuarios.
 #
 # Pre-requisitos:
 #   docker compose up -d app
@@ -32,12 +32,12 @@ fail=0
 ok()  { printf '  OK   %s\n' "$*"; }
 bad() { printf '  FAIL %s\n' "$*"; fail=1; }
 
-echo "== A. contrato do markup (5 telas) =="
+echo "== A. contrato do markup (telas de tabela) =="
 # `HTML_DIR` aponta a checagem para um diretorio ja gravado (usado no self-test negativo
 # do proprio verificador, que roda fora do container). Sem ela, busca as telas no ar.
 DIR="${HTML_DIR:-$WORK}"
 if [ -z "${HTML_DIR:-}" ]; then
-    for rota in areas blocos usuarios status-chamado chamados; do
+    for rota in areas blocos usuarios status-chamado tipos-chamado chamados; do
         curl -s -b "$JAR" -c "$JAR" "$BASE/admin/$rota" -o "$WORK/$rota.html"
     done
 fi
@@ -57,6 +57,7 @@ TELAS = {
     "blocos":         {"alvo": "blocos-table",   "drawer": "drawer-bloco",   "busca": True},
     "usuarios":       {"alvo": "usuarios-table", "drawer": "drawer-usuario", "busca": True},
     "status-chamado": {"alvo": "status-table",   "drawer": "drawer-status",  "busca": True},
+    "tipos-chamado":  {"alvo": "tipos-table",    "drawer": "drawer-tipo",    "busca": True},
     "chamados":       {"alvo": None,             "drawer": None,             "busca": False},
 }
 
@@ -226,6 +227,19 @@ if 'data-tip="Tornar padrao"' not in h:
 if '/inicial-padrao"' in h and 'value="patch"' not in h:
     bad("status-chamado", "definir padrao precisa de _method=patch")
 
+# tipos-chamado: sem remocao, edicao no drawer; nenhuma coluna de status
+h = html["tipos-chamado"]
+corpo = re.search(r'<tbody>(.*?)</tbody>', h, re.S)
+if corpo and re.search(r'<span class="badge ', corpo.group(1)):
+    bad("tipos-chamado", "tipo de chamado nao tem coluna de status")
+linhas = h.count('<td class="cell-actions app-tabela-acoes">')
+if h.count('data-drawer-editar="drawer-tipo"') != linhas:
+    bad("tipos-chamado", f"{linhas} linhas, mas nao ha um gatilho de editar por linha")
+if 'app-btn-perigo' in h or 'data-tip="Remover"' in h:
+    bad("tipos-chamado", "esta tela nao tem endpoint de remocao")
+if 'data-campo="titulo"' not in h or 'data-campo="prazoHoras"' not in h:
+    bad("tipos-chamado", "o gatilho de editar deveria levar titulo e prazoHoras")
+
 # chamados: so leitura, filtros no servidor
 h = html["chamados"]
 if not re.search(r'<form method="get" action="/admin/chamados" class="app-card-filtros app-card-filtros--campos">', h):
@@ -275,6 +289,8 @@ CASOS = [
     ("usuarios", 'data-drawer-espelho="tipo"', '', "perfil travado sem campo espelho"),
     ("chamados", 'class="app-card-filtros app-card-filtros--campos"', 'class="app-card-filtros"',
      "faixa de filtros sem a variante de campos"),
+    ("tipos-chamado", 'data-drawer-editar="drawer-tipo"', 'data-drawer-editar="outro"',
+     "gatilho de editar de tipos apontando para outro drawer"),
 ]
 
 if SAB.exists():
@@ -503,7 +519,8 @@ ctrl = pathlib.Path("src/main/java/br/com/dunnastecnologia/chamados/infrastructu
 for metodo, extra in (("listarAreas", {"authentication", "page", "size", "areaId", "model"}),
                       ("listarBlocos", {"page", "size", "model"}),
                       ("listarUsuarios", {"page", "size", "model"}),
-                      ("listarStatusChamado", {"page", "size", "statusId", "model"})):
+                      ("listarStatusChamado", {"page", "size", "statusId", "model"}),
+                      ("listarTiposChamado", {"page", "size", "tipoId", "model"})):
     m = re.search(r'public String ' + metodo + r'\((.*?)\)\s*\{', ctrl, re.S)
     if not m:
         problemas.append(f"nao achei a assinatura de {metodo}")

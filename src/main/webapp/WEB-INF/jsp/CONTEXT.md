@@ -42,22 +42,23 @@ Views JSP/JSTL dos controllers web; prefixo/sufixo em `application.properties`.
 
 ## Telas de tabela (S24/S25, extraídas para tags em S26)
 
-As cinco telas de listagem do admin seguem o mesmo desenho, montado com os tags de
-`WEB-INF/tags`: **areas**, **blocos**, **chamados** (só leitura), **status-chamado** e
-**usuarios**. O contrato do desenho — cabeçalho com filete, faixa de filtros, coluna de ações
+As seis telas de listagem do admin seguem o mesmo desenho, montado com os tags de
+`WEB-INF/tags`: **areas**, **blocos**, **chamados** (só leitura), **status-chamado**,
+**tipos-chamado** e **usuarios**. O contrato do desenho — cabeçalho com filete, faixa de filtros, coluna de ações
 encostada na direita, badges e ações só com ícone + tooltip — está documentado em
 `WEB-INF/tags/CONTEXT.md`, junto do esqueleto de uma tela nova.
 
 O que é específico de cada tela fica no JSP: títulos, colunas, o mapeamento de cada badge e os
 valores de cada linha.
 
-- **Criar/editar** vai para o `ui:drawer` nas quatro telas que escrevem. O `perfil` do usuário
+- **Criar/editar** vai para o `ui:drawer` nas cinco telas que escrevem. O `perfil` do usuário
   é o único campo travado (`travar="tipo"`): o servidor recusa a troca.
-- **Filtros**: a busca local (`ui:busca`) em areas, blocos, status-chamado e usuarios;
+- **Filtros**: a busca local (`ui:busca`) em areas, blocos, status-chamado, tipos-chamado e usuarios;
   chamados usa um `<form method="get">` na própria faixa (classe `app-card-filtros--campos`),
   porque seus três filtros vão ao servidor.
 - **Ações**: `ui:acao-form` (remover/desativar/definir padrão), `ui:acao-editar` (abre o
-  drawer) e `ui:acao-link` (Detalhar / Gerenciar / Ver unidades).
+  drawer) e `ui:acao-link` (Detalhar / Gerenciar / Ver unidades). Tipos de chamado só tem
+  `ui:acao-editar` e blocos só tem `ui:acao-link` — são as telas sem endpoint de remoção.
 - **status-chamado** era um `stack-list` de `.list-row` e virou tabela, para compartilhar a
   mesma coluna de ações.
 - Os `GET` com `?areaId=`/`?statusId=`/`?tipoId=` continuam nos controllers, mas nenhuma tela

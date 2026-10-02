@@ -146,12 +146,12 @@ then :; else fail=1; fi
 
 echo "== B. escopo: as telas de cadastro com tabela =="
 # S23 exigia UMA tela; a S26 espalhou o componente pelas telas de tabela com criacao e
-# edicao. Chamados do admin fica de fora: e so leitura. A lista abaixo e fechada de
+# edicao (a S27 somou tipos-chamado). Chamados do admin fica de fora: e so leitura. A lista abaixo e fechada de
 # proposito — um `ui:drawer` numa tela nova tem de ser uma decisao, nao um efeito colateral.
 USOS="$(grep -rl '<ui:drawer' src/main/webapp --include='*.jsp' | sort | tr '\n' ' ')"
-ESPERADO="src/main/webapp/WEB-INF/jsp/admin/areas/lista.jsp src/main/webapp/WEB-INF/jsp/admin/blocos/lista.jsp src/main/webapp/WEB-INF/jsp/admin/status-chamado/lista.jsp src/main/webapp/WEB-INF/jsp/admin/usuarios/lista.jsp "
+ESPERADO="src/main/webapp/WEB-INF/jsp/admin/areas/lista.jsp src/main/webapp/WEB-INF/jsp/admin/blocos/lista.jsp src/main/webapp/WEB-INF/jsp/admin/status-chamado/lista.jsp src/main/webapp/WEB-INF/jsp/admin/tipos-chamado/lista.jsp src/main/webapp/WEB-INF/jsp/admin/usuarios/lista.jsp "
 if [ "$USOS" = "$ESPERADO" ]; then
-    ok "o componente e usado nas 4 telas de cadastro com tabela"
+    ok "o componente e usado nas 5 telas de cadastro com tabela"
 else
     bad "uso inesperado: '$USOS' (esperado '$ESPERADO')"
 fi

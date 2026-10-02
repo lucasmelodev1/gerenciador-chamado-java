@@ -8,8 +8,8 @@ páginas, e por isso ficam fora do diretório que os resolvers de view varrem.
 
 # Padrão de tela de tabela (S26)
 
-Toda tela de listagem do admin — **areas, blocos, chamados, status-chamado, usuarios** — é
-montada com os mesmos seis tags. Uma tela nova é ~15 linhas de estrutura:
+Toda tela de listagem do admin — **areas, blocos, chamados, status-chamado, tipos-chamado e
+usuarios** — é montada com os mesmos seis tags. Uma tela nova é ~15 linhas de estrutura:
 
 ```jsp
 <section class="card">
@@ -218,9 +218,9 @@ e `iconeClasse`. Alias desconhecido cai num círculo de fallback — que `ui-she
 
 ## Verificação
 
-- `bash scripts/ui-tabelas.sh` — contrato das **5 telas** de tabela: cabeçalho, faixa de
+- `bash scripts/ui-tabelas.sh` — contrato das **6 telas** de tabela: cabeçalho, faixa de
   filtros, coluna de ações, badges, drawers, as regras do `custom.css`, as classes do bundle,
-  e o `tables.js` executado. Traz self-test negativo (10 sabotagens de markup + 10 de CSS).
+  e o `tables.js` executado. Traz self-test negativo (11 sabotagens de markup + 10 de CSS).
 - `bash scripts/ui-drawer.sh` — contrato do `ui:drawer` nos dois estados, posição fora de
   `.page-content`, escopo de uso, fluxo criar→editar→remover e o `drawer.js` executado
   por `node scripts/ui-drawer-js.mjs` (21 casos).
