@@ -42,6 +42,7 @@
 --%>
 <%@ tag pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ attribute name="id" required="true" description="id do dialogo; tambem nomeia o form interno" %>
 <%@ attribute name="titulo" required="true" %>
 <%@ attribute name="descricao" required="false" %>
@@ -85,20 +86,26 @@
         </button>
     </header>
 
+    <%-- O corpo e capturado (em vez de emitido direto) para saber se ha conteudo: um
+         dialogo de confirmacao pura nao pode renderizar a faixa do corpo vazia. --%>
+    <jsp:doBody var="dialogCorpo" />
+    <c:set var="dialogTemCorpo" value="${not empty fn:trim(dialogCorpo)}" />
+    <c:set var="dialogCorpoClasse" value="app-dialog-corpo${dialogTemCorpo ? '' : ' app-dialog-corpo--vazio'}" />
+
     <c:choose>
         <c:when test="${not empty acao}">
-            <form id="${dialogFormId}" data-drawer-form method="${dialogMetodo}" action="${acao}" class="app-dialog-corpo">
+            <form id="${dialogFormId}" data-drawer-form method="${dialogMetodo}" action="${acao}" class="${dialogCorpoClasse}">
                 <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
                 <%-- Vazio = POST. O gatilho da linha troca por `patch`/`delete` conforme
                      a acao (negar e cancelar mandam `_method`). --%>
                 <input type="hidden" name="_method" value="">
-                <jsp:doBody />
+                ${dialogCorpo}
             </form>
         </c:when>
         <c:otherwise>
-            <div class="app-dialog-corpo">
-                <jsp:doBody />
-            </div>
+            <c:if test="${dialogTemCorpo}">
+                <div class="app-dialog-corpo">${dialogCorpo}</div>
+            </c:if>
         </c:otherwise>
     </c:choose>
 

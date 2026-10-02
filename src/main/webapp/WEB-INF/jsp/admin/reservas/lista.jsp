@@ -99,11 +99,10 @@
            acao="${ctx}/admin/reservas"
            rotuloConfirmar="Negar" varianteConfirmar="error" iconeConfirmar="negar"
            rotuloCancelar="Voltar">
-    <label class="field">
-        <span>Motivo da negacao</span>
-        <input class="input w-full" type="text" name="motivo" maxlength="255"
-               placeholder="Ex.: manutencao da piscina" required>
-    </label>
+    <%-- Sem rotulo visivel: o proprio placeholder e o titulo do campo, e o `aria-label`
+         mantem o nome acessivel (o dialogo ja explica o porque na descricao). --%>
+    <input class="input w-full" type="text" name="motivo" maxlength="255"
+           placeholder="Motivo da negacao" aria-label="Motivo da negacao" required>
 </ui:dialog>
 
 <ui:dialog id="dialog-cancelamento"

@@ -226,10 +226,11 @@
     justify-content: space-between;
     gap: 1rem;
     padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--color-base-300);
 }
 
-/* Unica regiao com scroll: topo e rodape ficam sempre visiveis. */
+/* Unica regiao com scroll: topo e rodape ficam sempre visiveis.
+   NAO tem filete: no dialogo a forma ja e dada pelo raio e pela sombra, e como o corpo e
+   OPCIONAL um filete so viraria uma linha solta no meio de um dialogo de confirmacao. */
 .app-dialog-corpo {
     display: grid;
     flex: 1 1 auto;
@@ -246,7 +247,13 @@
     justify-content: flex-end;
     gap: 0.5rem;
     padding: 1rem 1.25rem;
-    border-top: 1px solid var(--color-base-300);
+}
+
+/* Dialogo sem campos (confirmacao pura): o corpo continua existindo porque e ele que
+   carrega o <form>, mas sem padding — senao sobraria uma faixa vazia entre o titulo e os
+   botoes. */
+.app-dialog-corpo--vazio {
+    padding: 0;
 }
 
 /* ---------------------------------------------------------------------------

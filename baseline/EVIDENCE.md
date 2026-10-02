@@ -1230,6 +1230,32 @@ para.
 `ui-tabelas.sh` ganhou a checagem (com sabotagem propria) porque e um erro silencioso: o
 dialogo continua abrindo e funcionando, so com a altura errada.
 
+### Correcao: sem filetes, corpo opcional e o titulo no placeholder
+
+Tres ajustes pedidos depois de ver o dialogo de cancelamento:
+
+1. **Filetes fora.** `.app-dialog-topo` tinha `border-bottom` e `.app-dialog-rodape`
+   `border-top`. No dialogo a forma ja e dada pelo raio e pela sombra, e como o corpo e
+   opcional um filete virava uma linha solta no meio de um dialogo de confirmacao. O
+   `ui:drawer` mantem os filetes: ali as tres faixas sao sempre preenchidas.
+
+2. **Corpo opcional de verdade.** O `<form>` e o `.app-dialog-corpo`, entao ele existe mesmo
+   num dialogo sem campos — e o `padding` de 1.25rem sobrava como faixa em branco entre o
+   titulo e os botoes. O `dialog.tag` agora captura o corpo (`<jsp:doBody var="dialogCorpo"/>`)
+   e marca o form com `app-dialog-corpo--vazio` quando `fn:trim` da vazio; a classe zera o
+   padding. Um dialogo sem `acao` e sem corpo nao renderiza a faixa.
+
+3. **Titulo no placeholder.** O rotulo `<span>Motivo da negacao</span>` saia grande (o
+   `.field span` e `font-weight: 600` no tamanho do corpo) e competia com o titulo do dialogo.
+   Saiu: o texto virou `placeholder="Motivo da negacao"` **e** `aria-label`, porque sem rotulo
+   visivel o campo precisa de nome acessivel.
+
+Verificacao: o markup de reservas passa a conferir que o dialogo de negacao NAO esta marcado
+como vazio e o de cancelamento ESTA, que o campo usa o titulo como placeholder, que tem
+`aria-label` e que nao voltou `<span>` de rotulo. O CSS confere que os dois blocos nao tem
+`border` e que `.app-dialog-corpo--vazio` zera o padding. Self-tests: **15/15** markup e
+**16/16** CSS.
+
 ### Verificacao
 
 | # | Check | Result |

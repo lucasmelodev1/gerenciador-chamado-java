@@ -180,6 +180,23 @@ for dlg in ("dialog-negacao", "dialog-cancelamento"):
             bad("reservas", f"{dlg!r} sem role=dialog/aria-modal")
 if 'name="motivo"' not in h:
     bad("reservas", "o dialogo de negacao perdeu o campo motivo")
+negacao = re.search(r'<aside id="dialog-negacao".*?</aside>', h, re.S)
+cancelamento = re.search(r'<aside id="dialog-cancelamento".*?</aside>', h, re.S)
+if negacao and cancelamento:
+    neg, can = negacao.group(0), cancelamento.group(0)
+    # O corpo existe sempre (e ele que carrega o <form>); o que nao pode e sobrar a faixa
+    # em branco quando o dialogo nao tem campo nenhum.
+    if "app-dialog-corpo--vazio" in neg:
+        bad("reservas", "o dialogo de negacao tem campo: nao pode ser marcado como vazio")
+    if "app-dialog-corpo--vazio" not in can:
+        bad("reservas", "o dialogo de cancelamento nao tem campos: o corpo deveria sair vazio")
+    # O titulo do campo vive no placeholder + aria-label, sem rotulo visivel.
+    if 'placeholder="Motivo da negacao"' not in neg:
+        bad("reservas", "o campo de motivo deveria usar o proprio titulo como placeholder")
+    if 'aria-label="Motivo da negacao"' not in neg:
+        bad("reservas", "campo sem rotulo visivel precisa de aria-label")
+    if '<span>Motivo da negacao</span>' in h:
+        bad("reservas", "o campo de motivo ainda tem rotulo visivel")
 if 'btn-error' not in h:
     bad("reservas", "o botao de confirmar dos dialogos deveria ser vermelho (btn-error)")
 if 'data-confirm' in h:
@@ -325,6 +342,10 @@ CASOS = [
      "dialogo de negacao renderizado como drawer lateral"),
     ("reservas", 'name="motivo"', 'name="semMotivo"',
      "dialogo de negacao sem o campo de motivo"),
+    ("reservas", 'placeholder="Motivo da negacao"', 'placeholder="Ex.: manutencao da piscina"',
+     "campo de motivo volta ao placeholder de exemplo, sem titulo"),
+    ("reservas", 'class="app-dialog-corpo app-dialog-corpo--vazio"', 'class="app-dialog-corpo"',
+     "dialogo de confirmacao volta a renderizar a faixa do corpo"),
 ]
 
 if SAB.exists():
@@ -437,6 +458,15 @@ def verificar(custom, build):
               ".app-dialog deveria ter `height: fit-content` (com `inset: 0` a altura automatica estica)")
         check(re.search(r'visibility\s*:\s*hidden', dialogo) is not None,
               ".app-dialog deveria nascer escondido")
+    topo = bloco(custom, ".app-dialog-topo")
+    check(topo is not None and re.search(r'border(?:-(?:top|bottom|inline|block))?\s*:', topo or "") is None,
+          ".app-dialog-topo nao pode ter filete (o corpo e opcional; a linha ficaria solta)")
+    rodape = bloco(custom, ".app-dialog-rodape")
+    check(rodape is not None and re.search(r'border(?:-(?:top|bottom|inline|block))?\s*:', rodape or "") is None,
+          ".app-dialog-rodape nao pode ter filete")
+    vazio = bloco(custom, ".app-dialog-corpo--vazio")
+    check(vazio is not None and re.search(r'padding\s*:\s*0', vazio or "") is not None,
+          "falta `.app-dialog-corpo--vazio` com padding 0 (dialogo sem campos ficaria com faixa em branco)")
     check(bloco(custom, ".app-dialog[data-drawer-aberto]") is not None,
           "falta o estado aberto do dialogo")
     check(bloco(custom, ".app-dialog-rodape") is not None, "falta o rodape do dialogo")
@@ -507,6 +537,14 @@ SABOTAGENS = [
      lambda c: re.sub(r'\.app-card-filtros--campos \{[^}]*\}', '', c, count=1)),
     ("dialogo deixa de ser centralizado",
      lambda c: c.replace("    margin: auto;\n    border-radius: var(--radius-box);", "    border-radius: var(--radius-box);", 1)),
+    ("filete de volta no topo do dialogo",
+     lambda c: c.replace("    padding: 1rem 1.25rem;\n}\n\n/* Unica regiao com scroll",
+                         "    padding: 1rem 1.25rem;\n    border-bottom: 1px solid var(--color-base-300);\n}\n\n/* Unica regiao com scroll", 1)),
+    ("filete de volta no rodape do dialogo",
+     lambda c: c.replace("    gap: 0.5rem;\n    padding: 1rem 1.25rem;\n}\n\n/* Dialogo sem campos",
+                         "    gap: 0.5rem;\n    padding: 1rem 1.25rem;\n    border-top: 1px solid var(--color-base-300);\n}\n\n/* Dialogo sem campos", 1)),
+    ("corpo vazio volta a ter padding",
+     lambda c: re.sub(r'\.app-dialog-corpo--vazio \{[^}]*\}', '', c, count=1)),
     ("dialogo deixa de ter altura de conteudo",
      lambda c: c.replace("    height: fit-content;\n", "", 1)),
     ("dialogo nasce visivel",
