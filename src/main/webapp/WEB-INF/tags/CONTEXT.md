@@ -12,6 +12,7 @@ páginas, e por isso ficam fora do diretório que os resolvers de view varrem.
 | `ui:nav-grupo` / `ui:nav-item` | navegação lateral: grupo com rótulo + item (ícone, rótulo e estado ativo no servidor) |
 | `ui:card-head` | cabeçalho de card (título, descrição, `subtitulo` opcional; corpo = ação) |
 | `ui:busca` | campo de busca local da faixa de filtros |
+| `ui:campo` / `ui:campo-senha` | campo com rótulo (e dica opcional); o de senha tem o botão de olho (`data-password-campo`, `aria-pressed` — o glifo é escolha do CSS) |
 | `ui:paginacao` | Anterior/Próxima + "Página X de Y", preservando os filtros (`parametros`) |
 | `ui:badge` | `<span class="badge badge-<variante>">` |
 | `ui:acao-link` | ação de linha que navega: ícone + tooltip, ou `texto` visível |

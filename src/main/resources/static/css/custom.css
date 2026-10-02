@@ -654,6 +654,63 @@ body.app-drawer-trava-scroll {
 }
 
 /* ---------------------------------------------------------------------------
+ * Padrao decorativo do login (S34) — coluna da direita do bloco `login-02` do shadcn.
+ *
+ * No bloco original essa coluna e uma imagem (`<img class="object-cover">`); aqui e o padrao
+ * CSS que o time de design passou, sem asset novo e sem dependencia nova. As seis camadas
+ * (`background-image` + `background-position` + `background-size`) andam juntas: cada camada
+ * de imagem casa, pela ordem, com a posicao de mesmo indice.
+ *
+ * As cores sao as da identidade do projeto (`#0d5c63` e o `--color-primary`; o creme
+ * `#f4f0eb` e o fundo do padrao, nao um token do tema — o `base-200` e cinza-neutro desde a
+ * S21). O padrao de referencia do design usava azul/lilas; trocar as cores mudaria a
+ * identidade.
+ *
+ * A classe e usada por `auth/login.jsp` na coluna `hidden lg:block`; abaixo de `lg` ela nao
+ * e renderizada.
+ * ------------------------------------------------------------------------ */
+
+.app-padrao-login {
+    background-color: #f4f0eb;
+    opacity: 0.8;
+    background-image:
+        linear-gradient(30deg, #0d5c63 12%, transparent 12.5%, transparent 87%, #0d5c63 87.5%, #0d5c63),
+        linear-gradient(150deg, #0d5c63 12%, transparent 12.5%, transparent 87%, #0d5c63 87.5%, #0d5c63),
+        linear-gradient(30deg, #0d5c63 12%, transparent 12.5%, transparent 87%, #0d5c63 87.5%, #0d5c63),
+        linear-gradient(150deg, #0d5c63 12%, transparent 12.5%, transparent 87%, #0d5c63 87.5%, #0d5c63),
+        linear-gradient(60deg, #0d5c6377 25%, transparent 25.5%, transparent 75%, #0d5c6377 75%, #0d5c6377),
+        linear-gradient(60deg, #0d5c6377 25%, transparent 25.5%, transparent 75%, #0d5c6377 75%, #0d5c6377);
+    background-size: 54px 95px;
+    background-position: 0 0, 0 0, 27px 47px, 27px 47px, 0 0, 27px 47px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Botao de mostrar/ocultar senha (`tags/campo-senha.tag`, S34).
+ *
+ * Os dois glifos (`ver` e `ocultar`) vem do markup e quem escolhe qual aparece e o CSS,
+ * por `aria-pressed` — o JS nao conhece icone. Fora de layer, entao vence o `hidden`/
+ * `flex` de utilitario que estivesse no elemento.
+ *   aria-pressed="false" -> senha oculta, glifo `mostrar` (olho)
+ *   aria-pressed="true"  -> senha visivel, glifo `ocultar` (olho cortado)
+ * ------------------------------------------------------------------------ */
+
+[data-password-toggle] [data-password-icone="mostrar"] {
+    display: flex;
+}
+
+[data-password-toggle] [data-password-icone="ocultar"] {
+    display: none;
+}
+
+[data-password-toggle][aria-pressed="true"] [data-password-icone="mostrar"] {
+    display: none;
+}
+
+[data-password-toggle][aria-pressed="true"] [data-password-icone="ocultar"] {
+    display: flex;
+}
+
+/* ---------------------------------------------------------------------------
  * Acessibilidade (S8)
  * ------------------------------------------------------------------------ */
 

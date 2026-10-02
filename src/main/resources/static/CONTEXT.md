@@ -41,6 +41,14 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
   direita" do `ui:detalhe-linha` — linha em `flex` com `space-between`, valor com `font-weight: 700` e
   `text-align: end`, os dois `margin` do navegador zerados e `min-width: 0` no valor (item flex nasce com
   `min-width: auto` e um motivo longo empurraria a linha para fora do painel).
+  Também o **padrão decorativo do login** (S34): `.app-padrao-login` é a coluna da direita do bloco
+  `login-02` do shadcn, que no original é uma imagem. São seis camadas de `background-image`
+  (`linear-gradient` ×6, duas a duas em 30/150/60 graus) com `background-size` e
+  `background-position` de mesmo índice; as cores são as da identidade (`#0d5c63`, o
+  `--color-primary`, e o creme `#f4f0eb`), e não as do padrão de referência do design.
+  Também o **glifo do botão de senha** (S34): as quatro regras
+  `[data-password-toggle][aria-pressed=...]` escolhem entre os dois `ui:icone` do
+  `campo-senha.tag` — o JS não conhece ícone (ver `js/forms.js`).
   **Camadas aninhadas:** dentro da daisyUI (`daisyui.l1` > `l1.l2` > `l1.l2.l3` > `l1.l2.l3.l4`), para
   declarações **normais** o layer **pai vence o filho** ("non-nested styles in a layer have precedence over
   normal nested styles"). É o que faz o `.btn:hover` de `l1` sobrepor o `color` do `.btn-ghost` de `l1.l2.l3` —
@@ -64,6 +72,10 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
 - `core` (`window.AppDom`), `alerts`, `forms` (`data-confirm`, `data-password-*`, `data-character-*`,
   `data-auto-submit`) e `tables` (`data-filter-*`; esconde a linha com o utilitário `hidden` do Tailwind,
   que substituiu o `.is-hidden` do legado no F1 da S33).
+- `forms.js` > botão de senha (S34): acha o input por `[data-password-campo]` (o `.password-field`
+  do legado saiu do markup na S33 e deixava o botão sem efeito) e troca `type`, `aria-pressed`,
+  `aria-label` e `data-tip`; o glifo é escolha do CSS. Comportamento executado por
+  `scripts/ui-forms-js.mjs` (rodado no `ui-invariants.sh check`), porque não há browser no ambiente.
 - `calendar.js` (agendas mês/semana do admin e do morador): monta os eventos a partir dos
   `.reserva-data`, filtra por área **no cliente** e, no clique do evento, abre o painel de detalhe
   declarado em `data-painel-detalhe` no `#calendar` (o JS não conhece o id `drawer-reserva`)
@@ -103,5 +115,10 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
   e `.divider`).
 - Tokens que existem para o login, herdados do legado na migração (S33/F2): `--color-primary-strong`
   (`bg-primary-strong`, o #093f44 da marca) e `--shadow-painel` (`shadow-painel`, a `--shadow` do
-  `base.css`). A tela `auth/login.jsp` foi a primeira convertida para utilitários — as classes
-  `.auth-*`, `.feature-list` e `.eyebrow` saíram do markup.
+  `base.css`). A S34 acrescentou `--shadow-cartao` (`shadow-cartao`): três camadas curtas
+  (contato de 1px + degradê médio + halo abaixo) para o relevo discreto do card, no estilo
+  Notion/Untitled UI — o `--shadow-painel` continua sendo o hover das outras telas. A tela
+  `auth/login.jsp` foi a primeira convertida para utilitários — as classes
+  `.auth-*`, `.feature-list` e `.eyebrow` saíram do markup. Na S34 ela passou ao layout de duas
+  colunas do `login-02`, com o formulário num `card` de `max-w-88` (22rem) centrado na coluna (a marca
+  fica fora do fluxo) e o marcador `data-page="login"` no `ui-routes.sh`.

@@ -70,6 +70,18 @@ escrever uma tela.
 - **Utilitários**: `ui:icone` (alias + `classe`), `ui:vazio`, `ui:reserva-status` e
   `ui:flash` (mensagens de redirect).
 
+## Login (S34)
+`auth/login.jsp` é a única página com shell próprio. Desde a S34 segue o bloco `login-02` do
+shadcn: `<main>` em duas colunas a partir de `lg` — formulário no `card`/`card-body` da daisyUI
+(`max-w-88`, `bg-base-100`, `border-base-content/10` e o `shadow-cartao`), com o título "Entrar"
+centralizado, e, à direita, o painel decorativo que no bloco original era uma imagem; aqui é a
+classe `.app-padrao-login`
+(`static/css/custom.css`). A marca fica `absolute` no topo da coluna: como linha no fluxo ela
+entraria na conta do `items-center` e o card cairia abaixo do meio da página. Abaixo de `lg` o
+painel não é renderizado (`hidden lg:block`) e sobra a coluna do formulário. Os componentes
+daisyUI (`input`, `btn`, `alert`) e os tags `ui:campo`/`ui:campo-senha`/`ui:icone` continuam os
+mesmos. Contrato com `scripts/ui-routes.sh`: o marcador pós-rewrite é o `data-page="login"`.
+
 ## Telas de tabela (S24/S25, extraídas para tags em S26)
 
 As sete telas de listagem do admin seguem o mesmo desenho, montado com os tags de
