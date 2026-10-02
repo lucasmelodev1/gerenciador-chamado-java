@@ -36,40 +36,24 @@
     (ex.: /WEB-INF/jsp/admin/blocos/lista.jsp) — nenhum link casaria. O caminho original
     esta no atributo de forward da spec Servlet. Ver baseline/EVIDENCE.md > S7.
 --%>
-<c:set var="navPath" value="${requestScope['jakarta.servlet.forward.request_uri']}" />
+<c:set var="navPath" value="${requestScope['jakarta.servlet.forward.request_uri']}" scope="request" />
 <c:if test="${empty navPath}">
-    <c:set var="navPath" value="${pageContext.request.requestURI}" />
+    <c:set var="navPath" value="${pageContext.request.requestURI}" scope="request" />
 </c:if>
 <c:set var="navContext" value="${requestScope['jakarta.servlet.forward.context_path']}" />
 <c:if test="${empty navContext}">
     <c:set var="navContext" value="${ctx}" />
 </c:if>
 <c:if test="${not empty navContext and fn:startsWith(navPath, navContext)}">
-    <c:set var="navPath" value="${fn:substringAfter(navPath, navContext)}" />
+    <c:set var="navPath" value="${fn:substringAfter(navPath, navContext)}" scope="request" />
 </c:if>
 
-<%--
-    Grupos de navegacao por perfil, no formato:
-        RotuloDoGrupo@href|Texto|aliasDoIcone;/outro|Texto|icone#ProximoGrupo@...
-
-    Os separadores foram escolhidos para nao colidir com nada que apareca nos rotulos
-    (`#` separa grupos, `@` separa grupo de itens, `;` separa itens, `|` separa campos).
-    O alias do icone e resolvido por `fragments/icone.jspf`.
---%>
-<c:choose>
-    <c:when test="${isAdministrador}">
-        <c:set var="navGroups"
-               value="Operacao@/admin|Inicio|inicio;/admin/chamados|Chamados|chamados;/admin/reservas/agenda|Agenda|agenda;/admin/reservas|Reservas|reservas#Cadastros@/admin/blocos|Blocos|blocos;/admin/areas|Areas|areas;/admin/tipos-chamado|Tipos de Chamado|tipos;/admin/status-chamado|Status|status#Acessos@/admin/usuarios|Usuarios|usuarios;/admin/vinculos-morador|Vincular Morador|vinculos;/admin/escopo-colaborador|Escopo Colaborador|escopo" />
-    </c:when>
-    <c:when test="${isMorador}">
-        <c:set var="navGroups"
-               value="Chamados@/morador|Inicio|inicio;/morador/chamados/novo|Abrir Chamado|abrir;/morador/chamados|Meus Chamados|chamados#Reservas@/morador/reservas/agenda|Agenda|agenda;/morador/reservas/nova|Reservar Area|reservar;/morador/reservas|Minhas Reservas|minhasReservas" />
-    </c:when>
-    <c:when test="${isColaborador}">
-        <c:set var="navGroups"
-               value="Atendimento@/colaborador|Inicio|inicio;/colaborador/chamados|Fila de Atendimento|fila" />
-    </c:when>
-</c:choose>
+<%-- `navPath` e `ctx` ficam no REQUEST scope: quem consome sao os tags `ui:nav-item`, e um
+     tag file le o chamador pelo escopo de request (mesmo padrao do `chamado` no
+     `ui:detalhe-chamado`). O marcador `navItemAtivoResolvido` tambem vive la: e ele que faz
+     o primeiro item que casa vencer, como no loop que a S31 substituiu. --%>
+<c:set var="navItemAtivoResolvido" value="" scope="request" />
+<c:set var="ctx" value="${ctx}" scope="request" />
 
 <%-- Cartao do usuario (NavUser): o modelo autenticado carrega apenas username e perfil,
      entao o "nome" exibido e a parte local do e-mail e a segunda linha e o perfil. --%>
@@ -102,59 +86,58 @@
             <a href="${ctx}${currentUserHome}"
                class="flex w-full items-center gap-2 rounded-field px-2 py-2 transition-colors hover:bg-base-content/10">
                 <span class="grid size-8 shrink-0 place-items-center rounded-field bg-primary text-primary-content">
-                    <c:set var="icone" value="marca" />
-                    <c:set var="iconeClasse" value="size-5" />
-                    <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+                    <ui:icone nome="marca" classe="size-5" />
                 </span>
                 <span class="font-display truncate text-base font-semibold">${appName}</span>
             </a>
         </div>
 
-        <%-- SidebarContent: SidebarGroup (rotulo) + SidebarMenu (item = icone + rotulo). --%>
+        <%-- SidebarContent: SidebarGroup (rotulo) + SidebarMenu (item = icone + rotulo).
+             Grupos e itens sao MARKUP (`ui:nav-grupo`/`ui:nav-item`): antes era uma string
+             com separadores proprios (`Grupo@href|Rotulo|icone#...`), que corrompia o menu
+             se um rotulo tivesse um dos separadores. Cada grupo lista os caminhos do mais
+             especifico para o mais generico — o primeiro item que casa a URI vence. --%>
         <nav class="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto px-1.5 pb-1.5"
              aria-label="Navegacao principal">
-            <c:set var="navMatched" value="${false}" />
-            <c:forEach var="navGroup" items="${fn:split(navGroups, '#')}">
-                <c:set var="navGroupParts" value="${fn:split(navGroup, '@')}" />
-                <div class="grid gap-0.5">
-                    <c:if test="${not empty navGroupParts[0]}">
-                        <p class="px-2 text-xs font-semibold tracking-wider uppercase opacity-60">${navGroupParts[0]}</p>
-                    </c:if>
-
-                    <ul class="menu w-full">
-                        <c:forEach var="navItem" items="${fn:split(navGroupParts[1], ';')}">
-                            <c:set var="parts" value="${fn:split(navItem, '|')}" />
-                            <c:set var="href" value="${parts[0]}" />
-                            <c:set var="label" value="${parts[1]}" />
-                            <c:set var="isHome" value="${href eq '/admin' or href eq '/morador' or href eq '/colaborador'}" />
-                            <c:set var="prefixMatch" value="${fn:startsWith(navPath, href)}" />
-                            <c:choose>
-                                <c:when test="${isHome}">
-                                    <c:set var="active" value="${not navMatched and navPath eq href}" />
-                                </c:when>
-                                <c:otherwise>
-                                    <c:set var="active" value="${not navMatched and prefixMatch}" />
-                                </c:otherwise>
-                            </c:choose>
-                            <c:if test="${active}">
-                                <c:set var="navMatched" value="${true}" />
-                            </c:if>
-                            <li>
-                                <a href="${ctx}${href}"
-                                   class="${active ? 'menu-active' : ''}"${active ? ' aria-current="page"' : ''}>
-                                    <c:set var="icone" value="${parts[2]}" />
-                                    <c:set var="iconeClasse" value="size-4 shrink-0" />
-                                    <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
-                                    <%-- `min-w-0` porque o item do menu e um grid de 3
-                                         colunas e o item de grid nasce com `min-width:auto`,
-                                         o que impediria o `truncate`. --%>
-                                    <span class="min-w-0 truncate">${label}</span>
-                                </a>
-                            </li>
-                        </c:forEach>
-                    </ul>
-                </div>
-            </c:forEach>
+            <c:choose>
+                <c:when test="${isAdministrador}">
+                    <ui:nav-grupo rotulo="Operacao">
+                        <ui:nav-item href="/admin" rotulo="Inicio" icone="inicio" exato="true" />
+                        <ui:nav-item href="/admin/chamados" rotulo="Chamados" icone="chamados" />
+                        <ui:nav-item href="/admin/reservas/agenda" rotulo="Agenda" icone="agenda" />
+                        <ui:nav-item href="/admin/reservas" rotulo="Reservas" icone="reservas" />
+                    </ui:nav-grupo>
+                    <ui:nav-grupo rotulo="Cadastros">
+                        <ui:nav-item href="/admin/blocos" rotulo="Blocos" icone="blocos" />
+                        <ui:nav-item href="/admin/areas" rotulo="Areas" icone="areas" />
+                        <ui:nav-item href="/admin/tipos-chamado" rotulo="Tipos de Chamado" icone="tipos" />
+                        <ui:nav-item href="/admin/status-chamado" rotulo="Status" icone="status" />
+                    </ui:nav-grupo>
+                    <ui:nav-grupo rotulo="Acessos">
+                        <ui:nav-item href="/admin/usuarios" rotulo="Usuarios" icone="usuarios" />
+                        <ui:nav-item href="/admin/vinculos-morador" rotulo="Vincular Morador" icone="vinculos" />
+                        <ui:nav-item href="/admin/escopo-colaborador" rotulo="Escopo Colaborador" icone="escopo" />
+                    </ui:nav-grupo>
+                </c:when>
+                <c:when test="${isMorador}">
+                    <ui:nav-grupo rotulo="Chamados">
+                        <ui:nav-item href="/morador" rotulo="Inicio" icone="inicio" exato="true" />
+                        <ui:nav-item href="/morador/chamados/novo" rotulo="Abrir Chamado" icone="abrir" />
+                        <ui:nav-item href="/morador/chamados" rotulo="Meus Chamados" icone="chamados" />
+                    </ui:nav-grupo>
+                    <ui:nav-grupo rotulo="Reservas">
+                        <ui:nav-item href="/morador/reservas/agenda" rotulo="Agenda" icone="agenda" />
+                        <ui:nav-item href="/morador/reservas/nova" rotulo="Reservar Area" icone="reservar" />
+                        <ui:nav-item href="/morador/reservas" rotulo="Minhas Reservas" icone="minhasReservas" />
+                    </ui:nav-grupo>
+                </c:when>
+                <c:when test="${isColaborador}">
+                    <ui:nav-grupo rotulo="Atendimento">
+                        <ui:nav-item href="/colaborador" rotulo="Inicio" icone="inicio" exato="true" />
+                        <ui:nav-item href="/colaborador/chamados" rotulo="Fila de Atendimento" icone="fila" />
+                    </ui:nav-grupo>
+                </c:when>
+            </c:choose>
         </nav>
 
         <%-- SidebarFooter: cartao do usuario. O `form` fica FORA do menu e o botao o
@@ -177,9 +160,7 @@
                         <span class="truncate text-sm font-medium">${navUserHandle}</span>
                         <span class="truncate text-xs opacity-60">${currentUserRoleLabel}</span>
                     </span>
-                    <c:set var="icone" value="opcoes" />
-                    <c:set var="iconeClasse" value="size-4 shrink-0 opacity-60" />
-                    <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+                    <ui:icone nome="opcoes" classe="size-4 shrink-0 opacity-60" />
                 </div>
 
                 <ul tabindex="0"
@@ -187,9 +168,7 @@
                     <li class="menu-title"><span class="truncate">${currentUserEmail}</span></li>
                     <li>
                         <button type="submit" form="app-logout" class="text-error">
-                            <c:set var="icone" value="sair" />
-                            <c:set var="iconeClasse" value="size-4 shrink-0" />
-                            <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+                            <ui:icone nome="sair" classe="size-4 shrink-0" />
                             <span>Sair</span>
                         </button>
                     </li>

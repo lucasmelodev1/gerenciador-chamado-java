@@ -19,6 +19,10 @@
  *   document.addEventListener("drawer:fechado", function (evento) {
  *       console.log(evento.detail.id, evento.detail.valor);
  *   });
+ *
+ * Um painel pode abrir outro por cima: o botao declarado por `painelAcao` de um `ui:drawer`
+ * informativo abre um `ui:dialog`. Nesse caso Esc, Tab e o foco preso valem para o painel de
+ * CIMA (o ultimo aberto), e o de baixo continua aberto por tras.
  */
 (function () {
     var EVENTO_ABERTURA = "drawer:aberto";
@@ -41,6 +45,24 @@
     // id do drawer -> estado com que o servidor o renderizou (acao e titulo). Serve para
     // o gatilho "novo" devolver o formulario ao modo de criacao depois de uma edicao.
     var estadoInicial = {};
+
+    // Ids dos paineis abertos, na ordem de abertura. Um painel pode abrir outro por cima
+    // (o detalhe da reserva abre o dialogo de cancelamento), e nesse caso Esc, Tab e o foco
+    // pertencem ao de CIMA — que e o ultimo aberto e o mesmo que o CSS pinta por cima.
+    var abertos = [];
+
+    function registrarAbertura(id) {
+        if (abertos.indexOf(id) === -1) {
+            abertos.push(id);
+        }
+    }
+
+    function registrarFechamento(id) {
+        var indice = abertos.indexOf(id);
+        if (indice !== -1) {
+            abertos.splice(indice, 1);
+        }
+    }
 
     function formDoPainel(painel) {
         return painel.querySelector("[data-drawer-form]");
@@ -183,11 +205,13 @@
             if (backdrop) {
                 backdrop.setAttribute(ATRIBUTO_ABERTO, "");
             }
+            registrarAbertura(id);
         } else {
             painel.removeAttribute(ATRIBUTO_ABERTO);
             if (backdrop) {
                 backdrop.removeAttribute(ATRIBUTO_ABERTO);
             }
+            registrarFechamento(id);
         }
         return painel;
     }
@@ -243,13 +267,16 @@
         return painel;
     }
 
-    function primeiroAberto() {
-        return window.AppDom.bySelector("[data-drawer][" + ATRIBUTO_ABERTO + "]")[0] || null;
+    // Painel de cima: o ultimo aberto (ver `abertos`). Com um painel so, e ele mesmo.
+    function painelDoTopo() {
+        var id = abertos[abertos.length - 1];
+        return id ? painelPorId(id) : null;
     }
 
-    // Esc fecha e Tab fica preso no painel — o que o <dialog> faria sozinho.
+    // Esc fecha e Tab fica preso no painel — o que o <dialog> faria sozinho. Quem responde
+    // e o painel de CIMA: fechar o de baixo com um dialogo aberto por cima seria surpresa.
     function aoTeclar(evento) {
-        var painel = primeiroAberto();
+        var painel = painelDoTopo();
         if (!painel) {
             return;
         }
@@ -338,6 +365,7 @@
         // aplicar o que o HTML nao carrega: trava de scroll, foco e o evento.
         window.AppDom.bySelector("[data-drawer][" + ATRIBUTO_ABERTO + "]").forEach(function (painel) {
             focoAnterior[painel.id] = document.activeElement;
+            registrarAbertura(painel.id);
             travarScroll();
             focarPrimeiro(painel);
             avisar(painel, EVENTO_ABERTURA, "");

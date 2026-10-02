@@ -1,14 +1,6 @@
+<%@ page pageEncoding="UTF-8" %>
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
-<body data-page="admin-status">
-<div class="drawer lg:drawer-open">
-    <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="drawer-content">
-        <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main id="conteudo-principal" class="page-content">
-            <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
+<ui:shell dataPagina="admin-status">
 
             <%-- A lista era um `stack-list` de `.list-row`; virou tabela para usar a mesma
                  coluna de acoes das outras telas. Os tres status reservados do sistema
@@ -28,9 +20,7 @@
 
                     <c:choose>
                         <c:when test="${empty statusChamado}">
-                            <c:set var="vazioTitulo" value="Nenhum status cadastrado" />
-                            <c:set var="vazioMensagem" value="Cadastre ao menos um status e marque o inicial padrao." />
-                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                            <ui:vazio titulo="Nenhum status cadastrado" mensagem="Cadastre ao menos um status e marque o inicial padrao." />
                         </c:when>
                         <c:otherwise>
                             <div class="overflow-x-auto">
@@ -39,7 +29,7 @@
                                     <tr>
                                         <th>Nome</th>
                                         <th>Situacao</th>
-                                        <th><span class="sr-only">Acoes</span></th>
+                                        <th><span class="sr-only">Ações</span></th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -61,12 +51,12 @@
                                                     </c:if>
                                                 </span>
                                             </td>
-                                            <td class="cell-actions app-tabela-acoes">
+                                            <td class="app-tabela-acoes">
                                                 <c:if test="${status.editavel}">
-                                                    <ui:acao-editar drawer="drawer-status" titulo="Editar status"
+                                                    <ui:acao-painel painel="drawer-status" titulo="Editar status"
                                                                     acao="${ctx}/admin/status-chamado/${status.id}">
                                                         <input type="hidden" data-campo="nome" value="${fn:escapeXml(status.nome)}">
-                                                    </ui:acao-editar>
+                                                    </ui:acao-painel>
                                                 </c:if>
                                                 <c:if test="${not status.inicialPadrao}">
                                                     <ui:acao-form acao="${ctx}/admin/status-chamado/${status.id}/inicial-padrao"
@@ -82,32 +72,19 @@
                         </c:otherwise>
                     </c:choose>
 
-                    <div class="pagination">
-                        <c:if test="${statusChamadoPage.hasPrevious}">
-                            <a class="btn" href="${ctx}/admin/status-chamado?page=${statusChamadoPage.page - 1}&size=${statusChamadoPage.size}">Anterior</a>
-                        </c:if>
-                        <span>Pagina ${statusChamadoPage.page + 1} de ${statusChamadoPage.totalPages == 0 ? 1 : statusChamadoPage.totalPages}</span>
-                        <c:if test="${statusChamadoPage.hasNext}">
-                            <a class="btn" href="${ctx}/admin/status-chamado?page=${statusChamadoPage.page + 1}&size=${statusChamadoPage.size}">Proxima</a>
-                        </c:if>
-                    </div>
+                    <ui:paginacao pagina="${statusChamadoPage}" url="${ctx}/admin/status-chamado" />
                 </div>
             </section>
-        </main>
-    </div>
-</div>
+</ui:shell>
 
-<%-- Fora de `.page-content`: o legado espremeria o backdrop. Ver custom.css > Drawer. --%>
+<%-- Fora de `.app-page`: o legado espremeria o backdrop. Ver custom.css > Drawer. --%>
 <ui:drawer id="drawer-status"
            titulo="Novo status"
            descricao="Um status por etapa do atendimento. O inicial e o que o chamado recebe ao abrir."
            acao="${ctx}/admin/status-chamado">
-    <label class="field">
-        <span>Nome do status</span>
+    <ui:campo rotulo="Nome do status">
         <input class="input w-full" type="text" name="nome" value="${statusChamadoForm.nome}" placeholder="Em atendimento" maxlength="255" required>
-    </label>
+    </ui:campo>
 </ui:drawer>
 
-<%@ include file="/WEB-INF/jsp/fragments/scripts.jspf" %>
-</body>
-</html>
+<ui:shell-fim />

@@ -4,7 +4,12 @@
  * Ordem de carregamento em head.jspf:
  *   app.build.css  -> Tailwind + daisyUI (tema "chamados")
  *   custom.css     -> este arquivo
- *   base/layout/components/responsive.css -> legado, removido ate S17
+ *
+ * Ate a S33 havia mais quatro folhas depois desta (`base.css`, `layout.css`,
+ * `components.css`, `responsive.css`), fora de cascade layer e por isso vencedoras da
+ * daisyUI. Elas foram removidas quando a ultima classe delas saiu do markup; o que sobrou
+ * virou utilitario no markup ou regra daqui. `scripts/ui-legado.sh check` reprova quem
+ * reintroduzir arquivo, `<link>` ou classe daquela lista.
  *
  * ATENCAO a ordem das camadas (medida em app.build.css):
  *   @layer properties < @layer base < @layer utilities < @layer daisyui
@@ -22,6 +27,125 @@
  * "consertar" o que nao esta quebrado: o `btn-square`, por exemplo, funciona — ele mora no
  * layer PAI do `.btn`.
  */
+
+/* ---------------------------------------------------------------------------
+ * Fundacao do shell (S33) — assume o que os quatro arquivos legados faziam em
+ * `html`, `body` e no antigo `.page-content`.
+ *
+ * Vem da migracao do CSS legado (F1): as regras sao as MESMAS de antes, so mudaram de
+ * dono. Enquanto `base.css`/`layout.css`/`responsive.css` ainda estiverem linkados no
+ * `head.jspf` as duas definicoes coexistem (mesmos valores); no F6 o legado sai e estas
+ * passam a ser as unicas.
+ *
+ * `.app-page` e o `<main>` emitido pelo `ui:shell`; `.app-page--estreito` e o `classeMain`
+ * dos dois formularios estreitos (morador/chamados/novo e morador/reservas/nova).
+ * ------------------------------------------------------------------------ */
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.app-page {
+    padding: 18px 24px 28px;
+    display: grid;
+    gap: 16px;
+    align-content: start;
+}
+
+/* O `> *` e o que mantem o painel da esquerda e o conteudo alinhados: os paineis
+   (`ui:drawer`/`ui:dialog`) sao renderizados FORA daqui justamente porque esta regra
+   espremeria o backdrop. Ver custom.css > Drawer lateral. */
+.app-page > * {
+    width: min(100%, 1360px);
+    margin-inline: auto;
+}
+
+.app-page--estreito {
+    max-width: 900px;
+}
+
+@media (max-width: 980px) {
+    .app-page {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}
+
+body[data-page]:not([data-page="login"]) .app-page > * {
+    animation: fadeLift 0.36s ease both;
+}
+
+body[data-page]:not([data-page="login"]) .app-page > *:nth-child(2) {
+    animation-delay: 0.04s;
+}
+
+body[data-page]:not([data-page="login"]) .app-page > *:nth-child(3) {
+    animation-delay: 0.08s;
+}
+
+body[data-page]:not([data-page="login"]) .app-page > *:nth-child(4) {
+    animation-delay: 0.12s;
+}
+
+@keyframes fadeLift {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ---------------------------------------------------------------------------
+ * Grades de duas colunas e cartao de metrica (S33/F5) — eram `.two-column-grid`,
+ * `.detail-grid` e `.stat-card`/`.stat-card::after` no legado.
+ *
+ * As grades ficam aqui (e nao em utilitario) porque a receita tem `minmax()` e media query:
+ * abaixo de 981px empilha, acima a primeira coluna fica entre 320/360px e 420/500px.
+ * O resto do cartao de metrica e utilitario no tag `ui:metrica`; so a barra de destaque
+ * (pseudo-elemento) precisa de regra propria.
+ * ------------------------------------------------------------------------ */
+
+.app-grade-lateral,
+.app-grade-detalhe {
+    display: grid;
+    gap: 24px;
+}
+
+.app-grade-lateral {
+    grid-template-columns: 1fr;
+}
+
+.app-grade-detalhe {
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 981px) {
+    .app-grade-lateral {
+        grid-template-columns: minmax(320px, 420px) 1fr;
+    }
+
+    .app-grade-detalhe {
+        grid-template-columns: minmax(360px, 500px) 1fr;
+    }
+}
+
+.app-metrica::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 72px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--color-accent);
+}
 
 /* ---------------------------------------------------------------------------
  * Shell: conteudo "inset" (S19)
@@ -117,16 +241,10 @@
 
 .app-card-head__texto {
     display: grid;
-    /* 2px: a descricao e o titulo viram um bloco unico. O respiro extra que existia
-       (8px de margin-bottom do `.eyebrow`) empurrava o titulo para longe. */
+    /* 2px: a descricao e o titulo viram um bloco unico. Desde o F4 da S33 a descricao e
+       utilitario (nao tem `margin-bottom`), entao o espaco vem so daqui. */
     gap: 0.125rem;
     min-width: 0;
-}
-
-/* O espaco entre a descricao e o titulo passa a vir do `gap` acima. A regra do
-   `.eyebrow` (legado, sem layer) tem especificidade menor que esta, entao perde. */
-.app-card-head__texto .eyebrow {
-    margin-bottom: 0;
 }
 
 /* Mesma receita de `.section-header h2` (components.css), que este cabecalho nao usa.
@@ -166,6 +284,106 @@
 }
 
 /* ---------------------------------------------------------------------------
+ * Dialogo central (S28) — componente `WEB-INF/tags/dialog.tag`.
+ *
+ * Mesmo componente do drawer, outra forma: o painel nao desliza da borda, aparece
+ * centrado com fade + escala. O comportamento (backdrop, Esc, foco preso, trava de
+ * scroll, conteudo dinamico) e o MESMO `drawer.js` — por isso o marcador no DOM
+ * continua sendo `data-drawer`. Aqui so muda a apresentacao.
+ *
+ * Centralizar com `inset: 0` + `margin: auto` (e nao com `translate`) para o painel
+ * nunca sair da tela quando o conteudo for mais alto que a viewport: quem manda e o
+ * `max-height`, e o corpo rola.
+ *
+ * `height: fit-content` NAO e redundante. Com `inset: 0` e `height: auto`, um elemento
+ * `position: fixed` ESTICA entre top e bottom (o `height` automatico preenche o espaco
+ * que sobra), e o dialogo virava uma coluna da altura da tela com o corpo vazio no meio.
+ * Com altura de conteudo sobram as duas folgas que o `margin: auto` divide — e o dialogo
+ * fica centrado e JUSTO: cresce com o formulario e para no `max-height`, quando entao o
+ * corpo rola.
+ * ------------------------------------------------------------------------ */
+
+.app-dialog {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    width: calc(100% - 2rem);
+    max-width: 28rem; /* md, o padrao */
+    height: fit-content;
+    max-height: calc(100dvh - 2rem);
+    margin: auto;
+    border-radius: var(--radius-box);
+    background-color: var(--color-base-100);
+    box-shadow: 0 18px 50px rgb(18 32 51 / 0.22);
+    visibility: hidden;
+    opacity: 0;
+    scale: 0.96;
+    transition: opacity 0.2s ease, scale 0.2s ease, visibility 0.2s;
+}
+
+.app-dialog--sm {
+    max-width: 22rem;
+}
+
+.app-dialog--lg {
+    max-width: 36rem;
+}
+
+.app-dialog[data-drawer-aberto] {
+    opacity: 1;
+    scale: 1;
+    visibility: visible;
+}
+
+.app-dialog-topo {
+    display: flex;
+    flex-shrink: 0;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+}
+
+/* Unica regiao com scroll: topo e rodape ficam sempre visiveis.
+   NAO tem filete: no dialogo a forma ja e dada pelo raio e pela sombra, e como o corpo e
+   OPCIONAL um filete so viraria uma linha solta no meio de um dialogo de confirmacao.
+
+   Respiro vertical MINIMO, dos dois lados por motivos diferentes:
+     - em cima, 0.25rem (4px): e o tamanho do anel de foco do primeiro campo (outline de 2px
+       + offset de 2px, ver a regra de acessibilidade no fim deste arquivo). Com `padding-top`
+       zero, este container — que e o `overflow-y: auto` — corta o anel, e o campo parece
+       colado/atras do titulo;
+     - embaixo, 1rem: separa o ultimo campo do rodape.
+   O que nao pode e um `padding` cheio dos quatro lados: abria um vao entre a descricao e o
+   primeiro campo. O respiro de cima da faixa ja vem do `padding` do topo. */
+.app-dialog-corpo {
+    display: grid;
+    flex: 1 1 auto;
+    min-height: 0;
+    align-content: start;
+    gap: 1rem;
+    overflow-y: auto;
+    padding: 0.25rem 1.25rem 1rem;
+}
+
+.app-dialog-rodape {
+    display: flex;
+    flex-shrink: 0;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem;
+}
+
+/* Dialogo sem campos (confirmacao pura): o corpo continua existindo porque e ele que
+   carrega o <form>, mas sem padding — senao sobraria uma faixa vazia entre o titulo e os
+   botoes. */
+.app-dialog-corpo--vazio {
+    padding: 0;
+}
+
+/* ---------------------------------------------------------------------------
  * Coluna de acoes das tabelas + botoes so com icone (S25)
  *
  * O `.table :where(th,td){padding-inline:1rem}` da daisyUI deixa a ultima celula a
@@ -179,9 +397,14 @@
  * styles"). Ou seja, `daisyui.l1` vence `daisyui.l1.l2`, que vence `daisyui.l1.l2.l3`.
  * ------------------------------------------------------------------------ */
 
-/* `.cell-actions` (legado) ja e um flex; aqui entram o alinhamento a direita, o
-   espacamento curto entre os dois icones e o padding zerado da ultima celula. */
+/* `.cell-actions` (legado) dava o `display:flex` e o `align-items:center`; desde o F4 da
+   S33 a coluna e auto-suficiente. O `gap: 12px` do `.cell-actions` (carregado DEPOIS deste
+   arquivo, por isso vencia) era maior que os 4px pretendidos aqui — com a classe fora do
+   markup, o espacamento curto entre os icones passa a valer. */
 .app-tabela-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     justify-content: flex-end;
     gap: 0.25rem;
     padding-inline-end: 0;
@@ -229,18 +452,19 @@
 }
 
 /* ---------------------------------------------------------------------------
- * Drawer lateral (S23) — componente `WEB-INF/tags/drawer.tag`.
+ * Drawer lateral (S23) — componente `WEB-INF/tags/drawer.tag` (implementacao em
+ * `painel.tag` desde a S31).
  *
  * Nao usa o `modal` da daisyUI de proposito. O `modal` nao tem `::backdrop` (a daisyUI
  * aplica `display:none` nele e pinta o proprio elemento) e, como o componente era
- * renderizado dentro de `.page-content`, o legado
- * `.page-content > * { width: min(100%, 1360px); margin-inline: auto }` — que nao esta
- * em cascade layer, logo vence qualquer utilitario — espremia o escurecimento e deixava
- * as bordas da tela claras.
+ * renderizado dentro do `<main>`, a regra
+ * `.app-page > * { width: min(100%, 1360px); margin-inline: auto }` — que desde o F1 da
+ * migracao do CSS legado vive NESTE arquivo, fora de cascade layer — espremia o
+ * escurecimento e deixava as bordas da tela claras.
  *
  * Aqui o backdrop e um elemento proprio, irmao do painel e `position: fixed; inset: 0`,
  * e o painel desliza por `translate`. O componente PRECISA ser renderizado fora de
- * `.page-content` (filho direto do <body>), senao herda o mesmo `width` do legado.
+ * `.app-page` (filho direto do <body>), senao herda o mesmo `width`.
  *
  * Escala inspirada nas folhas laterais do shadcn (sm/md/lg). O padrao e `sm`, estreito
  * de proposito: sao formularios curtos, nao tabelas.
@@ -339,32 +563,180 @@ body.app-drawer-trava-scroll {
 }
 
 /* ---------------------------------------------------------------------------
+ * Lista de detalhes (S30) — componente `WEB-INF/tags/detalhe-linha.tag`.
+ *
+ * Cada linha e "rotulo a esquerda, valor em negrito a direita": o `<dl>` agrupa, o `<div>`
+ * da linha e o par `<dt>`/`<dd>`. Os dois `margin` do padrao do navegador (`<dl>` e o
+ * recuo de 40px do `<dd>`) sao zerados aqui, senao a linha nao encosta nas duas bordas.
+ *
+ * `min-width: 0` no valor: item flex nasce com `min-width: auto` e um valor longo sem
+ * espaco (um motivo, por exemplo) empurraria a linha para fora do painel.
+ * ------------------------------------------------------------------------ */
+
+.app-detalhe-lista {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.app-detalhe-linha {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.app-detalhe-rotulo {
+    flex-shrink: 0;
+    color: color-mix(in oklab, var(--color-base-content) 60%, transparent);
+    font-size: 0.875rem;
+}
+
+.app-detalhe-valor {
+    min-width: 0;
+    margin: 0;
+    font-weight: 700;
+    text-align: end;
+}
+
+/* ---------------------------------------------------------------------------
+ * Linha do tempo do chamado (S33/F4) — era `.timeline`/`.timeline-item` no legado.
+ *
+ * A geometria (o filete vertical e o ponto de cada item) usa pseudo-elementos, entao nao
+ * cabe em utilitario: vira classe do projeto, com os mesmos numeros. As regras de
+ * `header`/`p` que o legado tinha junto vieram no mesmo bloco.
+ * ------------------------------------------------------------------------ */
+
+.app-linha-tempo {
+    position: relative;
+    display: grid;
+    gap: 16px;
+    padding-left: 20px;
+}
+
+.app-linha-tempo::before {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 4px;
+    bottom: 4px;
+    width: 2px;
+    background: var(--color-base-300);
+}
+
+.app-linha-tempo-item {
+    position: relative;
+    padding: 0 0 0 20px;
+}
+
+.app-linha-tempo-item::before {
+    content: "";
+    position: absolute;
+    left: -1px;
+    top: 8px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-accent) 18%, transparent);
+}
+
+.app-linha-tempo-item header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.app-linha-tempo-item p {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+/* ---------------------------------------------------------------------------
+ * Padrao decorativo do login (S34) — coluna da direita do bloco `login-02` do shadcn.
+ *
+ * No bloco original essa coluna e uma imagem (`<img class="object-cover">`); aqui e o padrao
+ * CSS que o time de design passou, sem asset novo e sem dependencia nova. As seis camadas
+ * (`background-image` + `background-position` + `background-size`) andam juntas: cada camada
+ * de imagem casa, pela ordem, com a posicao de mesmo indice.
+ *
+ * As cores sao as da identidade do projeto (`#0d5c63` e o `--color-primary`; o creme
+ * `#f4f0eb` e o fundo do padrao, nao um token do tema — o `base-200` e cinza-neutro desde a
+ * S21). O padrao de referencia do design usava azul/lilas; trocar as cores mudaria a
+ * identidade.
+ *
+ * A classe e usada por `auth/login.jsp` na coluna `hidden lg:block`; abaixo de `lg` ela nao
+ * e renderizada.
+ * ------------------------------------------------------------------------ */
+
+.app-padrao-login {
+    background-color: #f4f0eb;
+    opacity: 0.8;
+    background-image:
+        linear-gradient(30deg, #0d5c63 12%, transparent 12.5%, transparent 87%, #0d5c63 87.5%, #0d5c63),
+        linear-gradient(150deg, #0d5c63 12%, transparent 12.5%, transparent 87%, #0d5c63 87.5%, #0d5c63),
+        linear-gradient(30deg, #0d5c63 12%, transparent 12.5%, transparent 87%, #0d5c63 87.5%, #0d5c63),
+        linear-gradient(150deg, #0d5c63 12%, transparent 12.5%, transparent 87%, #0d5c63 87.5%, #0d5c63),
+        linear-gradient(60deg, #0d5c6377 25%, transparent 25.5%, transparent 75%, #0d5c6377 75%, #0d5c6377),
+        linear-gradient(60deg, #0d5c6377 25%, transparent 25.5%, transparent 75%, #0d5c6377 75%, #0d5c6377);
+    background-size: 54px 95px;
+    background-position: 0 0, 0 0, 27px 47px, 27px 47px, 0 0, 27px 47px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Botao de mostrar/ocultar senha (`tags/campo-senha.tag`, S34).
+ *
+ * Os dois glifos (`ver` e `ocultar`) vem do markup e quem escolhe qual aparece e o CSS,
+ * por `aria-pressed` — o JS nao conhece icone. Fora de layer, entao vence o `hidden`/
+ * `flex` de utilitario que estivesse no elemento.
+ *   aria-pressed="false" -> senha oculta, glifo `mostrar` (olho)
+ *   aria-pressed="true"  -> senha visivel, glifo `ocultar` (olho cortado)
+ * ------------------------------------------------------------------------ */
+
+[data-password-toggle] [data-password-icone="mostrar"] {
+    display: flex;
+}
+
+[data-password-toggle] [data-password-icone="ocultar"] {
+    display: none;
+}
+
+[data-password-toggle][aria-pressed="true"] [data-password-icone="mostrar"] {
+    display: none;
+}
+
+[data-password-toggle][aria-pressed="true"] [data-password-icone="ocultar"] {
+    display: flex;
+}
+
+/* ---------------------------------------------------------------------------
  * Acessibilidade (S8)
  * ------------------------------------------------------------------------ */
 
-/* O legado desliga o indicador de foco (.btn:focus-visible e .field *:focus usam
-   `outline: none`). Como o legado carrega DEPOIS deste arquivo, ele venceria pela
-   ordem do cascade; por isso o !important. Este bloco sai em S17, quando o legado
-   for removido e o foco voltar a ser responsabilidade dos componentes daisyUI. */
+/* Anel de foco do projeto. Sem `!important`: o legado nao define mais `outline: none`
+   (a justificativa antiga deixou de valer na S33) e, fora de cascade layer, esta regra
+   vence as declaracoes em layer da daisyUI. */
 body :is(.btn, .field input, .field select, .field textarea, a, summary):focus-visible {
-    outline: 2px solid var(--color-primary) !important;
+    outline: 2px solid var(--color-primary);
     outline-offset: 2px;
 }
 
-/* Respeita "prefers-reduced-motion": a animacao de entrada de .page-content vem do
-   base.css e o drawer usa transicao de transform. */
+/* Respeita "prefers-reduced-motion": a animacao de entrada e a do `.app-page` (custom.css)
+   e o drawer usa transicao de transform. */
 @media (prefers-reduced-motion: reduce) {
     html {
         scroll-behavior: auto;
     }
 
-    body[data-page] .page-content > * {
+    body[data-page] .app-page > * {
         animation: none !important;
     }
 
     .drawer-side,
     .drawer-overlay,
     .app-drawer,
+    .app-dialog,
     .app-drawer-backdrop {
         transition: none !important;
     }

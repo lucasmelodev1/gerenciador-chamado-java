@@ -1,95 +1,65 @@
+<%@ page pageEncoding="UTF-8" %>
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
-<body data-page="admin-usuario-detalhe">
-<div class="drawer lg:drawer-open">
-    <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="drawer-content">
-        <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main id="conteudo-principal" class="page-content">
-            <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
+<ui:shell dataPagina="admin-usuario-detalhe">
 
-            <section class="two-column-grid">
+            <section class="app-grade-lateral">
                 <article class="card">
                     <div class="card-body">
-                    <div class="section-header">
-                        <div>
-                            <p class="eyebrow">Edicao</p>
-                            <h2>${usuario.nome}</h2>
-                        </div>
-                        <span class="badge badge-neutral">${usuario.tipo}</span>
-                    </div>
+                    <ui:card-head titulo="${usuario.nome}" descricao="Edicao">
+                        <ui:badge>${usuario.tipo}</ui:badge>
+                    </ui:card-head>
 
-                    <form method="post" action="${ctx}/admin/usuarios/${usuario.id}" class="stack-form">
+                    <form method="post" action="${ctx}/admin/usuarios/${usuario.id}" class="grid gap-4">
                         <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
                         <input type="hidden" name="_method" value="patch">
-                        <label class="field">
-                            <span>Nome</span>
+                        <ui:campo rotulo="Nome">
                             <input class="input w-full" type="text" name="nome" value="${usuarioForm.nome}" maxlength="255" required>
-                        </label>
-                        <label class="field">
-                            <span>Email</span>
+                        </ui:campo>
+                        <ui:campo rotulo="Email">
                             <input class="input w-full" type="email" name="email" value="${usuarioForm.email}" maxlength="255" required>
-                        </label>
-                        <label class="field">
-                            <span>Perfil</span>
+                        </ui:campo>
+                        <ui:campo rotulo="Perfil">
                             <input class="input w-full" type="text" value="${usuario.tipo}" disabled>
                             <input type="hidden" name="tipo" value="${usuarioForm.tipo}">
-                        </label>
-                        <label class="field">
-                            <span>Nova senha</span>
-                            <div class="password-field">
-                                <input class="input w-full" type="password" name="senha" placeholder="Obrigatorio para salvar" maxlength="255" required data-password-input>
-                                <button type="button" class="btn btn-ghost" data-password-toggle>Mostrar</button>
-                            </div>
-                        </label>
-                        <div class="button-row">
+                        </ui:campo>
+                        <ui:campo-senha rotulo="Nova senha" nome="senha"
+                                        placeholder="Obrigatorio para salvar" maxlength="255" />
+                        <div class="flex flex-wrap items-center gap-3">
                             <button type="submit" class="btn btn-primary">Salvar alteracoes</button>
                             <a href="${ctx}/admin/usuarios" class="btn">Voltar</a>
                         </div>
                     </form>
 
-                    <form method="post" action="${ctx}/admin/usuarios/${usuario.id}" data-confirm="Remover este usuario? A acao nao pode ser desfeita." class="inline-form danger-zone">
-                        <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                        <input type="hidden" name="_method" value="delete">
-                        <button type="submit" class="btn btn-error">Remover usuario</button>
-                    </form>
+                    <ui:acao-form acao="${ctx}/admin/usuarios/${usuario.id}" texto="Remover usuario"
+                                  variante="error" classe="flex flex-wrap items-center gap-3 mt-5"
+                                  confirmacao="Remover este usuario? A acao nao pode ser desfeita." />
                                     </div>
                 </article>
 
                 <c:if test="${usuario.role eq 'ROLE_MORADOR'}">
                     <article class="card">
                         <div class="card-body">
-                        <div class="section-header">
-                            <div>
-                                <p class="eyebrow">Vinculos</p>
-                                <h2>Unidades do morador</h2>
-                            </div>
-                        </div>
+                        <ui:card-head titulo="Unidades do morador" descricao="Vinculos" />
 
                         <c:choose>
                             <c:when test="${empty unidadesMorador}">
-                                <c:set var="vazioMensagem" value="Nenhuma unidade vinculada." />
-                                <c:set var="vazioCompacto" value="${true}" />
-                                <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                                <ui:vazio mensagem="Nenhuma unidade vinculada." compacto="true" />
                             </c:when>
                             <c:otherwise>
-                                <div class="stack-list">
+                                <div class="grid gap-4">
                                     <c:forEach items="${unidadesMorador}" var="unidade">
-                                        <div class="list-row">
+                                        <div class="flex items-center justify-between gap-3 rounded-xl border border-base-content/10 bg-base-100 px-4.5 py-4 transition duration-200">
                                             <div>
                                                 <strong>${unidade.identificacao}</strong>
-                                                <span>${unidade.blocoIdentificacao} - Andar ${unidade.andar}</span>
+                                                <span class="text-base-content/60">${unidade.blocoIdentificacao} - Andar ${unidade.andar}</span>
                                             </div>
-                                            <form method="post" action="${ctx}/admin/moradores/${usuario.id}/unidades/${unidade.id}" data-confirm="Desvincular esta unidade do morador?" class="inline-form">
-                                                <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                                                <input type="hidden" name="_method" value="delete">
+                                            <ui:acao-form acao="${ctx}/admin/moradores/${usuario.id}/unidades/${unidade.id}"
+                                                          texto="Desvincular" variante="error" classe="flex flex-wrap items-center gap-3"
+                                                          confirmacao="Desvincular esta unidade do morador?">
                                                 <c:if test="${not empty blocoSelecionadoId}">
                                                     <input type="hidden" name="blocoId" value="${blocoSelecionadoId}">
                                                 </c:if>
-                                                <button type="submit" class="btn btn-error">Desvincular</button>
-                                            </form>
+                                            </ui:acao-form>
                                         </div>
                                     </c:forEach>
                                 </div>
@@ -98,9 +68,8 @@
 
                         <div class="divider"></div>
 
-                        <form method="get" action="${ctx}/admin/usuarios/${usuario.id}" class="stack-form compact-form">
-                            <label class="field">
-                                <span>Selecionar bloco para vincular</span>
+                        <form method="get" action="${ctx}/admin/usuarios/${usuario.id}" class="grid gap-4 mt-4">
+                            <ui:campo rotulo="Selecionar bloco para vincular">
                                 <select class="select w-full" name="blocoId" data-auto-submit>
                                     <option value="">Escolha um bloco</option>
                                     <c:forEach items="${blocosDisponiveis}" var="bloco">
@@ -109,16 +78,15 @@
                                         </option>
                                     </c:forEach>
                                 </select>
-                            </label>
+                            </ui:campo>
                         </form>
 
                         <c:if test="${not empty unidadesBloco}">
-                            <form method="post" action="${ctx}/admin/moradores/${usuario.id}/unidades" class="stack-form compact-form">
+                            <form method="post" action="${ctx}/admin/moradores/${usuario.id}/unidades" class="grid gap-4 mt-4">
                                 <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
                                 <input type="hidden" name="_method" value="put">
                                 <input type="hidden" name="blocoId" value="${blocoSelecionadoId}">
-                                <label class="field">
-                                    <span>Selecionar unidade</span>
+                                <ui:campo rotulo="Selecionar unidade">
                                     <select class="select w-full" name="unidadeId" required>
                                         <option value="">Escolha uma unidade</option>
                                         <c:forEach items="${unidadesBloco}" var="unidade">
@@ -128,7 +96,7 @@
                                             </option>
                                         </c:forEach>
                                     </select>
-                                </label>
+                                </ui:campo>
                                 <button type="submit" class="btn btn-primary">Vincular unidade</button>
                             </form>
 
@@ -147,9 +115,7 @@
                                             <td>${unidade.identificacao}</td>
                                             <td>${unidade.andar}</td>
                                             <td>
-                                                <span class="badge ${unidade.vinculadaAoMorador ? 'badge-success' : 'badge-neutral'}">
-                                                    ${unidade.vinculadaAoMorador ? 'Vinculada' : 'Disponivel'}
-                                                </span>
+                                                <ui:badge variante="${unidade.vinculadaAoMorador ? 'success' : 'neutral'}">${unidade.vinculadaAoMorador ? 'Vinculada' : 'Disponivel'}</ui:badge>
                                             </td>
                                         </tr>
                                     </c:forEach>
@@ -164,32 +130,23 @@
                 <c:if test="${usuario.role eq 'ROLE_COLABORADOR'}">
                     <article class="card">
                         <div class="card-body">
-                        <div class="section-header">
-                            <div>
-                                <p class="eyebrow">Escopo</p>
-                                <h2>Tipos de chamado do colaborador</h2>
-                            </div>
-                        </div>
+                        <ui:card-head titulo="Tipos de chamado do colaborador" descricao="Escopo" />
 
                         <c:choose>
                             <c:when test="${empty tiposChamadoColaborador}">
-                                <c:set var="vazioMensagem" value="Nenhum tipo de chamado vinculado." />
-                                <c:set var="vazioCompacto" value="${true}" />
-                                <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                                <ui:vazio mensagem="Nenhum tipo de chamado vinculado." compacto="true" />
                             </c:when>
                             <c:otherwise>
-                                <div class="stack-list">
+                                <div class="grid gap-4">
                                     <c:forEach items="${tiposChamadoColaborador}" var="tipoChamado">
-                                        <div class="list-row">
+                                        <div class="flex items-center justify-between gap-3 rounded-xl border border-base-content/10 bg-base-100 px-4.5 py-4 transition duration-200">
                                             <div>
                                                 <strong>${tipoChamado.titulo}</strong>
-                                                <span>Prazo: ${tipoChamado.prazoHoras}h</span>
+                                                <span class="text-base-content/60">Prazo: ${tipoChamado.prazoHoras}h</span>
                                             </div>
-                                            <form method="post" action="${ctx}/admin/colaboradores/${usuario.id}/tipos-chamado/${tipoChamado.id}" data-confirm="Desvincular este tipo de chamado do colaborador?" class="inline-form">
-                                                <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                                                <input type="hidden" name="_method" value="delete">
-                                                <button type="submit" class="btn btn-error">Desvincular</button>
-                                            </form>
+                                            <ui:acao-form acao="${ctx}/admin/colaboradores/${usuario.id}/tipos-chamado/${tipoChamado.id}"
+                                                          texto="Desvincular" variante="error" classe="flex flex-wrap items-center gap-3"
+                                                          confirmacao="Desvincular este tipo de chamado do colaborador?" />
                                         </div>
                                     </c:forEach>
                                 </div>
@@ -198,11 +155,10 @@
 
                         <div class="divider"></div>
 
-                        <form method="post" action="${ctx}/admin/colaboradores/${usuario.id}/tipos-chamado" class="stack-form compact-form">
+                        <form method="post" action="${ctx}/admin/colaboradores/${usuario.id}/tipos-chamado" class="grid gap-4 mt-4">
                             <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
                             <input type="hidden" name="_method" value="put">
-                            <label class="field">
-                                <span>Selecionar tipo de chamado</span>
+                            <ui:campo rotulo="Selecionar tipo de chamado">
                                 <select class="select w-full" name="tipoChamadoId" required>
                                     <option value="">Escolha um tipo</option>
                                     <c:forEach items="${tiposChamadoDisponiveis}" var="tipoChamado">
@@ -213,16 +169,12 @@
                                         </option>
                                     </c:forEach>
                                 </select>
-                            </label>
+                            </ui:campo>
                             <button type="submit" class="btn btn-primary">Vincular tipo de chamado</button>
                         </form>
                                             </div>
                     </article>
                 </c:if>
             </section>
-        </main>
-    </div>
-</div>
-<%@ include file="/WEB-INF/jsp/fragments/scripts.jspf" %>
-</body>
-</html>
+</ui:shell>
+<ui:shell-fim />

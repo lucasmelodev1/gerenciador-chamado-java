@@ -1,33 +1,32 @@
+<%@ page pageEncoding="UTF-8" %>
 <%--
     Bloco compartilhado do calendario de reservas (admin e morador).
     Variaveis esperadas: agendaModo (admin|morador), agendaBase, agendaEyebrow, agendaTitulo,
     viewAtual, periodoReferencia, periodoLabel, periodoAnterior, periodoSeguinte, areasFiltro, reservas.
+
+    O detalhe da reserva clicada NAO fica aqui: e o `reservas-agenda-paineis.jspf`, que cada
+    agenda inclui depois de `</main>` (o drawer e o dialogo precisam nascer fora de
+    `.app-page`).
 --%>
 <section class="card">
     <div class="card-body">
-    <div class="card-body">
-    <div class="section-header">
-        <div>
-            <p class="eyebrow">${agendaEyebrow}</p>
-            <h2>${agendaTitulo}</h2>
-        </div>
+    <ui:card-head titulo="${agendaTitulo}" descricao="${agendaEyebrow}">
         <a href="${agendaBase}" class="btn">Ver lista</a>
-    </div>
+    </ui:card-head>
 
     <div class="mb-4 flex flex-wrap items-end justify-between gap-4">
-        <label class="field">
-            <span>Filtrar por area</span>
+        <ui:campo rotulo="Filtrar por área">
             <select class="select w-full" id="filtro-area">
-                <option value="">Todas as areas</option>
+                <option value="">Todas as áreas</option>
                 <c:forEach items="${areasFiltro}" var="area">
                     <option value="${area.id}">${fn:escapeXml(area.nome)}</option>
                 </c:forEach>
             </select>
-        </label>
+        </ui:campo>
 
         <div class="flex flex-wrap items-center gap-3">
-            <c:set var="rotuloAnterior" value="${viewAtual eq 'semana' ? 'Semana anterior' : 'Mes anterior'}" />
-            <c:set var="rotuloSeguinte" value="${viewAtual eq 'semana' ? 'Proxima semana' : 'Proximo mes'}" />
+            <c:set var="rotuloAnterior" value="${viewAtual eq 'semana' ? 'Semana anterior' : 'Mês anterior'}" />
+            <c:set var="rotuloSeguinte" value="${viewAtual eq 'semana' ? 'Próxima semana' : 'Próximo mês'}" />
 
             <%-- Navegacao de periodo: join (a daisyUI nao tem componente de paginacao) --%>
             <div class="join">
@@ -52,7 +51,10 @@
          data-view="${viewAtual}"
          data-referencia="${periodoReferencia}"
          data-base-url="${agendaBase}"
-         data-modo="${agendaModo}"></div>
+         data-modo="${agendaModo}"
+         <%-- O JS nao conhece o id do painel de detalhe: ele o le daqui (o
+              `#drawer-reserva` e declarado pelo `reservas-agenda-paineis.jspf`). --%>
+         data-painel-detalhe="drawer-reserva"></div>
 
     <div id="reservas-data" class="reservas-data">
         <c:forEach items="${reservas}" var="r">
@@ -69,43 +71,6 @@
                   data-fim-formatado="${fn:escapeXml(r.fimFormatado)}"
                   data-motivo="${fn:escapeXml(r.motivoNegacao)}"></span>
         </c:forEach>
-    </div>
-    </div>
-    </div>
-</section>
-
-<section id="reserva-detalhe" class="card reserva-detalhe" hidden>
-    <div class="card-body">
-    <div class="card-body">
-    <div class="section-header">
-        <div>
-            <p class="eyebrow">Reserva</p>
-            <h3 class="reserva-titulo"></h3>
-        </div>
-        <button type="button" class="btn" id="reserva-fechar">Fechar</button>
-    </div>
-    <p class="reserva-meta"></p>
-    <p class="reserva-motivo"></p>
-    <div class="button-row">
-        <c:if test="${agendaModo eq 'admin'}">
-            <form id="form-aprovar" method="post" hidden>
-                <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                <input type="hidden" name="_method" value="patch">
-                <button type="submit" class="btn btn-primary">Aprovar</button>
-            </form>
-            <form id="form-negar" method="post" class="inline-panel" hidden>
-                <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                <input type="hidden" name="_method" value="patch">
-                <input class="input w-full" type="text" name="motivo" maxlength="255" placeholder="Motivo da negacao" required>
-                <button type="submit" class="btn btn-link">Negar</button>
-            </form>
-        </c:if>
-        <form id="form-cancelar" method="post" hidden data-confirm="Cancelar esta reserva?">
-            <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-            <input type="hidden" name="_method" value="delete">
-            <button type="submit" class="btn btn-link">Cancelar</button>
-        </form>
-    </div>
     </div>
     </div>
 </section>

@@ -28,15 +28,10 @@
     <link rel="stylesheet" href="${ctx}/css/app.build.css">
     <link rel="stylesheet" href="${ctx}/css/custom.css">
 
-    <%-- LEGADO: mantido durante a transicao (P2..P4). base.css define os tokens usados
-         por layout/components/calendar e as telas ainda nao reescritas dependem dessas
-         classes; remover agora deixaria ~20 telas sem estilo. Remocao progressiva:
-         S10 (components.css) e S17 (base, layout, responsive).
-         Ver baseline/EVIDENCE.md > S7. --%>
-    <link rel="stylesheet" href="${ctx}/css/base.css">
-    <link rel="stylesheet" href="${ctx}/css/layout.css">
-    <link rel="stylesheet" href="${ctx}/css/components.css">
-    <link rel="stylesheet" href="${ctx}/css/responsive.css">
+    <%-- Os quatro arquivos legados (base/layout/components/responsive.css) foram removidos
+         na S33: o que eles faziam vive nos utilitarios do markup ou no `custom.css`
+         (fundacao do shell, grades, timeline, cartao de metrica). O guard
+         `scripts/ui-legado.sh check` reprova quem reintroduzir classe ou arquivo deles. --%>
 
     <c:if test="${calendarAssets}">
         <link rel="stylesheet" href="${ctx}/css/vendor/fullcalendar/skeleton.min.css">

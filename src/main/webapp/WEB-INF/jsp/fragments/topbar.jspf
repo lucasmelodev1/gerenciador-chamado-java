@@ -13,9 +13,7 @@
     <div class="navbar-start gap-1">
         <label for="app-drawer" class="btn btn-square btn-sm btn-ghost lg:hidden"
                aria-controls="app-drawer" aria-label="Abrir menu">
-            <c:set var="icone" value="menu" />
-            <c:set var="iconeClasse" value="size-5" />
-            <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+            <ui:icone nome="menu" classe="size-5" />
         </label>
 
         <%-- Separador vertical: o `divider divider-horizontal` da daisyUI exige altura do
@@ -27,9 +25,7 @@
 
     <div class="navbar-end gap-2">
         <span class="badge badge-ghost badge-sm gap-1">
-            <c:set var="icone" value="perfil" />
-            <c:set var="iconeClasse" value="size-3.5 shrink-0" />
-            <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+            <ui:icone nome="perfil" classe="size-3.5 shrink-0" />
             ${currentUserRoleLabel}
         </span>
     </div>

@@ -11,7 +11,9 @@
                 var query = input.value.trim().toLowerCase();
                 window.AppDom.bySelector("tbody tr", table).forEach(function (row) {
                     var text = row.textContent.toLowerCase();
-                    row.classList.toggle("is-hidden", query.length > 0 && text.indexOf(query) === -1);
+                    // `hidden` e o utilitario do Tailwind: substitui o `.is-hidden` do
+                    // base.css legado (F1 da migracao do CSS legado).
+                    row.classList.toggle("hidden", query.length > 0 && text.indexOf(query) === -1);
                 });
             });
         });

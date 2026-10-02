@@ -1,32 +1,17 @@
+<%@ page pageEncoding="UTF-8" %>
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
-<body data-page="admin-escopo-colaborador">
-<div class="drawer lg:drawer-open">
-    <%@ include file="/WEB-INF/jsp/fragments/sidebar.jspf" %>
-    <div class="drawer-content">
-        <%@ include file="/WEB-INF/jsp/fragments/topbar.jspf" %>
-        <main id="conteudo-principal" class="page-content">
-            <%@ include file="/WEB-INF/jsp/fragments/alerts.jspf" %>
+<ui:shell dataPagina="admin-escopo-colaborador">
 
-            <section class="two-column-grid">
+            <section class="app-grade-lateral">
                 <article class="card">
                     <div class="card-body">
-                    <div class="section-header">
-                        <div>
-                            <p class="eyebrow">Operacao</p>
-                            <h2>Designar colaborador por tipo</h2>
-                        </div>
-                    </div>
+                    <ui:card-head titulo="Designar colaborador por tipo" descricao="Operacao" />
 
-                    <form method="get" action="${ctx}/admin/escopo-colaborador" class="stack-form compact-form">
-                        <label class="field">
-                            <span>Buscar por e-mail</span>
+                    <form method="get" action="${ctx}/admin/escopo-colaborador" class="grid gap-4 mt-4">
+                        <ui:campo rotulo="Buscar por e-mail">
                             <input class="input w-full" type="text" name="colaboradorEmail" value="${filtroColaboradorEmail}" placeholder="Ex.: ana" />
-                        </label>
-                        <label class="field">
-                            <span>Colaborador</span>
+                        </ui:campo>
+                        <ui:campo rotulo="Colaborador">
                             <select class="select w-full" name="colaboradorId" data-auto-submit>
                                 <option value="">Escolha um colaborador</option>
                                 <c:forEach items="${colaboradoresDisponiveis}" var="colaborador">
@@ -35,8 +20,8 @@
                                     </option>
                                 </c:forEach>
                             </select>
-                        </label>
-                        <div class="button-row">
+                        </ui:campo>
+                        <div class="flex flex-wrap items-center gap-3">
                             <button type="submit" class="btn btn-primary">Buscar colaborador</button>
                             <a href="${ctx}/admin/escopo-colaborador" class="btn">Limpar</a>
                         </div>
@@ -44,33 +29,29 @@
 
                     <c:if test="${not empty colaboradorSelecionado}">
                         <div class="divider"></div>
-                        <div class="list-row">
+                        <div class="flex items-center justify-between gap-3 rounded-xl border border-base-content/10 bg-base-100 px-4.5 py-4 transition duration-200">
                             <div>
                                 <strong>${colaboradorSelecionado.nome}</strong>
-                                <span>${colaboradorSelecionado.email}</span>
+                                <span class="text-base-content/60">${colaboradorSelecionado.email}</span>
                             </div>
                             <a href="${ctx}/admin/usuarios/${colaboradorSelecionado.id}" class="btn">Abrir cadastro</a>
                         </div>
 
                         <c:choose>
                             <c:when test="${empty tiposChamadoColaborador}">
-                                <c:set var="vazioMensagem" value="Este colaborador ainda nao possui tipos de chamado vinculados." />
-                                <c:set var="vazioCompacto" value="${true}" />
-                                <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                                <ui:vazio mensagem="Este colaborador ainda nao possui tipos de chamado vinculados." compacto="true" />
                             </c:when>
                             <c:otherwise>
-                                <div class="stack-list">
+                                <div class="grid gap-4">
                                     <c:forEach items="${tiposChamadoColaborador}" var="tipoChamado">
-                                        <div class="list-row">
+                                        <div class="flex items-center justify-between gap-3 rounded-xl border border-base-content/10 bg-base-100 px-4.5 py-4 transition duration-200">
                                             <div>
                                                 <strong>${tipoChamado.titulo}</strong>
-                                                <span>Prazo: ${tipoChamado.prazoHoras}h</span>
+                                                <span class="text-base-content/60">Prazo: ${tipoChamado.prazoHoras}h</span>
                                             </div>
-                                            <form method="post" action="${ctx}/admin/colaboradores/${colaboradorSelecionado.id}/tipos-chamado/${tipoChamado.id}?dashboard=true" data-confirm="Desvincular este tipo de chamado do colaborador?" class="inline-form">
-                                                <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
-                                                <input type="hidden" name="_method" value="delete">
-                                                <button type="submit" class="btn btn-error">Desvincular</button>
-                                            </form>
+                                            <ui:acao-form acao="${ctx}/admin/colaboradores/${colaboradorSelecionado.id}/tipos-chamado/${tipoChamado.id}?dashboard=true"
+                                                          texto="Desvincular" variante="error" classe="flex flex-wrap items-center gap-3"
+                                                          confirmacao="Desvincular este tipo de chamado do colaborador?" />
                                         </div>
                                     </c:forEach>
                                 </div>
@@ -79,11 +60,10 @@
 
                         <div class="divider"></div>
 
-                        <form method="post" action="${ctx}/admin/colaboradores/${colaboradorSelecionado.id}/tipos-chamado?dashboard=true" class="stack-form compact-form">
+                        <form method="post" action="${ctx}/admin/colaboradores/${colaboradorSelecionado.id}/tipos-chamado?dashboard=true" class="grid gap-4 mt-4">
                             <%@ include file="/WEB-INF/jsp/fragments/csrf.jspf" %>
                             <input type="hidden" name="_method" value="put">
-                            <label class="field">
-                                <span>Selecionar tipo de chamado</span>
+                            <ui:campo rotulo="Selecionar tipo de chamado">
                                 <select class="select w-full" name="tipoChamadoId" required>
                                     <option value="">Escolha um tipo</option>
                                     <c:forEach items="${tiposChamadoDisponiveis}" var="tipoChamado">
@@ -94,7 +74,7 @@
                                         </option>
                                     </c:forEach>
                                 </select>
-                            </label>
+                            </ui:campo>
                             <button type="submit" class="btn btn-primary">Vincular tipo de chamado</button>
                         </form>
                     </c:if>
@@ -103,18 +83,11 @@
 
                 <article class="card">
                     <div class="card-body">
-                    <div class="section-header">
-                        <div>
-                            <p class="eyebrow">Consulta</p>
-                            <h2>Colaboradores encontrados</h2>
-                        </div>
-                    </div>
+                    <ui:card-head titulo="Colaboradores encontrados" descricao="Consulta" />
 
                     <c:choose>
                         <c:when test="${empty colaboradoresDisponiveis}">
-                            <c:set var="vazioTitulo" value="Nenhum colaborador encontrado" />
-                            <c:set var="vazioMensagem" value="Ajuste o prefixo do e-mail para localizar outro colaborador." />
-                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                            <ui:vazio titulo="Nenhum colaborador encontrado" mensagem="Ajuste o prefixo do e-mail para localizar outro colaborador." />
                         </c:when>
                         <c:otherwise>
                             <div class="overflow-x-auto">
@@ -123,7 +96,7 @@
                                     <tr>
                                         <th>Nome</th>
                                         <th>Email</th>
-                                        <th></th>
+                                        <th><span class="sr-only">Ações</span></th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -137,8 +110,8 @@
                                         <tr>
                                             <td>${colaborador.nome}</td>
                                             <td>${colaborador.email}</td>
-                                            <td class="cell-actions">
-                                                <a href="${selecionarColaboradorUrl}" class="btn btn-link">Selecionar</a>
+                                            <td class="app-tabela-acoes">
+                                                <ui:acao-link href="${selecionarColaboradorUrl}" texto="Selecionar" />
                                             </td>
                                         </tr>
                                     </c:forEach>
@@ -150,9 +123,5 @@
                                     </div>
                 </article>
             </section>
-        </main>
-    </div>
-</div>
-<%@ include file="/WEB-INF/jsp/fragments/scripts.jspf" %>
-</body>
-</html>
+</ui:shell>
+<ui:shell-fim />

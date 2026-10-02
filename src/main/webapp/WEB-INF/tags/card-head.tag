@@ -16,6 +16,10 @@
     Sem corpo (tela sem acao primaria, ex.: chamados do admin) o cabecalho sai so com
     titulo e descricao, e o filete continua la.
 
+    `subtitulo` (opcional) e a linha de apoio que algumas telas escreviam como
+    `<p class="section-subtitle">` dentro do cabecalho legado — a classe nem existe no CSS,
+    entao o texto saia como paragrafo simples. Aqui ele sai com utilitarios do Tailwind.
+
     NAO reusa `.section-header` do legado: aquela classe carrega depois de
     `custom.css` e a `responsive.css` a empilha abaixo de 900px — ver o comentario da
     secao "Cabecalho de card de listagem" em `custom.css`.
@@ -24,13 +28,17 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ attribute name="titulo" required="true" %>
 <%@ attribute name="descricao" required="false" %>
+<%@ attribute name="subtitulo" required="false" %>
 
 <div class="app-card-head">
     <div class="app-card-head__texto">
         <c:if test="${not empty descricao}">
-            <p class="eyebrow">${descricao}</p>
+            <p class="text-xs tracking-eyebrow text-base-content/60 uppercase">${descricao}</p>
         </c:if>
         <h2>${titulo}</h2>
+        <c:if test="${not empty subtitulo}">
+            <p class="text-sm opacity-70">${subtitulo}</p>
+        </c:if>
     </div>
     <jsp:doBody />
 </div>

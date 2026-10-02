@@ -21,7 +21,7 @@
     A COR NAO E DECIDIDA AQUI: quem chama escolhe a variante a partir do valor do
     dominio (ex.: `<ui:badge variante="${area.status eq 'Ativo' ? 'success' : 'neutral'}">`).
     O mapeamento tem de ser literal no JSP, que e o mesmo motivo documentado em
-    `fragments/reserva-status.jspf`.
+    `ui:reserva-status`.
 --%>
 <%@ tag pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>

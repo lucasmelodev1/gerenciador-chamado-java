@@ -12,19 +12,25 @@
     function initPasswordToggle() {
         window.AppDom.bySelector("[data-password-toggle]").forEach(function (button) {
             button.addEventListener("click", function () {
-                var container = button.closest(".password-field");
-                if (!container) {
+                var campo = button.closest("[data-password-campo]");
+                if (!campo) {
                     return;
                 }
 
-                var input = container.querySelector("[data-password-input]");
+                var input = campo.querySelector("[data-password-input]");
                 if (!input) {
                     return;
                 }
 
-                var visible = input.type === "text";
-                input.type = visible ? "password" : "text";
-                button.textContent = visible ? "Mostrar" : "Ocultar";
+                var oculta = input.type === "password";
+                input.type = oculta ? "text" : "password";
+
+                // O glifo (olho / olho cortado) e escolhido pelo CSS a partir de `aria-pressed`;
+                // aqui so o estado e o rotulo acessivel mudam.
+                var rotulo = oculta ? "Ocultar senha" : "Mostrar senha";
+                button.setAttribute("aria-pressed", oculta ? "true" : "false");
+                button.setAttribute("aria-label", rotulo);
+                button.setAttribute("data-tip", rotulo);
             });
         });
     }
