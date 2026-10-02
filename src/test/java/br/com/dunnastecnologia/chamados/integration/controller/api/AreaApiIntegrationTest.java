@@ -8,6 +8,8 @@ import br.com.dunnastecnologia.chamados.domain.model.StatusArea;
 import br.com.dunnastecnologia.chamados.infrastructure.exception.ResourceNotFoundException;
 import br.com.dunnastecnologia.chamados.infrastructure.exception.UnauthorizedOperationException;
 import br.com.dunnastecnologia.chamados.integration.support.IntegrationTestSupport;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,9 @@ class AreaApiIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
     private AreaUseCase areaUseCase;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     private Authentication adminAuthentication;
     private AuthenticatedUser admin;
@@ -142,6 +147,9 @@ class AreaApiIntegrationTest extends IntegrationTestSupport {
                         .with(autenticacao(adminAuthentication)))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/areas"));
+
+        entityManager.flush();
+        entityManager.clear();
 
         assertThrows(ResourceNotFoundException.class, () -> areaUseCase.buscarAreaPorId(admin, areaId));
     }

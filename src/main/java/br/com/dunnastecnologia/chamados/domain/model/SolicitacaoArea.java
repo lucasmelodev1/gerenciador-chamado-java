@@ -13,16 +13,18 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.SoftDelete;
-import org.hibernate.annotations.SoftDeleteType;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "solicitacoes_area")
-@SoftDelete(strategy = SoftDeleteType.TIMESTAMP, columnName = "deleted_at")
+@SQLRestriction("deleted_at is null")
+@Audited
 @Getter
 @Setter
 public class SolicitacaoArea {
@@ -37,10 +39,12 @@ public class SolicitacaoArea {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "morador_id", nullable = false)
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Morador morador;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "unidade_id", nullable = false)
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Unidade unidade;
 
     @Column(nullable = false)
@@ -63,5 +67,8 @@ public class SolicitacaoArea {
     @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
 }

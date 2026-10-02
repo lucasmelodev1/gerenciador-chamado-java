@@ -17,6 +17,7 @@ public final class ValidationLimits {
     public static final int COMENTARIO_MENSAGEM_MAX_LENGTH = 255;
     public static final int ANEXO_NOME_ARQUIVO_MAX_LENGTH = 255;
     public static final int ANEXO_CONTENT_TYPE_MAX_LENGTH = 255;
+    public static final int REVISAO_USUARIO_ROLE_MAX_LENGTH = 32;
     public static final long ANEXO_TAMANHO_MAX_BYTES = 5L * 1024L * 1024L;
 
     private ValidationLimits() {

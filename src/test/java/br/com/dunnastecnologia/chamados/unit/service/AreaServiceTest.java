@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -174,13 +175,15 @@ class AreaServiceTest {
     }
 
     @Test
-    void removerAreaDeveDelegarSoftDeleteParaRepositorio() {
+    void removerAreaDeveMarcarDeletedAtEPersistir() {
         Area area = area("Piscina", StatusArea.ATIVO);
         when(areaRepository.findById(area.getId())).thenReturn(Optional.of(area));
+        when(areaRepository.save(area)).thenReturn(area);
 
         areaService.removerArea(administradorAutenticado(), area.getId());
 
-        verify(areaRepository).delete(area);
+        assertNotNull(area.getDeletedAt());
+        verify(areaRepository).save(area);
     }
 
     @Test
