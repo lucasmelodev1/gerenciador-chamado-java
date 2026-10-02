@@ -1256,6 +1256,16 @@ como vazio e o de cancelamento ESTA, que o campo usa o titulo como placeholder, 
 `border` e que `.app-dialog-corpo--vazio` zera o padding. Self-tests: **15/15** markup e
 **16/16** CSS.
 
+### Correcao: o corpo do dialogo sem respiro vertical
+
+O `padding: 1.25rem` do corpo e dos quatro lados abria um vao entre a descricao do topo e o
+primeiro campo. Virou `padding: 0 1.25rem 1rem`: o respiro de cima ja vem do `padding` do
+topo (que fecha o titulo e a descricao) e o de baixo, do rodape. O `--vazio` continua zerando
+tudo.
+
+O `ui-tabelas.sh` passou a conferir que o primeiro valor do `padding` do corpo e zero, com
+sabotagem propria. Self-test de CSS: **17/17**.
+
 ### Verificacao
 
 | # | Check | Result |

@@ -248,6 +248,10 @@ e pela sombra, e como o corpo e opcional um filete viraria uma linha solta numa 
 pura. Um dialogo sem campos sai com `app-dialog-corpo--vazio` (padding zero) para nao sobrar
 faixa em branco entre o titulo e os botoes.
 
+O corpo tambem **nao tem respiro vertical de topo**: o respiro de cima ja vem do `padding` do
+topo (que fecha o titulo e a descricao) e o de baixo, do rodape. Com `padding` cheio dos quatro
+lados abria um vao entre a descricao e o primeiro campo.
+
 O painel tem **altura de conteudo** (`height: fit-content` + `max-height` de viewport): cresce
 com o formulario, para num teto e so entao o corpo rola. Sem o `fit-content` o `inset: 0` do
 `position: fixed` estica o painel entre top e bottom e o dialogo ocupa a tela inteira.

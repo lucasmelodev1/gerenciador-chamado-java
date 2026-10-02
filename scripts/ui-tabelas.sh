@@ -467,6 +467,14 @@ def verificar(custom, build):
     vazio = bloco(custom, ".app-dialog-corpo--vazio")
     check(vazio is not None and re.search(r'padding\s*:\s*0', vazio or "") is not None,
           "falta `.app-dialog-corpo--vazio` com padding 0 (dialogo sem campos ficaria com faixa em branco)")
+    corpo = bloco(custom, ".app-dialog-corpo")
+    if corpo is None:
+        problemas.append("custom.css sem a regra .app-dialog-corpo")
+    else:
+        respiro = re.search(r'padding\s*:\s*([^;]+);', corpo)
+        topo = respiro.group(1).strip().split()[0] if respiro else None
+        check(topo is not None and re.match(r'^0(\.\d+)?(rem|px|em)?$', topo) is not None,
+              f"o respiro de topo do corpo do dialogo deveria ser zero (o topo ja fecha o titulo); veio {topo!r}")
     check(bloco(custom, ".app-dialog[data-drawer-aberto]") is not None,
           "falta o estado aberto do dialogo")
     check(bloco(custom, ".app-dialog-rodape") is not None, "falta o rodape do dialogo")
@@ -543,6 +551,8 @@ SABOTAGENS = [
     ("filete de volta no rodape do dialogo",
      lambda c: c.replace("    gap: 0.5rem;\n    padding: 1rem 1.25rem;\n}\n\n/* Dialogo sem campos",
                          "    gap: 0.5rem;\n    padding: 1rem 1.25rem;\n    border-top: 1px solid var(--color-base-300);\n}\n\n/* Dialogo sem campos", 1)),
+    ("corpo do dialogo volta a ter respiro cheio",
+     lambda c: c.replace("    padding: 0 1.25rem 1rem;", "    padding: 1.25rem;", 1)),
     ("corpo vazio volta a ter padding",
      lambda c: re.sub(r'\.app-dialog-corpo--vazio \{[^}]*\}', '', c, count=1)),
     ("dialogo deixa de ter altura de conteudo",
