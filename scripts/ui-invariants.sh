@@ -14,12 +14,18 @@
 #   - data-sidebar, data-sidebar-toggle, data-sidebar-backdrop  -> removed by S7 (daisyUI drawer)
 #   - the split between data-confirm and inline onsubmit confirm -> normalised by S13
 #   - legacy presentation classes (data-table, status-pill, ...)  -> deleted by S7/S10/S17
+#
+# Contagem de markup repetido NAO e congelada (ver `collect_form_contract`): extrair um
+# formulario ou um include repetido para um componente/tag derruba o total sem perder
+# invariante nenhum, e um piso de contagem leria isso como regressao. O que se congela e
+# ESTRUTURA (todo form nao-GET tem CSRF, todo `_method`/`data-confirm` vive num form,
+# toda pagina declara o marcador do <body>).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-WEBAPP="src/main/webapp"
+WEBAPP="${WEBAPP:-src/main/webapp}"
 
 # Os coletores contam SO markup. O `CONTEXT.md` de cada diretorio vive dentro de
 # `src/main/webapp` e, sem este filtro, escrever um `name="_method"` ou um `data-*` na
@@ -41,7 +47,6 @@ FROZEN_HOOKS=(
     data-drawer-editar data-drawer-form data-drawer-titulo
     data-detalhe
     data-alert data-dismiss-alert
-    data-page
     data-view data-referencia data-base-url data-modo
     data-id data-area-id data-start data-end data-area data-morador data-unidade data-status
     data-inicio-formatado data-fim-formatado data-motivo
@@ -78,10 +83,7 @@ collect_action_urls() {
 }
 
 collect_counts() {
-    printf 'method_inputs=%s\n'  "$(grep -rho 'name="_method"' "${MARKUP[@]}" "$WEBAPP" | wc -l | tr -d ' ')"
-    printf 'csrf_includes=%s\n'  "$(grep -rho 'fragments/csrf.jspf' "${MARKUP[@]}" "$WEBAPP" | wc -l | tr -d ' ')"
     printf 'multipart_forms=%s\n' "$(grep -rho 'enctype="multipart/form-data"' "${MARKUP[@]}" "$WEBAPP" | wc -l | tr -d ' ')"
-    printf 'confirmations=%s\n'  "$(( $(grep -rho 'data-confirm' "${MARKUP[@]}" "$WEBAPP" | wc -l) + $(grep -rho 'onsubmit="return confirm' "${MARKUP[@]}" "$WEBAPP" | wc -l) ))"
     printf 'utf8_decls=%s\n'     "$(grep -rhoE 'charset=UTF-8|pageEncoding="UTF-8"' "${MARKUP[@]}" "$WEBAPP" | wc -l | tr -d ' ')"
     printf 'jacoco_includes=%s\n' "$(grep -c '<include>br/com/dunnastecnologia/chamados/\(domain\|infrastructure\)' pom.xml)"
     printf 'jacoco_min=%s\n'     "$(grep -A3 COVEREDRATIO pom.xml | grep -oE '<minimum>[0-9.]+' | grep -oE '[0-9.]+')"
@@ -99,6 +101,109 @@ collect_calendar() {
     for sel in "${FROZEN_CALENDAR[@]}"; do
         printf '%s\t%s\n' "$(grep -rhoF "$sel" "${MARKUP[@]}" "$WEBAPP" | wc -l | tr -d ' ')" "$sel"
     done
+}
+
+# ---------------------------------------------------------------- estrutura
+
+# Contagem de forms/CSRF e um piso ruim: extrair um formulario repetido para um
+# componente derruba o numero sem perder invariante nenhum. Estas checagens olham a
+# ESTRUTURA — o que precisa ser verdade em qualquer arranjo:
+#   1. todo <form> NAO-GET carrega o `csrf.jspf` (ou o input `${_csrf.*}`) no proprio corpo;
+#   2. todo `name="_method"` vive dentro de um <form> nao-GET;
+#   3. todo `data-confirm` esta dentro de um <form> (confirmacao de envio);
+#   4. nenhum `<form method="get">` carrega `_method` (sobrescrita de metodo sem sentido).
+# Comentarios JSP/HTML saem antes da leitura: os comentarios dos tags citam markup.
+collect_form_contract() {
+    python3 - "$WEBAPP" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+raiz = Path(sys.argv[1])
+arquivos = sorted(p for ext in ("*.jsp", "*.jspf", "*.tag") for p in raiz.rglob(ext))
+
+comentario_jsp = re.compile(r"<%--.*?--%>", re.S)
+comentario_html = re.compile(r"<!--.*?-->", re.S)
+# Diretivas (`<%@ ... %>`) sao metadados: o `description` de um `attribute` pode citar um
+# hook ("texto do data-confirm") e isso nao e markup. A checagem de CSRF, porem, precisa
+# do `<%@ include file=".../csrf.jspf" %>`, entao as diretivas so saem na leitura de hooks.
+diretiva = re.compile(r"<%@.*?%>", re.S)
+form = re.compile(r"<form\b[^>]*>.*?</form>", re.S)
+
+violacoes = []
+nao_get = get = methods = 0
+data_confirm = data_confirm_fora = 0
+
+for arq in arquivos:
+    bruto = comentario_html.sub("", comentario_jsp.sub("", arq.read_text(encoding="utf-8")))
+    sem_diretiva = diretiva.sub("", bruto)
+    sem_form = form.sub("", sem_diretiva)
+
+    for bloco in form.findall(bruto):
+        abertura = bloco[: bloco.index(">") + 1]
+        proibido = re.findall(r'name="_method"', bloco)
+        if re.search(r'method\s*=\s*"get"', abertura, re.I):
+            get += 1
+            if proibido:
+                violacoes.append(f"{arq}: form GET com _method -> {abertura.strip()[:70]}")
+            continue
+
+        nao_get += 1
+        if "fragments/csrf.jspf" not in bloco and "${_csrf.parameterName}" not in bloco:
+            violacoes.append(f"{arq}: form nao-GET sem csrf.jspf -> {abertura.strip()[:70]}")
+        methods += len(proibido)
+
+    if re.search(r'name="_method"', sem_form):
+        violacoes.append(f"{arq}: name=\"_method\" fora de <form>")
+
+    data_confirm += sem_diretiva.count("data-confirm")
+    fora = sem_form.count("data-confirm")
+    data_confirm_fora += fora
+    if fora:
+        violacoes.append(f"{arq}: {fora} data-confirm fora de <form>")
+
+for v in violacoes:
+    print(f"VIOLACAO\t{v}")
+print(f"forms_nao_get={nao_get}")
+print(f"forms_get={get}")
+print(f"method_inputs_em_form={methods}")
+print(f"data_confirm_em_form={data_confirm - data_confirm_fora}")
+PY
+}
+
+# Toda pagina JSP declara o marcador do <body> — hoje `data-page="..."`, e a partir do
+# `ui:shell` o atributo `dataPagina` do proprio tag. O valor nao tem consumidor; o que a
+# checagem protege e a presenca (a animacao de `base.css` depende dela).
+check_page_markers() {
+    local total=0 faltando=""
+    while IFS= read -r jsp; do
+        grep -q '<!DOCTYPE html>' "$jsp" || continue
+        total=$((total + 1))
+        grep -qE 'data-page=|dataPagina=' "$jsp" || faltando="$faltando $jsp"
+    done < <(find "$WEBAPP/WEB-INF/jsp" -name '*.jsp' | sort)
+
+    if [ -z "$faltando" ]; then
+        ok "marcador do <body> (data-page/dataPagina) nas $total paginas"
+    else
+        bad "pagina(s) sem marcador do <body>:$faltando"
+    fi
+}
+
+check_form_contract() {
+    collect_form_contract > /tmp/ui-inv.form
+    if grep -q '^VIOLACAO' /tmp/ui-inv.form; then
+        bad "contrato dos formularios violado"
+        grep '^VIOLACAO' /tmp/ui-inv.form | sed 's/^VIOLACAO\t/    /'
+        return
+    fi
+
+    local nao_get get methods confirms
+    nao_get="$(grep '^forms_nao_get=' /tmp/ui-inv.form | cut -d= -f2)"
+    get="$(grep '^forms_get=' /tmp/ui-inv.form | cut -d= -f2)"
+    methods="$(grep '^method_inputs_em_form=' /tmp/ui-inv.form | cut -d= -f2)"
+    confirms="$(grep '^data_confirm_em_form=' /tmp/ui-inv.form | cut -d= -f2)"
+    ok "todo form nao-GET tem csrf ($nao_get nao-GET, $get GET)"
+    ok "todo _method dentro de form ($methods) e todo data-confirm em form ($confirms)"
 }
 
 # ---------------------------------------------------------------- modes
@@ -142,9 +247,17 @@ check() {
     echo "== form contract =="
     collect_action_urls > /tmp/ui-inv.actions
     check_file "form action URLs unchanged" "$SNAP/action-urls.txt" /tmp/ui-inv.actions
+    check_form_contract
+    check_page_markers
+
+    echo "== contagens congeladas =="
     collect_counts > /tmp/ui-inv.counts
     while IFS='=' read -r key expected; do
         actual="$(grep "^$key=" /tmp/ui-inv.counts | cut -d= -f2)"
+        if [ -z "$actual" ]; then
+            bad "$key ausente do coletor (rode: bash scripts/ui-invariants.sh snapshot)"
+            continue
+        fi
         case "$key" in
             jacoco_min|jacoco_includes)
                 if [ "$expected" = "$actual" ]; then ok "$key = $actual"; else bad "$key = $actual (expected $expected)"; fi ;;
