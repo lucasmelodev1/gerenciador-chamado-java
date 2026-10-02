@@ -2,7 +2,7 @@
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
 <ui:shell dataPagina="admin-usuario-detalhe">
 
-            <section class="two-column-grid">
+            <section class="app-grade-lateral">
                 <article class="card">
                     <div class="card-body">
                     <ui:card-head titulo="${usuario.nome}" descricao="Edicao">

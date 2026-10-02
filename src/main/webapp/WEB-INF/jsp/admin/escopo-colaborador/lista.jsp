@@ -2,7 +2,7 @@
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
 <ui:shell dataPagina="admin-escopo-colaborador">
 
-            <section class="two-column-grid">
+            <section class="app-grade-lateral">
                 <article class="card">
                     <div class="card-body">
                     <ui:card-head titulo="Designar colaborador por tipo" descricao="Operacao" />

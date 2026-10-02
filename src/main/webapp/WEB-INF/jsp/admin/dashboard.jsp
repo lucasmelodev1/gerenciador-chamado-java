@@ -2,32 +2,13 @@
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
 <ui:shell dataPagina="admin-dashboard">
 
-            <section class="stats-grid">
-                <article class="stat-card">
-                    <span>Blocos</span>
-                    <strong>${totalBlocos}</strong>
-                </article>
-                <article class="stat-card">
-                    <span>Usuarios</span>
-                    <strong>${totalUsuarios}</strong>
-                </article>
-                <article class="stat-card">
-                    <span>Tipos de Chamado</span>
-                    <strong>${totalTiposChamado}</strong>
-                </article>
-                <article class="stat-card">
-                    <span>Status</span>
-                    <strong>${totalStatus}</strong>
-                </article>
-                <article class="stat-card">
-                    <span>Chamados atrasados</span>
-                    <strong>${totalChamadosAtrasados}</strong>
-                </article>
-                <article class="stat-card stat-card-wide">
-                    <span>Chamados monitorados</span>
-                    <strong>${totalChamados}</strong>
-                    <a href="${ctx}/admin/chamados" class="btn">Abrir fila completa</a>
-                </article>
+            <section class="grid grid-cols-1 gap-4.5 min-[981px]:grid-cols-3 min-[1201px]:grid-cols-5">
+                    <ui:metrica rotulo="Blocos" valor="${totalBlocos}" />
+                    <ui:metrica rotulo="Usuarios" valor="${totalUsuarios}" />
+                    <ui:metrica rotulo="Tipos de Chamado" valor="${totalTiposChamado}" />
+                    <ui:metrica rotulo="Status" valor="${totalStatus}" />
+                    <ui:metrica rotulo="Chamados atrasados" valor="${totalChamadosAtrasados}" />
+                    <ui:metrica rotulo="Chamados monitorados" valor="${totalChamados}" destaque="true" href="${ctx}/admin/chamados" rotuloLink="Abrir fila completa" />
             </section>
 
             <section class="card">

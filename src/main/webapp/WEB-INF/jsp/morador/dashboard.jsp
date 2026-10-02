@@ -2,23 +2,13 @@
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
 <ui:shell dataPagina="morador-dashboard">
 
-            <section class="stats-grid">
-                <article class="stat-card">
-                    <span>Minhas unidades</span>
-                    <strong>${totalUnidades}</strong>
-                </article>
-                <article class="stat-card">
-                    <span>Meus chamados</span>
-                    <strong>${totalChamados}</strong>
-                </article>
-                <article class="stat-card stat-card-wide">
-                    <span>Novo atendimento</span>
-                    <strong>Abrir chamado</strong>
-                    <a href="${ctx}/morador/chamados/novo" class="btn btn-primary">Registrar agora</a>
-                </article>
+            <section class="grid grid-cols-1 gap-4.5 min-[981px]:grid-cols-3 min-[1201px]:grid-cols-5">
+                    <ui:metrica rotulo="Minhas unidades" valor="${totalUnidades}" />
+                    <ui:metrica rotulo="Meus chamados" valor="${totalChamados}" />
+                    <ui:metrica rotulo="Novo atendimento" valor="Abrir chamado" destaque="true" href="${ctx}/morador/chamados/novo" rotuloLink="Registrar agora" classeLink="btn btn-primary" />
             </section>
 
-            <section class="two-column-grid">
+            <section class="app-grade-lateral">
                 <article class="card">
                     <div class="card-body">
                     <ui:card-head titulo="Minhas unidades" descricao="Acesso vinculado" />

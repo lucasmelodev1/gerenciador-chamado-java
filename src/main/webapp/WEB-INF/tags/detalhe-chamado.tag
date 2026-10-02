@@ -49,7 +49,7 @@
 <%@ attribute name="podeAnexarAvulso" required="false" %>
 <%@ attribute name="dicaAnexo" required="true" %>
 
-<section class="detail-grid">
+<section class="app-grade-detalhe">
     <article class="card">
         <div class="card-body">
             <ui:card-head titulo="${chamado.tipoChamadoTitulo}" descricao="${eyebrow}">

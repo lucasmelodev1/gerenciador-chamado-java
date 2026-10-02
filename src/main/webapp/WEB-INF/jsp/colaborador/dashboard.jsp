@@ -2,16 +2,9 @@
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
 <ui:shell dataPagina="colaborador-dashboard">
 
-            <section class="stats-grid">
-                <article class="stat-card">
-                    <span>Chamados atrasados</span>
-                    <strong>${totalChamadosAtrasados}</strong>
-                </article>
-                <article class="stat-card stat-card-wide">
-                    <span>Chamados em atendimento</span>
-                    <strong>${totalChamadosAbertos}</strong>
-                    <a href="${ctx}/colaborador/chamados" class="btn btn-primary">Abrir fila</a>
-                </article>
+            <section class="grid grid-cols-1 gap-4.5 min-[981px]:grid-cols-3 min-[1201px]:grid-cols-5">
+                    <ui:metrica rotulo="Chamados atrasados" valor="${totalChamadosAtrasados}" />
+                    <ui:metrica rotulo="Chamados em atendimento" valor="${totalChamadosAbertos}" destaque="true" href="${ctx}/colaborador/chamados" rotuloLink="Abrir fila" classeLink="btn btn-primary" />
             </section>
 
             <section class="card">

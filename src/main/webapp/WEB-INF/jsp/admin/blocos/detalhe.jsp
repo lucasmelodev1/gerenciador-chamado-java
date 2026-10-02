@@ -2,12 +2,12 @@
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
 <ui:shell dataPagina="admin-bloco-detalhe">
 
-            <section class="hero-card">
+            <section class="relative overflow-hidden rounded-2xl border border-white/70 bg-base-100 p-6 transition duration-200 hover:-translate-y-0.5 hover:border-accent/20 hover:shadow-painel">
                 <p class="mb-2 text-xs tracking-eyebrow text-base-content/60 uppercase">Estrutura fisica</p>
-                <h2>${bloco.identificacao}</h2>
-                <div class="hero-metrics">
-                    <span><strong>${bloco.quantidadeAndares}</strong> andares</span>
-                    <span><strong>${bloco.apartamentosPorAndar}</strong> apartamentos por andar</span>
+                <h2 class="font-display text-2xl font-semibold">${bloco.identificacao}</h2>
+                <div class="flex flex-wrap gap-5">
+                    <span class="text-base-content/60"><strong>${bloco.quantidadeAndares}</strong> andares</span>
+                    <span class="text-base-content/60"><strong>${bloco.apartamentosPorAndar}</strong> apartamentos por andar</span>
                 </div>
             </section>
 

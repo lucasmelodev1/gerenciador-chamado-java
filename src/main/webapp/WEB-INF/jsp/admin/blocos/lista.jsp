@@ -66,7 +66,7 @@
         <input class="input w-full" type="text" name="identificacao" value="${blocoForm.identificacao}" placeholder="Bloco A" maxlength="255" required>
     </ui:campo>
 
-    <div class="form-grid">
+    <div class="grid gap-4 min-[981px]:grid-cols-2">
         <ui:campo rotulo="Andares">
             <input class="input w-full" type="number" name="quantidadeAndares" min="1" value="${blocoForm.quantidadeAndares}" required>
         </ui:campo>

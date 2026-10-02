@@ -99,6 +99,50 @@ body[data-page]:not([data-page="login"]) .app-page > *:nth-child(4) {
 }
 
 /* ---------------------------------------------------------------------------
+ * Grades de duas colunas e cartao de metrica (S33/F5) — eram `.two-column-grid`,
+ * `.detail-grid` e `.stat-card`/`.stat-card::after` no legado.
+ *
+ * As grades ficam aqui (e nao em utilitario) porque a receita tem `minmax()` e media query:
+ * abaixo de 981px empilha, acima a primeira coluna fica entre 320/360px e 420/500px.
+ * O resto do cartao de metrica e utilitario no tag `ui:metrica`; so a barra de destaque
+ * (pseudo-elemento) precisa de regra propria.
+ * ------------------------------------------------------------------------ */
+
+.app-grade-lateral,
+.app-grade-detalhe {
+    display: grid;
+    gap: 24px;
+}
+
+.app-grade-lateral {
+    grid-template-columns: 1fr;
+}
+
+.app-grade-detalhe {
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 981px) {
+    .app-grade-lateral {
+        grid-template-columns: minmax(320px, 420px) 1fr;
+    }
+
+    .app-grade-detalhe {
+        grid-template-columns: minmax(360px, 500px) 1fr;
+    }
+}
+
+.app-metrica::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 72px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--color-accent);
+}
+
+/* ---------------------------------------------------------------------------
  * Shell: conteudo "inset" (S19)
  *
  * No bloco dashboard-01 do shadcn a area de conteudo e uma superficie propria,

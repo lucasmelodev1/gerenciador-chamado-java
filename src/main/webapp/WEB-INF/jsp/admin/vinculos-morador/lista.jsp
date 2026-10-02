@@ -26,7 +26,7 @@
                 <c:set var="vinculosContexto" value="${vinculosContexto}&blocoId=${blocoSelecionadoId}" />
             </c:if>
 
-            <section class="two-column-grid">
+            <section class="app-grade-lateral">
                 <article class="card">
                     <div class="card-body">
                     <ui:card-head titulo="Vincular morador a unidade" descricao="Operacao" />
