@@ -44,9 +44,7 @@
 
                     <c:choose>
                         <c:when test="${empty chamados}">
-                            <c:set var="vazioTitulo" value="Nenhum chamado encontrado" />
-                            <c:set var="vazioMensagem" value="Altere os filtros ou aguarde novas aberturas." />
-                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                            <ui:vazio titulo="Nenhum chamado encontrado" mensagem="Altere os filtros ou aguarde novas aberturas." />
                         </c:when>
                         <c:otherwise>
                             <div class="overflow-x-auto">
@@ -82,15 +80,7 @@
                     </c:choose>
 
                     <%-- A paginacao repete os filtros: sem isso, paginar perderia o recorte. --%>
-                    <div class="pagination">
-                        <c:if test="${chamadosPage.hasPrevious}">
-                            <a class="btn" href="${ctx}/admin/chamados?page=${chamadosPage.page - 1}&size=${chamadosPage.size}&statusId=${filtroStatusId}&moradorNome=${filtroMoradorNome}&dataAbertura=${filtroDataAbertura}">Anterior</a>
-                        </c:if>
-                        <span>Pagina ${chamadosPage.page + 1} de ${chamadosPage.totalPages == 0 ? 1 : chamadosPage.totalPages}</span>
-                        <c:if test="${chamadosPage.hasNext}">
-                            <a class="btn" href="${ctx}/admin/chamados?page=${chamadosPage.page + 1}&size=${chamadosPage.size}&statusId=${filtroStatusId}&moradorNome=${filtroMoradorNome}&dataAbertura=${filtroDataAbertura}">Proxima</a>
-                        </c:if>
-                    </div>
+                    <ui:paginacao pagina="${chamadosPage}" url="${ctx}/admin/chamados" parametros="&statusId=${filtroStatusId}&moradorNome=${filtroMoradorNome}&dataAbertura=${filtroDataAbertura}" />
                 </div>
             </section>
         </main>

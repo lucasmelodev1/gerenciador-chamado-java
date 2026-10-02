@@ -19,6 +19,7 @@
 --%>
 <%@ tag pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="ui" tagdir="/WEB-INF/tags" %>
 <%@ attribute name="alvo" required="true" description="valor de data-filter-target; casa com o data-filter-table da tabela" %>
 <%@ attribute name="rotulo" required="false" description="nome acessivel do campo (padrao: Pesquisar)" %>
 <%@ attribute name="placeholder" required="false" %>
@@ -27,9 +28,7 @@
 <c:set var="buscaPlaceholder" value="${empty placeholder ? 'Pesquisar...' : placeholder}" />
 
 <label class="input input-sm">
-    <c:set var="icone" value="pesquisar" />
-    <c:set var="iconeClasse" value="size-4 shrink-0 opacity-60" />
-    <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+    <ui:icone nome="pesquisar" classe="size-4 shrink-0 opacity-60" />
     <input type="search" placeholder="${buscaPlaceholder}" aria-label="${buscaRotulo}"
            data-filter-input data-filter-target="${alvo}">
 </label>

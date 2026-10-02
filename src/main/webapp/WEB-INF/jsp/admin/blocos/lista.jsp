@@ -28,9 +28,7 @@
 
                     <c:choose>
                         <c:when test="${empty blocos}">
-                            <c:set var="vazioTitulo" value="Nenhum bloco cadastrado" />
-                            <c:set var="vazioMensagem" value="Cadastre o primeiro bloco para gerar as unidades automaticamente." />
-                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                            <ui:vazio titulo="Nenhum bloco cadastrado" mensagem="Cadastre o primeiro bloco para gerar as unidades automaticamente." />
                         </c:when>
                         <c:otherwise>
                             <div class="overflow-x-auto">
@@ -61,15 +59,7 @@
                         </c:otherwise>
                     </c:choose>
 
-                    <div class="pagination">
-                        <c:if test="${blocosPage.hasPrevious}">
-                            <a class="btn" href="${ctx}/admin/blocos?page=${blocosPage.page - 1}&size=${blocosPage.size}">Anterior</a>
-                        </c:if>
-                        <span>Pagina ${blocosPage.page + 1} de ${blocosPage.totalPages == 0 ? 1 : blocosPage.totalPages}</span>
-                        <c:if test="${blocosPage.hasNext}">
-                            <a class="btn" href="${ctx}/admin/blocos?page=${blocosPage.page + 1}&size=${blocosPage.size}">Proxima</a>
-                        </c:if>
-                    </div>
+                    <ui:paginacao pagina="${blocosPage}" url="${ctx}/admin/blocos" />
                 </div>
             </section>
         </main>

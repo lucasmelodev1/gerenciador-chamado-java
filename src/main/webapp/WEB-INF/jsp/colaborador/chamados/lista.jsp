@@ -60,9 +60,7 @@
                 <div class="card-body">
                 <c:choose>
                     <c:when test="${empty chamados}">
-                        <c:set var="vazioTitulo" value="Nenhum chamado encontrado" />
-                        <c:set var="vazioMensagem" value="Revise os filtros ou aguarde novas ocorrencias no seu escopo." />
-                        <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                        <ui:vazio titulo="Nenhum chamado encontrado" mensagem="Revise os filtros ou aguarde novas ocorrencias no seu escopo." />
                     </c:when>
                     <c:otherwise>
                         <div class="overflow-x-auto">
@@ -96,15 +94,7 @@
                     </c:otherwise>
                 </c:choose>
 
-                <div class="pagination">
-                    <c:if test="${chamadosPage.hasPrevious}">
-                        <a class="btn" href="${ctx}/colaborador/chamados?page=${chamadosPage.page - 1}&size=${chamadosPage.size}&statusId=${filtroStatusId}&tipoChamadoId=${filtroTipoChamadoId}&unidade=${filtroUnidade}&dataAbertura=${filtroDataAbertura}">Anterior</a>
-                    </c:if>
-                    <span>Pagina ${chamadosPage.page + 1} de ${chamadosPage.totalPages == 0 ? 1 : chamadosPage.totalPages}</span>
-                    <c:if test="${chamadosPage.hasNext}">
-                        <a class="btn" href="${ctx}/colaborador/chamados?page=${chamadosPage.page + 1}&size=${chamadosPage.size}&statusId=${filtroStatusId}&tipoChamadoId=${filtroTipoChamadoId}&unidade=${filtroUnidade}&dataAbertura=${filtroDataAbertura}">Proxima</a>
-                    </c:if>
-                </div>
+                <ui:paginacao pagina="${chamadosPage}" url="${ctx}/colaborador/chamados" parametros="&statusId=${filtroStatusId}&tipoChamadoId=${filtroTipoChamadoId}&unidade=${filtroUnidade}&dataAbertura=${filtroDataAbertura}" />
                             </div>
             </section>
         </main>

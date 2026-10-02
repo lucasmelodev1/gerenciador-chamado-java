@@ -27,9 +27,7 @@
 
                     <c:choose>
                         <c:when test="${empty tiposChamado}">
-                            <c:set var="vazioTitulo" value="Nenhum tipo cadastrado" />
-                            <c:set var="vazioMensagem" value="Cadastre os motivos de abertura de chamado para os moradores." />
-                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                            <ui:vazio titulo="Nenhum tipo cadastrado" mensagem="Cadastre os motivos de abertura de chamado para os moradores." />
                         </c:when>
                         <c:otherwise>
                             <div class="overflow-x-auto">
@@ -61,15 +59,7 @@
                         </c:otherwise>
                     </c:choose>
 
-                    <div class="pagination">
-                        <c:if test="${tiposChamadoPage.hasPrevious}">
-                            <a class="btn" href="${ctx}/admin/tipos-chamado?page=${tiposChamadoPage.page - 1}&size=${tiposChamadoPage.size}">Anterior</a>
-                        </c:if>
-                        <span>Pagina ${tiposChamadoPage.page + 1} de ${tiposChamadoPage.totalPages == 0 ? 1 : tiposChamadoPage.totalPages}</span>
-                        <c:if test="${tiposChamadoPage.hasNext}">
-                            <a class="btn" href="${ctx}/admin/tipos-chamado?page=${tiposChamadoPage.page + 1}&size=${tiposChamadoPage.size}">Proxima</a>
-                        </c:if>
-                    </div>
+                    <ui:paginacao pagina="${tiposChamadoPage}" url="${ctx}/admin/tipos-chamado" />
                 </div>
             </section>
         </main>

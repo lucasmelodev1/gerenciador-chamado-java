@@ -54,7 +54,7 @@
 
     Os separadores foram escolhidos para nao colidir com nada que apareca nos rotulos
     (`#` separa grupos, `@` separa grupo de itens, `;` separa itens, `|` separa campos).
-    O alias do icone e resolvido por `fragments/icone.jspf`.
+    O alias do icone e resolvido por `ui:icone`.
 --%>
 <c:choose>
     <c:when test="${isAdministrador}">
@@ -102,9 +102,7 @@
             <a href="${ctx}${currentUserHome}"
                class="flex w-full items-center gap-2 rounded-field px-2 py-2 transition-colors hover:bg-base-content/10">
                 <span class="grid size-8 shrink-0 place-items-center rounded-field bg-primary text-primary-content">
-                    <c:set var="icone" value="marca" />
-                    <c:set var="iconeClasse" value="size-5" />
-                    <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+                    <ui:icone nome="marca" classe="size-5" />
                 </span>
                 <span class="font-display truncate text-base font-semibold">${appName}</span>
             </a>
@@ -142,9 +140,7 @@
                             <li>
                                 <a href="${ctx}${href}"
                                    class="${active ? 'menu-active' : ''}"${active ? ' aria-current="page"' : ''}>
-                                    <c:set var="icone" value="${parts[2]}" />
-                                    <c:set var="iconeClasse" value="size-4 shrink-0" />
-                                    <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+                                    <ui:icone nome="${parts[2]}" classe="size-4 shrink-0" />
                                     <%-- `min-w-0` porque o item do menu e um grid de 3
                                          colunas e o item de grid nasce com `min-width:auto`,
                                          o que impediria o `truncate`. --%>
@@ -177,9 +173,7 @@
                         <span class="truncate text-sm font-medium">${navUserHandle}</span>
                         <span class="truncate text-xs opacity-60">${currentUserRoleLabel}</span>
                     </span>
-                    <c:set var="icone" value="opcoes" />
-                    <c:set var="iconeClasse" value="size-4 shrink-0 opacity-60" />
-                    <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+                    <ui:icone nome="opcoes" classe="size-4 shrink-0 opacity-60" />
                 </div>
 
                 <ul tabindex="0"
@@ -187,9 +181,7 @@
                     <li class="menu-title"><span class="truncate">${currentUserEmail}</span></li>
                     <li>
                         <button type="submit" form="app-logout" class="text-error">
-                            <c:set var="icone" value="sair" />
-                            <c:set var="iconeClasse" value="size-4 shrink-0" />
-                            <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+                            <ui:icone nome="sair" classe="size-4 shrink-0" />
                             <span>Sair</span>
                         </button>
                     </li>

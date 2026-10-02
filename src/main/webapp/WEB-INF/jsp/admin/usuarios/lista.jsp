@@ -27,9 +27,7 @@
 
                     <c:choose>
                         <c:when test="${empty usuarios}">
-                            <c:set var="vazioTitulo" value="Nenhum usuario encontrado" />
-                            <c:set var="vazioMensagem" value="Cadastre administradores, colaboradores e moradores para iniciar a operacao." />
-                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                            <ui:vazio titulo="Nenhum usuario encontrado" mensagem="Cadastre administradores, colaboradores e moradores para iniciar a operacao." />
                         </c:when>
                         <c:otherwise>
                             <div class="overflow-x-auto">
@@ -72,15 +70,7 @@
                         </c:otherwise>
                     </c:choose>
 
-                    <div class="pagination">
-                        <c:if test="${usuariosPage.hasPrevious}">
-                            <a class="btn" href="${ctx}/admin/usuarios?page=${usuariosPage.page - 1}&size=${usuariosPage.size}">Anterior</a>
-                        </c:if>
-                        <span>Pagina ${usuariosPage.page + 1} de ${usuariosPage.totalPages == 0 ? 1 : usuariosPage.totalPages}</span>
-                        <c:if test="${usuariosPage.hasNext}">
-                            <a class="btn" href="${ctx}/admin/usuarios?page=${usuariosPage.page + 1}&size=${usuariosPage.size}">Proxima</a>
-                        </c:if>
-                    </div>
+                    <ui:paginacao pagina="${usuariosPage}" url="${ctx}/admin/usuarios" />
                 </div>
             </section>
         </main>

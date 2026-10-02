@@ -34,9 +34,7 @@
 
                 <c:choose>
                     <c:when test="${empty chamados}">
-                        <c:set var="vazioTitulo" value="Nenhum chamado disponivel no seu escopo" />
-                        <c:set var="vazioMensagem" value="Quando surgirem novos atendimentos eles aparecerao aqui." />
-                        <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                        <ui:vazio titulo="Nenhum chamado disponivel no seu escopo" mensagem="Quando surgirem novos atendimentos eles aparecerao aqui." />
                     </c:when>
                     <c:otherwise>
                         <div class="overflow-x-auto">

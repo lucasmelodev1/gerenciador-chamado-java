@@ -19,6 +19,7 @@
 --%>
 <%@ tag pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="ui" tagdir="/WEB-INF/tags" %>
 <%@ attribute name="drawer" required="true" description="id do ui:drawer que este gatilho abre" %>
 <%@ attribute name="titulo" required="true" description="titulo que o drawer assume no modo edicao" %>
 <%@ attribute name="acao" required="true" description="action do form no modo edicao" %>
@@ -37,7 +38,5 @@
         data-drawer-acao="${acao}">
     <input type="hidden" data-campo="_method" value="${editarMetodo}">
     <jsp:doBody />
-    <c:set var="icone" value="${editarIcone}" />
-    <c:set var="iconeClasse" value="size-4" />
-    <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+    <ui:icone nome="${editarIcone}" />
 </button>

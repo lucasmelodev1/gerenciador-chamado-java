@@ -61,9 +61,7 @@
 
                 <c:choose>
                     <c:when test="${empty chamados}">
-                        <c:set var="vazioTitulo" value="Nenhum chamado registrado" />
-                        <c:set var="vazioMensagem" value="Use a abertura de chamado para registrar a primeira ocorrencia." />
-                        <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                        <ui:vazio titulo="Nenhum chamado registrado" mensagem="Use a abertura de chamado para registrar a primeira ocorrencia." />
                     </c:when>
                     <c:otherwise>
                         <div class="overflow-x-auto">
@@ -95,15 +93,7 @@
                     </c:otherwise>
                 </c:choose>
 
-                <div class="pagination">
-                    <c:if test="${chamadosPage.hasPrevious}">
-                        <a class="btn" href="${ctx}/morador/chamados?page=${chamadosPage.page - 1}&size=${chamadosPage.size}&statusId=${filtroStatusId}&unidadeId=${filtroUnidadeId}&tipoChamadoId=${filtroTipoChamadoId}&dataAbertura=${filtroDataAbertura}">Anterior</a>
-                    </c:if>
-                    <span>Pagina ${chamadosPage.page + 1} de ${chamadosPage.totalPages == 0 ? 1 : chamadosPage.totalPages}</span>
-                    <c:if test="${chamadosPage.hasNext}">
-                        <a class="btn" href="${ctx}/morador/chamados?page=${chamadosPage.page + 1}&size=${chamadosPage.size}&statusId=${filtroStatusId}&unidadeId=${filtroUnidadeId}&tipoChamadoId=${filtroTipoChamadoId}&dataAbertura=${filtroDataAbertura}">Proxima</a>
-                    </c:if>
-                </div>
+                <ui:paginacao pagina="${chamadosPage}" url="${ctx}/morador/chamados" parametros="&statusId=${filtroStatusId}&unidadeId=${filtroUnidadeId}&tipoChamadoId=${filtroTipoChamadoId}&dataAbertura=${filtroDataAbertura}" />
                             </div>
             </section>
         </main>

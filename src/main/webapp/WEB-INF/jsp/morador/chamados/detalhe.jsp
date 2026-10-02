@@ -68,16 +68,12 @@
                         </form>
                     </c:if>
                     <c:if test="${chamado.finalizado}">
-                        <c:set var="vazioMensagem" value="Chamados finalizados ficam bloqueados para novos comentarios ate serem reabertos." />
-                        <c:set var="vazioCompacto" value="${true}" />
-                        <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                        <ui:vazio mensagem="Chamados finalizados ficam bloqueados para novos comentarios ate serem reabertos." compacto="true" />
                     </c:if>
 
                     <c:choose>
                         <c:when test="${empty comentarios}">
-                            <c:set var="vazioMensagem" value="Nenhuma interacao registrada ainda." />
-                            <c:set var="vazioCompacto" value="${true}" />
-                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                            <ui:vazio mensagem="Nenhuma interacao registrada ainda." compacto="true" />
                         </c:when>
                         <c:otherwise>
                             <div class="timeline">
@@ -130,16 +126,12 @@
                         </form>
                     </c:if>
                     <c:if test="${chamado.finalizado}">
-                        <c:set var="vazioMensagem" value="Chamados finalizados nao aceitam novos anexos ate serem reabertos." />
-                        <c:set var="vazioCompacto" value="${true}" />
-                        <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                        <ui:vazio mensagem="Chamados finalizados nao aceitam novos anexos ate serem reabertos." compacto="true" />
                     </c:if>
 
                     <c:choose>
                         <c:when test="${empty anexos}">
-                            <c:set var="vazioMensagem" value="Nenhum anexo registrado ainda." />
-                            <c:set var="vazioCompacto" value="${true}" />
-                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                            <ui:vazio mensagem="Nenhum anexo registrado ainda." compacto="true" />
                         </c:when>
                         <c:otherwise>
                             <div class="stack-list">

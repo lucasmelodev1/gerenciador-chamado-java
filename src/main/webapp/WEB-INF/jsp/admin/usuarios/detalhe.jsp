@@ -71,9 +71,7 @@
 
                         <c:choose>
                             <c:when test="${empty unidadesMorador}">
-                                <c:set var="vazioMensagem" value="Nenhuma unidade vinculada." />
-                                <c:set var="vazioCompacto" value="${true}" />
-                                <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                                <ui:vazio mensagem="Nenhuma unidade vinculada." compacto="true" />
                             </c:when>
                             <c:otherwise>
                                 <div class="stack-list">
@@ -174,9 +172,7 @@
 
                         <c:choose>
                             <c:when test="${empty tiposChamadoColaborador}">
-                                <c:set var="vazioMensagem" value="Nenhum tipo de chamado vinculado." />
-                                <c:set var="vazioCompacto" value="${true}" />
-                                <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                                <ui:vazio mensagem="Nenhum tipo de chamado vinculado." compacto="true" />
                             </c:when>
                             <c:otherwise>
                                 <div class="stack-list">

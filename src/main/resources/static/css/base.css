@@ -70,15 +70,11 @@ button {
 }
 
 .auth-brand h1,
-.topbar h1,
 .section-header h2,
 .hero-card h2 {
     font-family: var(--font-serif);
 }
 
-.brand-block p,
-.sidebar-footer span,
-.profile-chip span,
 .field-hint,
 .detail-list span,
 .list-row span,

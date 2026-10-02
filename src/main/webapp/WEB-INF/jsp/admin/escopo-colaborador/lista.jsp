@@ -55,9 +55,7 @@
 
                         <c:choose>
                             <c:when test="${empty tiposChamadoColaborador}">
-                                <c:set var="vazioMensagem" value="Este colaborador ainda nao possui tipos de chamado vinculados." />
-                                <c:set var="vazioCompacto" value="${true}" />
-                                <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                                <ui:vazio mensagem="Este colaborador ainda nao possui tipos de chamado vinculados." compacto="true" />
                             </c:when>
                             <c:otherwise>
                                 <div class="stack-list">
@@ -113,9 +111,7 @@
 
                     <c:choose>
                         <c:when test="${empty colaboradoresDisponiveis}">
-                            <c:set var="vazioTitulo" value="Nenhum colaborador encontrado" />
-                            <c:set var="vazioMensagem" value="Ajuste o prefixo do e-mail para localizar outro colaborador." />
-                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                            <ui:vazio titulo="Nenhum colaborador encontrado" mensagem="Ajuste o prefixo do e-mail para localizar outro colaborador." />
                         </c:when>
                         <c:otherwise>
                             <div class="overflow-x-auto">

@@ -32,9 +32,7 @@
 
                 <c:choose>
                     <c:when test="${empty unidades}">
-                        <c:set var="vazioTitulo" value="Nenhuma unidade encontrada" />
-                        <c:set var="vazioMensagem" value="Verifique se o bloco foi gerado corretamente." />
-                        <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                        <ui:vazio titulo="Nenhuma unidade encontrada" mensagem="Verifique se o bloco foi gerado corretamente." />
                     </c:when>
                     <c:otherwise>
                         <div class="overflow-x-auto">
@@ -76,15 +74,7 @@
                     </c:otherwise>
                 </c:choose>
 
-                <div class="pagination">
-                    <c:if test="${unidadesPage.hasPrevious}">
-                        <a class="btn" href="${ctx}/admin/blocos/${bloco.id}?page=${unidadesPage.page - 1}&size=${unidadesPage.size}">Anterior</a>
-                    </c:if>
-                    <span>Pagina ${unidadesPage.page + 1} de ${unidadesPage.totalPages == 0 ? 1 : unidadesPage.totalPages}</span>
-                    <c:if test="${unidadesPage.hasNext}">
-                        <a class="btn" href="${ctx}/admin/blocos/${bloco.id}?page=${unidadesPage.page + 1}&size=${unidadesPage.size}">Proxima</a>
-                    </c:if>
-                </div>
+                <ui:paginacao pagina="${unidadesPage}" url="${ctx}/admin/blocos/${bloco.id}" />
                             </div>
             </section>
         </main>

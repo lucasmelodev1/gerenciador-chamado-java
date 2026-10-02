@@ -60,9 +60,7 @@
                     </div>
                     <c:choose>
                         <c:when test="${empty meusChamados}">
-                            <c:set var="vazioMensagem" value="Voce ainda nao abriu chamados." />
-                            <c:set var="vazioCompacto" value="${true}" />
-                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                            <ui:vazio mensagem="Voce ainda nao abriu chamados." compacto="true" />
                         </c:when>
                         <c:otherwise>
                             <div class="stack-list">

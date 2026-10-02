@@ -52,6 +52,7 @@
 --%>
 <%@ tag pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="ui" tagdir="/WEB-INF/tags" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ attribute name="id" required="true" description="id do painel; tambem nomeia o form interno" %>
 <%@ attribute name="titulo" required="true" %>
@@ -65,7 +66,7 @@
 <%@ attribute name="aberto" required="false" description="true abre o drawer no carregamento" %>
 <%@ attribute name="travar" required="false" description="campos separados por virgula que a EDICAO nao pode mudar; a criacao pode" %>
 <%@ attribute name="rotuloAcao" required="false" description="segundo botao do rodape do drawer informativo (a esquerda do Fechar)" %>
-<%@ attribute name="iconeAcao" required="false" description="alias de fragments/icone.jspf para o botao da acao" %>
+<%@ attribute name="iconeAcao" required="false" description="alias de ui:icone para o botao da acao" %>
 <%@ attribute name="varianteAcao" required="false" description="primary (padrao) ou error (vermelho)" %>
 <%@ attribute name="painelAcao" required="false" description="id do painel que a acao abre (protocolo data-drawer-editar)" %>
 <%@ attribute name="metodoAcao" required="false" description="valor de _method que o painel aberto recebe (ex.: delete)" %>
@@ -97,9 +98,7 @@
 
         <button type="button" class="btn btn-sm btn-circle btn-ghost -mt-1 -mr-1"
                 aria-label="${drawerFechar}" data-drawer-fechar>
-            <c:set var="icone" value="fechar" />
-            <c:set var="iconeClasse" value="size-4" />
-            <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+            <ui:icone nome="fechar" />
         </button>
     </header>
 
@@ -140,9 +139,7 @@
         <c:when test="${not empty acao}">
             <footer class="app-drawer-rodape">
                 <button type="submit" form="${drawerFormId}" class="btn btn-primary">
-                    <c:set var="icone" value="salvar" />
-                    <c:set var="iconeClasse" value="size-4" />
-                    <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+                    <ui:icone nome="salvar" />
                     ${drawerSalvar}
                 </button>
             </footer>
@@ -152,9 +149,7 @@
                 <c:if test="${not empty rotuloAcao}">
                     <button type="button" class="btn ${drawerVarianteAcao}"<c:if test="${not empty painelAcao}"> data-drawer-editar="${painelAcao}"</c:if><c:if test="${not empty metodoAcao}"> data-campo-_method="${metodoAcao}"</c:if>>
                         <c:if test="${not empty iconeAcao}">
-                            <c:set var="icone" value="${iconeAcao}" />
-                            <c:set var="iconeClasse" value="size-4" />
-                            <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+                            <ui:icone nome="${iconeAcao}" />
                         </c:if>
                         ${rotuloAcao}
                     </button>

@@ -29,9 +29,7 @@
 
                     <c:choose>
                         <c:when test="${empty statusChamado}">
-                            <c:set var="vazioTitulo" value="Nenhum status cadastrado" />
-                            <c:set var="vazioMensagem" value="Cadastre ao menos um status e marque o inicial padrao." />
-                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                            <ui:vazio titulo="Nenhum status cadastrado" mensagem="Cadastre ao menos um status e marque o inicial padrao." />
                         </c:when>
                         <c:otherwise>
                             <div class="overflow-x-auto">
@@ -83,15 +81,7 @@
                         </c:otherwise>
                     </c:choose>
 
-                    <div class="pagination">
-                        <c:if test="${statusChamadoPage.hasPrevious}">
-                            <a class="btn" href="${ctx}/admin/status-chamado?page=${statusChamadoPage.page - 1}&size=${statusChamadoPage.size}">Anterior</a>
-                        </c:if>
-                        <span>Pagina ${statusChamadoPage.page + 1} de ${statusChamadoPage.totalPages == 0 ? 1 : statusChamadoPage.totalPages}</span>
-                        <c:if test="${statusChamadoPage.hasNext}">
-                            <a class="btn" href="${ctx}/admin/status-chamado?page=${statusChamadoPage.page + 1}&size=${statusChamadoPage.size}">Proxima</a>
-                        </c:if>
-                    </div>
+                    <ui:paginacao pagina="${statusChamadoPage}" url="${ctx}/admin/status-chamado" />
                 </div>
             </section>
         </main>

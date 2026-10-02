@@ -33,9 +33,7 @@
 
                     <c:choose>
                         <c:when test="${empty areas}">
-                            <c:set var="vazioTitulo" value="Nenhuma area cadastrada" />
-                            <c:set var="vazioMensagem" value="Cadastre as areas do condominio para uso na operacao." />
-                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                            <ui:vazio titulo="Nenhuma area cadastrada" mensagem="Cadastre as areas do condominio para uso na operacao." />
                         </c:when>
                         <c:otherwise>
                             <div class="overflow-x-auto">
@@ -78,15 +76,7 @@
                         </c:otherwise>
                     </c:choose>
 
-                    <div class="pagination">
-                        <c:if test="${areasPage.hasPrevious}">
-                            <a class="btn" href="${ctx}/admin/areas?page=${areasPage.page - 1}&size=${areasPage.size}">Anterior</a>
-                        </c:if>
-                        <span>Pagina ${areasPage.page + 1} de ${areasPage.totalPages == 0 ? 1 : areasPage.totalPages}</span>
-                        <c:if test="${areasPage.hasNext}">
-                            <a class="btn" href="${ctx}/admin/areas?page=${areasPage.page + 1}&size=${areasPage.size}">Proxima</a>
-                        </c:if>
-                    </div>
+                    <ui:paginacao pagina="${areasPage}" url="${ctx}/admin/areas" />
                 </div>
             </section>
         </main>

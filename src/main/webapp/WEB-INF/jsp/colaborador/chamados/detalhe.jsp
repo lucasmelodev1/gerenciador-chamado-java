@@ -80,16 +80,12 @@
                         </form>
                     </c:if>
                     <c:if test="${chamado.finalizado}">
-                        <c:set var="vazioMensagem" value="Chamados finalizados ficam bloqueados para novos comentarios." />
-                        <c:set var="vazioCompacto" value="${true}" />
-                        <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                        <ui:vazio mensagem="Chamados finalizados ficam bloqueados para novos comentarios." compacto="true" />
                     </c:if>
 
                     <c:choose>
                         <c:when test="${empty comentarios}">
-                            <c:set var="vazioMensagem" value="Nenhum comentario registrado." />
-                            <c:set var="vazioCompacto" value="${true}" />
-                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                            <ui:vazio mensagem="Nenhum comentario registrado." compacto="true" />
                         </c:when>
                         <c:otherwise>
                             <div class="timeline">
@@ -132,9 +128,7 @@
 
                     <c:choose>
                         <c:when test="${empty anexos}">
-                            <c:set var="vazioMensagem" value="Nenhum anexo registrado." />
-                            <c:set var="vazioCompacto" value="${true}" />
-                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                            <ui:vazio mensagem="Nenhum anexo registrado." compacto="true" />
                         </c:when>
                         <c:otherwise>
                             <div class="stack-list">

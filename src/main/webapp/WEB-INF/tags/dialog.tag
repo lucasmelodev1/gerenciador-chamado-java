@@ -42,6 +42,7 @@
 --%>
 <%@ tag pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="ui" tagdir="/WEB-INF/tags" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ attribute name="id" required="true" description="id do dialogo; tambem nomeia o form interno" %>
 <%@ attribute name="titulo" required="true" %>
@@ -51,7 +52,7 @@
 <%@ attribute name="tamanho" required="false" description="sm, md (padrao) ou lg" %>
 <%@ attribute name="rotuloConfirmar" required="false" %>
 <%@ attribute name="varianteConfirmar" required="false" description="primary (padrao) ou error" %>
-<%@ attribute name="iconeConfirmar" required="false" description="alias de fragments/icone.jspf" %>
+<%@ attribute name="iconeConfirmar" required="false" description="alias de ui:icone" %>
 <%@ attribute name="rotuloCancelar" required="false" description="botao esmaecido que fecha; sem ele o rodape so confirma" %>
 <%@ attribute name="aberto" required="false" description="true abre o dialogo no carregamento" %>
 
@@ -80,9 +81,7 @@
 
         <button type="button" class="btn btn-sm btn-circle btn-ghost -mt-1 -mr-1"
                 aria-label="Fechar" data-drawer-fechar>
-            <c:set var="icone" value="fechar" />
-            <c:set var="iconeClasse" value="size-4" />
-            <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+            <ui:icone nome="fechar" />
         </button>
     </header>
 
@@ -118,9 +117,7 @@
             </c:if>
             <button type="submit" form="${dialogFormId}" class="btn ${dialogVariante}">
                 <c:if test="${not empty iconeConfirmar}">
-                    <c:set var="icone" value="${iconeConfirmar}" />
-                    <c:set var="iconeClasse" value="size-4" />
-                    <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+                    <ui:icone nome="${iconeConfirmar}" />
                 </c:if>
                 ${dialogConfirmar}
             </button>

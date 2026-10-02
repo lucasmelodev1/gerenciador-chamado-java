@@ -10,7 +10,6 @@
 --%>
 <section class="card">
     <div class="card-body">
-    <div class="card-body">
     <div class="section-header">
         <div>
             <p class="eyebrow">${agendaEyebrow}</p>
@@ -74,7 +73,6 @@
                   data-fim-formatado="${fn:escapeXml(r.fimFormatado)}"
                   data-motivo="${fn:escapeXml(r.motivoNegacao)}"></span>
         </c:forEach>
-    </div>
     </div>
     </div>
 </section>

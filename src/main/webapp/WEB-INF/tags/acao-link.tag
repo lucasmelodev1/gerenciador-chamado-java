@@ -13,12 +13,12 @@
 --%>
 <%@ tag pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="ui" tagdir="/WEB-INF/tags" %>
 <%@ attribute name="href" required="true" %>
 <%@ attribute name="rotulo" required="true" description="texto do tooltip e nome acessivel" %>
-<%@ attribute name="icone" required="true" description="alias de fragments/icone.jspf" %>
+<%@ attribute name="icone" required="true" description="alias de ui:icone" %>
 
 <a href="${href}" class="btn btn-ghost btn-sm btn-square tooltip"
    data-tip="${rotulo}" aria-label="${rotulo}">
-    <c:set var="iconeClasse" value="size-4" />
-    <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+    <ui:icone nome="${icone}" />
 </a>

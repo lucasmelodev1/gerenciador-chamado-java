@@ -26,9 +26,7 @@
 
                     <c:choose>
                         <c:when test="${empty reservas}">
-                            <c:set var="vazioTitulo" value="Nenhuma reserva registrada" />
-                            <c:set var="vazioMensagem" value="As solicitações dos moradores aparecerão aqui para decisão." />
-                            <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                            <ui:vazio titulo="Nenhuma reserva registrada" mensagem="As solicitações dos moradores aparecerão aqui para decisão." />
                         </c:when>
                         <c:otherwise>
                             <div class="overflow-x-auto">
@@ -78,15 +76,7 @@
                         </c:otherwise>
                     </c:choose>
 
-                    <div class="pagination">
-                        <c:if test="${reservasPage.hasPrevious}">
-                            <a class="btn" href="${ctx}/admin/reservas?page=${reservasPage.page - 1}&size=${reservasPage.size}">Anterior</a>
-                        </c:if>
-                        <span>Página ${reservasPage.page + 1} de ${reservasPage.totalPages == 0 ? 1 : reservasPage.totalPages}</span>
-                        <c:if test="${reservasPage.hasNext}">
-                            <a class="btn" href="${ctx}/admin/reservas?page=${reservasPage.page + 1}&size=${reservasPage.size}">Próxima</a>
-                        </c:if>
-                    </div>
+                    <ui:paginacao pagina="${reservasPage}" url="${ctx}/admin/reservas" />
                 </div>
             </section>
         </main>

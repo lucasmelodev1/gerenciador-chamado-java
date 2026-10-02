@@ -40,14 +40,10 @@
 
                 <c:choose>
                     <c:when test="${not consultou}">
-                        <c:set var="vazioMensagem" value="Selecione uma area e uma data para consultar a disponibilidade." />
-                        <c:set var="vazioCompacto" value="${true}" />
-                        <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                        <ui:vazio mensagem="Selecione uma area e uma data para consultar a disponibilidade." compacto="true" />
                     </c:when>
                     <c:when test="${empty disponibilidade}">
-                        <c:set var="vazioMensagem" value="Nenhuma reserva aprovada ou pendente para esta area nesta data." />
-                        <c:set var="vazioCompacto" value="${true}" />
-                        <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
+                        <ui:vazio mensagem="Nenhuma reserva aprovada ou pendente para esta area nesta data." compacto="true" />
                     </c:when>
                     <c:otherwise>
                         <div class="overflow-x-auto">

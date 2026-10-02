@@ -15,7 +15,7 @@
     Atributos:
         acao        action do form
         rotulo      texto do tooltip e nome acessivel
-        icone       alias de fragments/icone.jspf
+        icone       alias de ui:icone
         metodo      valor de `_method` (padrao: delete)
         confirmacao texto do `data-confirm`; sem ela o envio nao pede confirmacao
         perigo      `true` pinta o icone com a cor de erro (padrao: false)
@@ -29,9 +29,10 @@
 --%>
 <%@ tag pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="ui" tagdir="/WEB-INF/tags" %>
 <%@ attribute name="acao" required="true" %>
 <%@ attribute name="rotulo" required="true" description="texto do tooltip e nome acessivel" %>
-<%@ attribute name="icone" required="true" description="alias de fragments/icone.jspf" %>
+<%@ attribute name="icone" required="true" description="alias de ui:icone" %>
 <%@ attribute name="metodo" required="false" description="valor de _method (padrao: delete)" %>
 <%@ attribute name="confirmacao" required="false" description="texto do data-confirm; sem ela nao ha confirmacao" %>
 <%@ attribute name="perigo" required="false" description="true pinta o icone com a cor de erro" %>
@@ -44,7 +45,6 @@
     <input type="hidden" name="_method" value="${acaoFormMetodo}">
     <jsp:doBody />
     <button type="submit" class="${acaoFormClasse}" data-tip="${rotulo}" aria-label="${rotulo}">
-        <c:set var="iconeClasse" value="size-4" />
-        <%@ include file="/WEB-INF/jsp/fragments/icone.jspf" %>
+        <ui:icone nome="${icone}" />
     </button>
 </form>
