@@ -49,6 +49,10 @@ jobs:
       contents: 'read'
       id-token: 'write'
 
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy.outputs.url }}
+
     steps:
       - name: 'Checkout'
         uses: 'actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332' # actions/checkout@v4
@@ -79,7 +83,8 @@ jobs:
           DOCKER_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/${{ env.SERVICE }}:${{ github.sha }}"
           docker build --target runtime --tag "${DOCKER_TAG}" .
           docker push "${DOCKER_TAG}"
-      - name: 'Deploy to Cloud Run'
+      - id: 'deploy'
+        name: 'Deploy to Cloud Run'
 
         # END - Docker auth and build
 
