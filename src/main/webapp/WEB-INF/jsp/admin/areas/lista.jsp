@@ -1,3 +1,4 @@
+<%@ page pageEncoding="UTF-8" %>
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -46,7 +47,7 @@
                                         <%-- Coluna sem rotulo visivel: as acoes passaram a ser so
                                              icone (com tooltip), entao o texto vive aqui, para
                                              quem nao ve o icone. --%>
-                                        <th><span class="sr-only">Acoes</span></th>
+                                        <th><span class="sr-only">Ações</span></th>
                                     </tr>
                                     </thead>
                                     <tbody>

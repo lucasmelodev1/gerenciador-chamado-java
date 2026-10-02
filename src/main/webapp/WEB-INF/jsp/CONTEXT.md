@@ -3,6 +3,12 @@
 Views JSP/JSTL dos controllers web; prefixo/sufixo em `application.properties`.
 
 ## Shell (daisyUI, desde P2; layout do `dashboard-01` do shadcn desde S19)
+- **Toda página começa com `<%@ page pageEncoding="UTF-8" %>`.** Não é enfeite: a diretiva vale
+  para o **arquivo em que aparece**, então a que está em `taglibs.jspf` (que é *incluído*) não
+  vale para a página que o inclui. Sem ela o Jasper lê o arquivo como ISO-8859-1 e **todo
+  acento sai duplicado** (`Ãº` no lugar de `ú`). Foi por isso que o projeto passou anos sem
+  acento em texto de JSP. `scripts/ui-shell.sh` reprova página que inclua `taglibs.jspf` e não
+  declare isso na primeira linha. `taglibs.jspf` mantém a sua (vale para os `.jspf`).
 - `fragments/head.jspf`: carrega `app.build.css` + `custom.css` e, **depois**, o CSS legado (transitório).
   A ordem importa: o legado não está em cascade layer, então vence a daisyUI onde ambos definem a mesma classe.
   **Também materializa `${_csrf.token}` aqui, no `<head>`.** Não remova: o `CookieCsrfTokenRepository` só

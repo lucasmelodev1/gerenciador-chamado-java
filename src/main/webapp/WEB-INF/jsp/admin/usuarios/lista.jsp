@@ -1,3 +1,4 @@
+<%@ page pageEncoding="UTF-8" %>
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -38,7 +39,7 @@
                                         <th>Nome</th>
                                         <th>Email</th>
                                         <th>Perfil</th>
-                                        <th><span class="sr-only">Acoes</span></th>
+                                        <th><span class="sr-only">Ações</span></th>
                                     </tr>
                                     </thead>
                                     <tbody>

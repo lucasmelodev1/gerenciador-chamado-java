@@ -32,7 +32,7 @@ os dois paineis: `ui:drawer` e `ui:dialog`). Uma tela nova é ~15 linhas de estr
                     <table class="table table-zebra" data-filter-table="blocos-table">
                         <thead><tr>
                             <th>Identificacao</th> …
-                            <th><span class="sr-only">Acoes</span></th>
+                            <th><span class="sr-only">Ações</span></th>
                         </tr></thead>
                         <tbody>
                         <c:forEach items="${blocos}" var="bloco">

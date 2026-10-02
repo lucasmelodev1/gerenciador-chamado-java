@@ -154,5 +154,19 @@ for jsp in $(grep -rl 'DOCTYPE html' src/main/webapp/WEB-INF/jsp --include=*.jsp
       || { echo "  FAIL $jsp emite <body> mas nao inclui head.jspf"; fail=1; }
 done
 echo "  OK   token CSRF no <head> e head.jspf presente nas $n paginas"
+
+# ------------------------------------------------------- encoding do fonte
+# A diretiva `pageEncoding` vale para o ARQUIVO em que ela aparece. Como ela vive em
+# `taglibs.jspf` (que e INCLUIDO), ela nao vale para a pagina que inclui: sem a declaracao
+# na propria pagina, o Jasper le o arquivo como ISO-8859-1 e TODO acento sai duplicado
+# ("Ãº" no lugar de "u com acento"). Foi assim que a S29 descobriu que o projeto nunca
+# tinha acentuado texto visivel em JSP.
+n=0
+for jsp in $(grep -rl 'fragments/taglibs.jspf' src/main/webapp/WEB-INF/jsp --include=*.jsp); do
+    n=$((n + 1))
+    head -1 "$jsp" | grep -q 'pageEncoding="UTF-8"' \
+      || { echo "  FAIL $jsp nao declara pageEncoding=\"UTF-8\" na primeira linha"; fail=1; }
+done
+echo "  OK   $n paginas declaram pageEncoding na primeira linha"
 [ "$fail" = 0 ] && echo "SHELL OK"
 exit "$fail"

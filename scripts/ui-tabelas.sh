@@ -111,8 +111,8 @@ for tela, cfg in TELAS.items():
         bad(tela, "icone de fallback emitido (alias desconhecido em icone.jspf)")
 
     # --- coluna de acoes: rotulo acessivel, todas as linhas migradas ---
-    if '<th><span class="sr-only">Acoes</span></th>' not in h:
-        bad(tela, "coluna de acoes sem <span class=\"sr-only\">Acoes</span> no <th>")
+    if '<th><span class="sr-only">Ações</span></th>' not in h:
+        bad(tela, "coluna de acoes sem <span class=\"sr-only\">Ações</span> no <th>")
     acoes = h.count('<td class="cell-actions app-tabela-acoes">')
     todas = len(re.findall(r'<td class="cell-actions[^"]*">', h))
     if acoes == 0:
@@ -191,11 +191,11 @@ if negacao and cancelamento:
     if "app-dialog-corpo--vazio" not in can:
         bad("reservas", "o dialogo de cancelamento nao tem campos: o corpo deveria sair vazio")
     # O titulo do campo vive no placeholder + aria-label, sem rotulo visivel.
-    if 'placeholder="Motivo da negacao"' not in neg:
+    if 'placeholder="Motivo da negação"' not in neg:
         bad("reservas", "o campo de motivo deveria usar o proprio titulo como placeholder")
-    if 'aria-label="Motivo da negacao"' not in neg:
+    if 'aria-label="Motivo da negação"' not in neg:
         bad("reservas", "campo sem rotulo visivel precisa de aria-label")
-    if '<span>Motivo da negacao</span>' in h:
+    if '<span>Motivo da negação</span>' in h:
         bad("reservas", "o campo de motivo ainda tem rotulo visivel")
 if 'btn-error' not in h:
     bad("reservas", "o botao de confirmar dos dialogos deveria ser vermelho (btn-error)")
@@ -322,7 +322,7 @@ WORK, SAB = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2])
 CASOS = [
     ("areas", 'class="cell-actions app-tabela-acoes"', 'class="cell-actions"',
      "celula de acoes fora do padrao"),
-    ("areas", '<span class="sr-only">Acoes</span>', '',
+    ("areas", '<span class="sr-only">Ações</span>', '',
      "coluna de acoes sem rotulo acessivel"),
     ("areas", 'data-tip="Remover"', '', "acao sem tooltip"),
     ("areas", '<path d="M21 21l-6 -6" />', '', "busca sem a lupa"),
@@ -342,7 +342,7 @@ CASOS = [
      "dialogo de negacao renderizado como drawer lateral"),
     ("reservas", 'name="motivo"', 'name="semMotivo"',
      "dialogo de negacao sem o campo de motivo"),
-    ("reservas", 'placeholder="Motivo da negacao"', 'placeholder="Ex.: manutencao da piscina"',
+    ("reservas", 'placeholder="Motivo da negação"', 'placeholder="Ex.: manutencao da piscina"',
      "campo de motivo volta ao placeholder de exemplo, sem titulo"),
     ("reservas", 'class="app-dialog-corpo app-dialog-corpo--vazio"', 'class="app-dialog-corpo"',
      "dialogo de confirmacao volta a renderizar a faixa do corpo"),

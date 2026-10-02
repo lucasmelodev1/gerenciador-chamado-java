@@ -1294,6 +1294,90 @@ sabotagem propria. Self-test de CSS: **17/17**.
 Fecham arquivo por arquivo: os tres `action`/`_method`/`csrf.jspf` de reservas reapareceram
 dentro de `ui:acao-form`, `ui:acao-editar` e `ui:dialog`.
 
+## S29 — Acentuacao: o portugues da tela de reservas e a causa raiz do "sem acento"
+
+### O pedido
+
+Revisar o portugues da tela de reservas: faltavam acentos ("Reservas das areas comuns",
+"Agenda unica", "Inicio", "Pagina", "Proxima", "visivel", "horario", "negacao").
+
+### O que a revisao encontrou: um bug de encoding, nao só de texto
+
+Depois de acentuar, a tela passou a render **mojibake**:
+
+    fonte : 41 67 65 6e 64 61 20 c3 ba ...   -> "Agenda u-acute"      (UTF-8 correto)
+    servido: 41 67 65 6e 64 61 20 c3 83 c2 ba -> "Agenda A-tilde-ordfeminine" (duplicado)
+
+A causa: **a diretiva `pageEncoding` vale para o arquivo em que ela aparece**. Ela estava (e
+continua) em `fragments/taglibs.jspf`, que e *incluido* por `<%@ include %>` — entao **nao
+valia para a pagina que o inclui**. O Jasper lia cada JSP como ISO-8859-1: os bytes UTF-8 do
+fonte viravam dois caracteres Latin-1, e o resultado saia re-codificado.
+
+Isso explica a convencao informal de "portugues sem acento" no projeto: nao era preferencia
+estetica, era a unica forma de o texto visivel nao quebrar. E os unicos nao-ASCII que existiam
+em JSP eram `×`, `•` e `—`: dois deles estao no intervalo Latin-1 e passavam batido; o `—`
+vivia em comentarios, onde mojibake nao aparece.
+
+**Bug pre-existente encontrado de quebra:** o separador `•` (U+2022, fora do Latin-1) de
+`admin/chamados/detalhe.jsp`, `colaborador/.../detalhe.jsp` e `morador/.../detalhe.jsp` era
+texto visivel e estava saindo como `â€¢`. Corrigido junto.
+
+### A correcao
+
+Cada pagina declara a sua propria diretiva, na primeira linha:
+
+```jsp
+<%@ page pageEncoding="UTF-8" %>
+<%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
+```
+
+Sao **26 paginas** (19 ganharam agora, 7 ja tinham desde o comeco desta rodada). `taglibs.jspf`
+mantem a sua: vale para os `.jspf`, que sao arquivos proprios.
+
+`ui-shell.sh` passou a reprovar pagina que inclua `taglibs.jspf` e nao declare `pageEncoding` na
+primeira linha — a sabotagem (tirar a linha de `areas/lista.jsp`) reprova. Sem isso a armadilha
+volta na proxima pagina nova, e volta **silenciosa**: o texto continua la, so com os acentos
+duplicados.
+
+### O portugues da tela de reservas
+
+| Antes | Depois |
+|---|---|
+| Reservas das areas comuns | Reservas das **áreas** comuns |
+| Agenda unica | Agenda **única** |
+| Area / Inicio (colunas) | **Área** / **Início** |
+| Pagina X de Y / Proxima | **Página** X de Y / **Próxima** |
+| As solicitacoes ... aparecerao aqui para decisao. | As **solicitações** ... **aparecerão** aqui para **decisão**. |
+| O motivo fica visivel para o morador ... | O motivo fica **visível** para o morador ... |
+| Motivo da negacao (placeholder + aria-label) | Motivo da **negação** |
+| O horario volta a ficar livre na agenda. Nao ha motivo a informar. | O **horário** volta a ficar livre na agenda. **Não é** preciso informar um motivo. |
+
+O rotulo acessivel da coluna de acoes (`<span class="sr-only">Acoes</span>`) tambem estava sem
+acento e e lido por leitor de tela. Como essa string e do framework (aparece nas 7 telas), foi
+acentuada de uma vez nas sete, junto do check do `ui-tabelas.sh` e do esqueleto em
+`tags/CONTEXT.md`.
+
+### Verificacao
+
+| # | Check | Result |
+|---|---|---|
+| 1 | bytes servidos de `Agenda única` = `c3 ba` (UTF-8 correto), e nao `c3 83 c2 ba` | OK |
+| 2 | `•` das tres telas de detalhe de chamado: 2 ocorrencias corretas, 0 `â€¢` | OK |
+| 3 | `ui-shell.sh`: as 26 paginas declaram `pageEncoding` na primeira linha; sabotagem reprova | OK |
+| 4 | o texto renderizado da tela de reservas sai acentuado, sem mojibake | OK |
+| 5 | `ui-tabelas.sh` (7 telas) · `ui-routes.sh shell` · `ui-drawer.sh` | OK · 26/26 · OK |
+| 6 | `ui-invariants.sh check` (o floor de `utf8_decls` sobe, nao desce) | `INVARIANTS OK` |
+| 7 | `docker compose run --rm test` | **153 testes, 0 falhas** |
+
+### Fica para depois
+
+- **So a tela de reservas teve o texto acentuado.** As outras seis telas de tabela que migrei
+  (areas, blocos, usuarios, status-chamado, tipos-chamado, chamados) continuam com o texto em
+  ASCII, e o mesmo vale para as demais telas do app. Agora que o encoding esta resolvido,
+  acentuar e uma passada de texto por tela, sem risco de mojibake.
+- A paginacao ainda e copiada em cada tela; quando virar `ui:paginacao`, a acentuacao de
+  "Página/Próxima" sai de uma vez.
+
 ## Known limitations (carried to the end)
 
 1. **No browser in this environment.** Every verification is DOM/CSS-level. Button/alert colours, spacing,

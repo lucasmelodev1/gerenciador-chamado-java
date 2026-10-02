@@ -1,3 +1,4 @@
+<%@ page pageEncoding="UTF-8" %>
 <%@ include file="/WEB-INF/jsp/fragments/taglibs.jspf" %>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -19,14 +20,14 @@
                  solto dentro da celula de acoes, que estourava a coluna. --%>
             <section class="card">
                 <div class="card-body">
-                    <ui:card-head titulo="Reservas das areas comuns" descricao="Agenda unica">
+                    <ui:card-head titulo="Reservas das áreas comuns" descricao="Agenda única">
                         <a href="${ctx}/admin/reservas/agenda" class="btn btn-sm">Ver agenda</a>
                     </ui:card-head>
 
                     <c:choose>
                         <c:when test="${empty reservas}">
                             <c:set var="vazioTitulo" value="Nenhuma reserva registrada" />
-                            <c:set var="vazioMensagem" value="As solicitacoes dos moradores aparecerao aqui para decisao." />
+                            <c:set var="vazioMensagem" value="As solicitações dos moradores aparecerão aqui para decisão." />
                             <%@ include file="/WEB-INF/jsp/fragments/vazio.jspf" %>
                         </c:when>
                         <c:otherwise>
@@ -34,14 +35,14 @@
                                 <table class="table table-zebra">
                                     <thead>
                                     <tr>
-                                        <th>Area</th>
+                                        <th>Área</th>
                                         <th>Morador</th>
                                         <th>Unidade</th>
-                                        <th>Inicio</th>
+                                        <th>Início</th>
                                         <th>Fim</th>
                                         <th>Status</th>
                                         <th>Motivo</th>
-                                        <th><span class="sr-only">Acoes</span></th>
+                                        <th><span class="sr-only">Ações</span></th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -81,9 +82,9 @@
                         <c:if test="${reservasPage.hasPrevious}">
                             <a class="btn" href="${ctx}/admin/reservas?page=${reservasPage.page - 1}&size=${reservasPage.size}">Anterior</a>
                         </c:if>
-                        <span>Pagina ${reservasPage.page + 1} de ${reservasPage.totalPages == 0 ? 1 : reservasPage.totalPages}</span>
+                        <span>Página ${reservasPage.page + 1} de ${reservasPage.totalPages == 0 ? 1 : reservasPage.totalPages}</span>
                         <c:if test="${reservasPage.hasNext}">
-                            <a class="btn" href="${ctx}/admin/reservas?page=${reservasPage.page + 1}&size=${reservasPage.size}">Proxima</a>
+                            <a class="btn" href="${ctx}/admin/reservas?page=${reservasPage.page + 1}&size=${reservasPage.size}">Próxima</a>
                         </c:if>
                     </div>
                 </div>
@@ -95,19 +96,19 @@
 <%-- Fora de `.page-content`: o legado espremeria o backdrop. Ver custom.css > Dialogo. --%>
 <ui:dialog id="dialog-negacao"
            titulo="Negar reserva"
-           descricao="O motivo fica visivel para o morador na lista de reservas dele."
+           descricao="O motivo fica visível para o morador na lista de reservas dele."
            acao="${ctx}/admin/reservas"
            rotuloConfirmar="Negar" varianteConfirmar="error" iconeConfirmar="negar"
            rotuloCancelar="Voltar">
     <%-- Sem rotulo visivel: o proprio placeholder e o titulo do campo, e o `aria-label`
          mantem o nome acessivel (o dialogo ja explica o porque na descricao). --%>
     <input class="input w-full" type="text" name="motivo" maxlength="255"
-           placeholder="Motivo da negacao" aria-label="Motivo da negacao" required>
+           placeholder="Motivo da negação" aria-label="Motivo da negação" required>
 </ui:dialog>
 
 <ui:dialog id="dialog-cancelamento"
            titulo="Cancelar reserva"
-           descricao="O horario volta a ficar livre na agenda. Nao ha motivo a informar."
+           descricao="O horário volta a ficar livre na agenda. Não é preciso informar um motivo."
            acao="${ctx}/admin/reservas"
            rotuloConfirmar="Cancelar reserva" varianteConfirmar="error" iconeConfirmar="fechar"
            rotuloCancelar="Voltar" />
