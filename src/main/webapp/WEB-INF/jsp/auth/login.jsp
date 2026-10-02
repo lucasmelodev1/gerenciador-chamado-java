@@ -3,26 +3,39 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <%@ include file="/WEB-INF/jsp/fragments/head.jspf" %>
-<body class="auth-body" data-page="login">
-<main class="auth-layout">
-    <section class="auth-panel auth-brand">
-        <p class="eyebrow">Gerenciamento de chamados</p>
-        <h1>${appName}</h1>
+<%-- Pagina publica: shell proprio (sem drawer) e, por isso, o unico `<body>` que nao vem do
+     `ui:shell`. As classes utilitarias substituem `.auth-body`/`.auth-layout`/`.auth-panel`/
+     `.auth-brand`/`.auth-form-panel`/`.feature-list`/`.eyebrow` do CSS legado (S33, F2):
+       - `.auth-body`        -> grid + place-items-center + p-[18px] sm:p-8 (+ fundo/cor do shell)
+       - `.auth-layout`      -> grid w-full max-w-[1140px] gap-8, 1.1fr/0.9fr a partir de 980px
+       - `.auth-panel`       -> rounded-[20px] p-10, borda clara, `shadow-painel` (a `--shadow`)
+       - `.auth-brand`       -> bg-primary-strong + text-primary-content (a marca escura)
+       - `.auth-form-panel`  -> flex items-center, superficie translucida + backdrop-blur
+       - `.feature-list`     -> grid gap-4 pl-5 com marcador de lista
+       - `.eyebrow`          -> text-xs uppercase + `tracking-eyebrow` (0.12em) + mb-2
+     O `eyebrow` da marca usa `text-primary-content/70`: no legado ele saia com a cor de texto
+     secundaria (`--muted`) sobre o fundo escuro — contraste baixo. E a unica diferenca
+     visual intencional desta tela. --%>
+<body class="grid min-h-screen place-items-center bg-base-200 p-[18px] text-base-content sm:p-8" data-page="login">
+<main class="grid w-full max-w-[1140px] items-stretch gap-8 min-[980px]:grid-cols-[1.1fr_0.9fr]">
+    <section class="relative overflow-hidden rounded-[20px] border border-white/60 bg-primary-strong p-[18px] text-primary-content shadow-painel sm:p-10 max-[640px]:rounded-[14px]">
+        <p class="mb-2 text-xs tracking-eyebrow text-primary-content/70 uppercase">Gerenciamento de chamados</p>
+        <h1 class="font-display">${appName}</h1>
         <p>
             Controle blocos, moradores, fluxo de atendimento e historico de interacoes
             em uma unica interface.
         </p>
-        <ul class="feature-list">
-            <li>Abertura de chamados por unidade</li>
-            <li>Fluxo com status e SLA configuraveis</li>
-            <li>Historico de comentarios por perfil</li>
+        <ul class="grid list-disc gap-4 pl-5">
+            <li class="mb-2.5">Abertura de chamados por unidade</li>
+            <li class="mb-2.5">Fluxo com status e SLA configuraveis</li>
+            <li class="mb-2.5">Historico de comentarios por perfil</li>
         </ul>
     </section>
 
-    <section class="auth-panel auth-form-panel">
-        <div class="card">
+    <section class="flex items-center rounded-[20px] border border-white/60 bg-base-100/90 p-[18px] shadow-painel backdrop-blur sm:p-10 max-[640px]:rounded-[14px]">
+        <div class="card w-full">
             <div class="card-body">
-            <p class="eyebrow">Acesso</p>
+            <p class="mb-2 text-xs tracking-eyebrow text-base-content/60 uppercase">Acesso</p>
             <h2>Entrar</h2>
 
             <c:if test="${param.error eq 'true'}">

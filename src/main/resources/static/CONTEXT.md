@@ -104,3 +104,7 @@ CSS/JS servidos direto pelo Spring e incluídos pelos fragmentos JSP.
   `app.css`): precisa listar toda classe montada por variável (as variantes de `ui:badge`). O bloco
   `#shell` espelha a lateral/topbar reais desde a S32 (antes mostrava a lateral antiga, com `bg-base-100`
   e `.divider`).
+- Tokens que existem para o login, herdados do legado na migração (S33/F2): `--color-primary-strong`
+  (`bg-primary-strong`, o #093f44 da marca) e `--shadow-painel` (`shadow-painel`, a `--shadow` do
+  `base.css`). A tela `auth/login.jsp` foi a primeira convertida para utilitários — as classes
+  `.auth-*`, `.feature-list` e `.eyebrow` saíram do markup.

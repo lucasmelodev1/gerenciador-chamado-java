@@ -38,8 +38,10 @@ done
 # rota|perfil|marcador baseline|marcador shell (S7)|marcador pos-rewrite
 # A coluna "shell" existe porque o rewrite e incremental: entre S7 e S16 apenas o shell
 # esta em daisyUI, e usar os marcadores finais nessas fases daria falso negativo.
+# S33/F2: o marcador do login era `auth-layout`, classe do CSS legado que a tela trocou por
+# utilitarios; passou a ser a propria action do formulario.
 ROWS="
-/login|public|auth-layout|auth-layout|card-body
+/login|public|auth-layout|action=\"/login\"|card-body
 /admin|admin|stats-grid|drawer-side|stats
 /morador|morador|stats-grid|drawer-side|stats
 /colaborador|colaborador|stats-grid|drawer-side|stats
