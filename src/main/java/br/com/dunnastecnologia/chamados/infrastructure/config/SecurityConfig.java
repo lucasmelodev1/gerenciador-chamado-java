@@ -2,6 +2,8 @@ package br.com.dunnastecnologia.chamados.infrastructure.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import br.com.dunnastecnologia.chamados.infrastructure.security.JwtAuthenticationFilter;
 import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
@@ -52,9 +54,11 @@ public class SecurityConfig {
     }
 
     @Bean
-    public static CorsConfigurationSource corsConfigurationSource() {
+    public static CorsConfigurationSource corsConfigurationSource(
+            @Value("${app.cors.allowed-origins:http://localhost:8080,http://localhost:3000,http://127.0.0.1:8080}") List<String> allowedOrigins
+    ) {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:8080", "http://localhost:3000"));
+        configuration.setAllowedOriginPatterns(allowedOrigins);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-XSRF-TOKEN"));
         configuration.setAllowCredentials(true);
@@ -98,13 +102,14 @@ public class SecurityConfig {
         public SecurityFilterChain apiSecurityFilterChain(
                 HttpSecurity http,
                 JwtAuthenticationFilter jwtAuthenticationFilter,
-                AuthenticationProvider authenticationProvider
+                AuthenticationProvider authenticationProvider,
+                CorsConfigurationSource corsConfigurationSource
         ) throws Exception {
             http
                     .securityMatcher("/api/**")
                     // A API trabalha sem sessao no servidor e autentica pelo JWT.
                     .csrf(AbstractHttpConfigurer::disable)
-                    .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                    .cors(cors -> cors.configurationSource(corsConfigurationSource))
                     .authorizeHttpRequests(auth -> auth
                             .requestMatchers("/api/auth/**").permitAll()
                             .requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
@@ -130,7 +135,8 @@ public class SecurityConfig {
         @Bean
         public SecurityFilterChain webSecurityFilterChain(
                 HttpSecurity http,
-                AuthenticationProvider authenticationProvider
+                AuthenticationProvider authenticationProvider,
+                CorsConfigurationSource corsConfigurationSource
         ) throws Exception {
             http
                     .authorizeHttpRequests(auth -> auth
@@ -152,7 +158,7 @@ public class SecurityConfig {
                     .csrf(csrf -> csrf
                             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                     )
-                    .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                    .cors(cors -> cors.configurationSource(corsConfigurationSource))
                     .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                     .authenticationProvider(authenticationProvider)
                     .formLogin(form -> form
